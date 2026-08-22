@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #070b18;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.2),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 150%;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+input {
+  outline: none;
+  border: none;
+}
+
+:root {
+  --bg: #050816;
+  --card: #121826;
+  --card2: #1B2336;
+  --primary: #5B5CEB;
+  --primary2: #6C63FF;
+  --green: #22C55E;
+  --red: #EF4444;
+  --orange: #F59E0B;
+  --text: #FFFFFF;
+  --sub: #94A3B8;
+  --border: #2A324A;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #5B5CEB;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0E1323;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 10px 35px rgba(0,0,0,.35);
+  transition: .3s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 45px rgba(91,92,235,.25);
+}
+
+.primary-btn {
+  background: linear-gradient(90deg, #5B5CEB, #7A5AF8);
+  color: white;
+  padding: 15px 28px;
+  border: none;
+  border-radius: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: .3s;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(108,99,255,.4);
+}
+
+.input {
+  width: 100%;
+  padding: 18px;
+  border-radius: 16px;
+  background: #0B1120;
+  border: 1px solid #2A324A;
+  color: white;
+  font-size: 16px;
+  transition: .3s;
+}
+
+.input:focus {
+  border: 1px solid #6C63FF;
+  box-shadow: 0 0 15px rgba(108,99,255,.3);
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #94A3B8;
+  margin-bottom: 20px;
+}
+
+.container {
+  max-width: 1350px;
+  margin: auto;
+  padding: 35px;
+}

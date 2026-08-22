@@ -1,0 +1,501 @@
+account_id,account_name,upi_id,account_type,bank_name,mobile_number,current_balance,trust_score,account_status,created_at
+A0001,Rahul Sharma,rahul.sharma77@paytm,Personal,SBI,9707942888,1840744.0,60,Active,2022-01-05
+A0002,Charan Nair,charan.nair9@okaxis,Personal,Union Bank,9991874377,234111.0,98,Active,2021-07-02
+A0003,BBMP,bbmp@oksbi,Government,Canara,9657637319,1582570.0,77,Active,2025-05-19
+A0004,Amit Verma,amit.verma61@okhdfcbank,Personal,Axis,9626523761,1935510.0,78,Active,2021-04-01
+A0005,Meera Shetty,meera.shetty67@ibl,Personal,Union Bank,9759229430,928269.0,77,Active,2021-10-20
+A0006,Meera Singh,meera.singh8@paytm,Personal,Canara,9796561129,1697699.0,94,Active,2024-12-23
+A0007,BWSSB,bwssb@paytm,Utility,Canara,9797888594,1859159.0,79,Active,2024-04-24
+A0008,Kiran Rao,kiran.rao76@okicici,Personal,Union Bank,9311960904,459027.0,72,Active,2021-08-02
+A0009,Rohan Patel,rohan.patel35@okicici,Personal,PNB,9934633732,664906.0,69,Active,2021-07-09
+A0010,Priya Gupta,priya.gupta9@ibl,Personal,Kotak,9032018457,1854097.0,95,Active,2025-10-15
+A0011,Kavya Verma,kavya.verma75@ibl,Personal,HDFC,9706612824,892177.0,75,Active,2021-02-20
+A0012,CityWater,citywater@okaxis,Utility,IDFC FIRST,9385922164,658299.0,73,Active,2026-09-08
+A0013,Deepa Kulkarni,deepa.kulkarni58@oksbi,Personal,Kotak,9648499703,311092.0,70,Active,2022-06-03
+A0014,Sneha Verma,sneha.verma44@okaxis,Student,Axis,9623609368,541110.0,71,Active,2024-12-24
+A0015,BBMP,bbmp@ibl,Government,Union Bank,9284775241,552847.0,35,Active,2022-07-03
+A0016,Amit Gupta,amit.gupta28@okaxis,Personal,PNB,9944817534,589208.0,78,Active,2025-04-18
+A0017,Manoj Gupta,manoj.gupta80@paytm,Personal,ICICI,9668138171,1532478.0,82,Active,2023-04-13
+A0018,Vikram Gupta,vikram.gupta23@ybl,Student,Union Bank,9919904385,797266.0,64,Active,2022-12-22
+A0019,PowerGrid,powergrid@paytm,Utility,Axis,9798962836,1986942.0,90,Active,2024-03-02
+A0020,HelpIndia,helpindia31@okaxis,NGO,SBI,9668560218,456511.0,85,Active,2023-06-13
+A0021,TechWorld52,techworld52@oksbi,Merchant,HDFC,9423538053,181451.0,61,Active,2024-11-16
+A0022,KarnatakaGas,karnatakagas@ibl,Utility,Union Bank,9787350261,1157386.0,87,Active,2021-06-09
+A0023,BESCOM,bescom@ibl,Utility,SBI,9618475875,210015.0,69,Active,2025-09-07
+A0024,BWSSB,bwssb@ibl,Utility,IDFC FIRST,9856126520,1828082.0,94,Active,2024-07-25
+A0025,Priya Nair,priya.nair94@ibl,Personal,Canara,9379802623,496509.0,77,Active,2021-09-13
+A0026,Anjali Patel,anjali.patel28@okaxis,Personal,PNB,9361765879,1267335.0,96,Suspended,2023-02-18
+A0027,Vikram Verma,vikram.verma18@ibl,Personal,ICICI,9763232955,1158854.0,88,Active,2025-08-24
+A0028,FreshMart33,freshmart33@oksbi,Merchant,Canara,9928339433,1107674.0,69,Active,2025-01-22
+A0029,Kiran Singh,kiran.singh25@ibl,Personal,SBI,9447243991,200732.0,93,Active,2023-10-15
+A0030,CityPharmacy49,citypharmacy49@okicici,Merchant,HDFC,9274345879,454198.0,81,Active,2024-01-28
+A0031,FreshMart85,freshmart85@ibl,Merchant,HDFC,9174847048,1454804.0,72,Active,2022-11-18
+A0032,ABC Pvt Ltd,abcpvtltd49@oksbi,Business,Union Bank,9336654664,252333.0,20,Active,2022-07-25
+A0033,ABC Pvt Ltd,abcpvtltd20@oksbi,Business,PNB,9579385297,564592.0,78,Active,2023-06-03
+A0034,Arjun Singh,arjun.singh20@ibl,Personal,Axis,9296216530,1081037.0,86,Active,2025-09-12
+A0035,CareFoundation,carefoundation7@ybl,NGO,Canara,9832677345,1686509.0,79,Active,2023-12-28
+A0036,SmileTrust,smiletrust89@okicici,NGO,Canara,9651042819,1502603.0,86,Active,2021-04-20
+A0037,TechWorld37,techworld37@paytm,Merchant,Union Bank,9506853138,946128.0,19,Active,2021-09-15
+A0038,Kavya Kulkarni,kavya.kulkarni17@ibl,Personal,Canara,9131214152,720014.0,80,Active,2022-06-01
+A0039,Divya Singh,divya.singh29@okaxis,Personal,ICICI,9386911358,1711901.0,94,Active,2026-11-05
+A0040,KarnatakaTransport,karnatakatransport@okicici,Government,Union Bank,9169803102,13257.0,97,Active,2025-03-08
+A0041,Manoj Reddy,manoj.reddy1@ibl,Personal,HDFC,9456277594,1821692.0,31,Active,2021-03-21
+A0042,Pooja Kulkarni,pooja.kulkarni16@oksbi,Personal,HDFC,9154906561,1545075.0,100,Active,2023-10-04
+A0043,Deepa Verma,deepa.verma96@oksbi,Personal,PNB,9886390957,1441194.0,80,Active,2025-11-26
+A0044,Rahul Sharma,rahul.sharma99@okaxis,Personal,HDFC,9018922076,1223404.0,64,Active,2021-09-01
+A0045,CareFoundation,carefoundation74@paytm,NGO,HDFC,9319560189,1935670.0,67,Active,2021-02-21
+A0046,Kavya Kulkarni,kavya.kulkarni51@ibl,Student,PNB,9964943408,1211260.0,75,Active,2025-03-20
+A0047,Pooja Singh,pooja.singh94@oksbi,Personal,PNB,9670999742,807190.0,67,Active,2024-03-28
+A0048,Nova Solutions,novasolutions11@ibl,Business,HDFC,9128926976,425128.0,97,Suspended,2021-10-08
+A0049,Arjun Verma,arjun.verma92@okaxis,Personal,Union Bank,9719244553,1770988.0,83,Active,2025-03-27
+A0050,SmartElectronics42,smartelectronics42@ybl,Merchant,ICICI,9257081527,1738298.0,65,Active,2021-10-28
+A0051,Charan Rao,charan.rao17@oksbi,Personal,Axis,9412175887,1046211.0,95,Active,2026-05-11
+A0052,Anjali Sharma,anjali.sharma39@ybl,Student,Canara,9374289909,25582.0,99,Active,2021-08-15
+A0053,FreshMart70,freshmart70@okaxis,Merchant,Union Bank,9656196837,512380.0,92,Active,2026-03-06
+A0054,Rohan Gupta,rohan.gupta27@paytm,Personal,Kotak,9328855634,11067.0,66,Active,2021-06-02
+A0055,TechWorld21,techworld21@okhdfcbank,Merchant,PNB,9422910418,74389.0,61,Active,2021-10-06
+A0056,BESCOM,bescom@paytm,Utility,Union Bank,9348549486,548919.0,98,Active,2023-04-21
+A0057,CityPharmacy40,citypharmacy40@okhdfcbank,Merchant,Axis,9897548181,331112.0,77,Active,2023-07-08
+A0058,FreshMart17,freshmart17@okaxis,Merchant,PNB,9535407447,1129844.0,94,Active,2021-01-22
+A0059,Varun Patel,varun.patel93@oksbi,Personal,HDFC,9873926226,1390246.0,70,Active,2026-05-22
+A0060,Rahul Reddy,rahul.reddy87@okicici,Personal,SBI,9853898805,6799.0,78,Active,2023-12-05
+A0061,MegaStore95,megastore95@paytm,Merchant,IDFC FIRST,9369962325,1010474.0,95,Active,2026-11-14
+A0062,Deepa Shetty,deepa.shetty22@ybl,Personal,IDFC FIRST,9842917272,1629835.0,95,Active,2024-05-18
+A0063,Meera Verma,meera.verma21@okhdfcbank,Personal,IDFC FIRST,9956762282,1142687.0,93,Active,2024-03-15
+A0064,Deepa Kulkarni,deepa.kulkarni68@paytm,Personal,PNB,9625478772,719628.0,82,Active,2025-12-13
+A0065,Pooja Verma,pooja.verma78@paytm,Student,Axis,9494491814,1525702.0,13,Active,2024-11-13
+A0066,Sneha Reddy,sneha.reddy9@oksbi,Personal,SBI,9944565205,1321569.0,83,Active,2022-07-14
+A0067,Arjun Shetty,arjun.shetty13@ibl,Personal,Kotak,9574557877,253063.0,89,Active,2025-06-04
+A0068,Anjali Patel,anjali.patel10@okaxis,Personal,ICICI,9302956179,34540.0,71,Active,2023-10-15
+A0069,Sneha Patel,sneha.patel91@okicici,Personal,Axis,9396254505,1533329.0,89,Active,2024-03-18
+A0070,DailyNeeds20,dailyneeds20@paytm,Merchant,Canara,9645063420,633252.0,72,Active,2026-07-28
+A0071,Charan Gupta,charan.gupta17@ibl,Personal,HDFC,9236436585,164898.0,80,Active,2021-12-17
+A0072,Anjali Kulkarni,anjali.kulkarni20@paytm,Personal,HDFC,9455149712,864216.0,87,Suspended,2024-05-06
+A0073,XYZ Logistics,xyzlogistics85@okicici,Business,Kotak,9086322748,591002.0,73,Active,2021-10-17
+A0074,XYZ Logistics,xyzlogistics45@okaxis,Business,Canara,9010267882,1971947.0,94,Active,2021-07-04
+A0075,DailyNeeds91,dailyneeds91@okicici,Merchant,SBI,9992366401,203563.0,81,Active,2023-11-10
+A0076,Arjun Kulkarni,arjun.kulkarni8@okhdfcbank,Personal,Kotak,9115244696,1476161.0,80,Active,2023-08-11
+A0077,Kiran Patel,kiran.patel20@paytm,Personal,SBI,9723327954,124112.0,65,Active,2022-02-20
+A0078,IncomeTax,incometax@ibl,Government,ICICI,9327760421,1827261.0,79,Active,2024-01-10
+A0079,Manoj Shetty,manoj.shetty36@okicici,Personal,IDFC FIRST,9358013413,947571.0,77,Active,2025-05-09
+A0080,Anjali Singh,anjali.singh70@okhdfcbank,Student,Canara,9591335039,528378.0,67,Active,2022-10-01
+A0081,Arjun Reddy,arjun.reddy88@ybl,Personal,ICICI,9061693323,828031.0,72,Active,2025-06-20
+A0082,Pooja Shetty,pooja.shetty88@paytm,Personal,Canara,9691217011,513245.0,75,Active,2023-10-04
+A0083,Varun Patel,varun.patel5@ibl,Student,IDFC FIRST,9678503179,1427611.0,35,Active,2022-09-14
+A0084,Sneha Sharma,sneha.sharma31@okhdfcbank,Personal,SBI,9560231521,1118437.0,73,Active,2022-06-05
+A0085,Sneha Gupta,sneha.gupta31@ibl,Personal,Kotak,9762816929,1903141.0,89,Active,2025-04-15
+A0086,KarnatakaTransport,karnatakatransporta0086@okicici,Government,Axis,9085662374,839109.0,64,Active,2021-07-24
+A0087,Deepa Singh,deepa.singh24@ybl,Personal,PNB,9753779977,1872425.0,9,Active,2025-11-15
+A0088,Pooja Shetty,pooja.shetty50@okicici,Student,Canara,9104057657,1123900.0,96,Active,2023-01-02
+A0089,Kavya Rao,kavya.rao83@okaxis,Personal,Canara,9852392594,747752.0,79,Active,2025-12-10
+A0090,Kavya Shetty,kavya.shetty42@ybl,Personal,SBI,9461097780,532233.0,95,Active,2021-04-21
+A0091,Meera Shetty,meera.shetty22@ibl,Student,IDFC FIRST,9775809637,728246.0,82,Blocked,2022-03-04
+A0092,Divya Singh,divya.singh56@oksbi,Student,Union Bank,9503067364,531941.0,97,Active,2023-02-27
+A0093,Deepa Sharma,deepa.sharma37@okaxis,Personal,ICICI,9135185298,1963100.0,80,Active,2025-10-14
+A0094,KarnatakaGas,karnatakagas@okhdfcbank,Utility,HDFC,9083415348,1329958.0,65,Suspended,2026-10-20
+A0095,TechWorld36,techworld36@ibl,Merchant,Kotak,9826088012,1348612.0,88,Active,2022-03-09
+A0096,Priya Gupta,priya.gupta18@paytm,Student,PNB,9013019728,1963122.0,61,Active,2022-10-23
+A0097,CityPharmacy47,citypharmacy47@oksbi,Merchant,Union Bank,9854371309,1807873.0,100,Active,2024-08-25
+A0098,KarnatakaGas,karnatakagas@okicici,Utility,Kotak,9434345044,24401.0,9,Active,2026-03-11
+A0099,CityPharmacy69,citypharmacy69@ibl,Merchant,SBI,9325027575,300923.0,69,Active,2023-01-17
+A0100,IncomeTax,incometax@okicici,Government,Canara,9393982466,1644441.0,80,Active,2026-08-15
+A0101,Manoj Verma,manoj.verma25@okhdfcbank,Personal,IDFC FIRST,9752713355,744213.0,65,Active,2024-10-06
+A0102,Charan Gupta,charan.gupta64@paytm,Student,Kotak,9314726275,1073469.0,67,Active,2024-02-04
+A0103,Deepa Nair,deepa.nair86@paytm,Student,HDFC,9246921740,175694.0,35,Active,2021-03-18
+A0104,SmartElectronics36,smartelectronics36@ybl,Merchant,ICICI,9788388266,343919.0,71,Active,2024-12-02
+A0105,Asha Sharma,asha.sharma70@ibl,Personal,SBI,9499400851,431116.0,82,Active,2023-04-21
+A0106,TechWorld5,techworld5@okicici,Merchant,IDFC FIRST,9639104460,679091.0,76,Active,2022-05-04
+A0107,Rohan Nair,rohan.nair33@paytm,Student,PNB,9706482624,384959.0,84,Active,2026-02-03
+A0108,PowerGrid,powergrida0108@paytm,Utility,Union Bank,9553147107,1047245.0,86,Active,2024-02-05
+A0109,ABC Pvt Ltd,abcpvtltd26@paytm,Business,SBI,9897585718,931468.0,81,Active,2024-11-20
+A0110,Vikram Reddy,vikram.reddy46@ibl,Student,ICICI,9873523059,1902517.0,66,Active,2021-01-15
+A0111,Kiran Rao,kiran.rao91@ibl,Personal,Union Bank,9605886158,15448.0,77,Active,2026-08-20
+A0112,Rohan Gupta,rohan.gupta20@paytm,Student,SBI,9129951025,1173599.0,93,Active,2026-10-12
+A0113,ABC Pvt Ltd,abcpvtltd14@oksbi,Business,IDFC FIRST,9733603992,1569016.0,99,Active,2024-10-03
+A0114,DailyNeeds65,dailyneeds65@paytm,Merchant,ICICI,9335980948,1897418.0,28,Active,2022-11-21
+A0115,Nikhil Sharma,nikhil.sharma23@okhdfcbank,Personal,HDFC,9423723682,1264587.0,96,Active,2021-05-09
+A0116,DailyNeeds1,dailyneeds1@okicici,Merchant,Kotak,9670048315,1628990.0,69,Active,2026-06-12
+A0117,Meera Singh,meera.singh24@okicici,Personal,HDFC,9578509789,1567676.0,87,Active,2024-11-02
+A0118,ABC Pvt Ltd,abcpvtltd85@okaxis,Business,PNB,9705976255,715908.0,99,Active,2025-01-16
+A0119,PassportOffice,passportoffice@ibl,Government,Canara,9905097198,1174266.0,79,Active,2021-12-28
+A0120,Charan Verma,charan.verma21@ybl,Student,PNB,9128734915,1764025.0,67,Active,2023-03-13
+A0121,Vikram Kulkarni,vikram.kulkarni75@ibl,Personal,HDFC,9962671099,867677.0,94,Active,2023-11-28
+A0122,MegaStore6,megastore6@okhdfcbank,Merchant,PNB,9500131698,36511.0,65,Active,2026-11-08
+A0123,Charan Kulkarni,charan.kulkarni15@ibl,Personal,Union Bank,9790848293,1291042.0,70,Active,2022-12-01
+A0124,Kiran Verma,kiran.verma23@okicici,Personal,IDFC FIRST,9505626717,811777.0,76,Active,2022-05-16
+A0125,Manoj Reddy,manoj.reddy79@okicici,Student,Union Bank,9408003959,1215624.0,91,Active,2026-09-18
+A0126,Rohan Sharma,rohan.sharma40@ibl,Student,ICICI,9454445810,439483.0,87,Active,2021-01-23
+A0127,CityWater,citywater@oksbi,Utility,PNB,9701956157,1263991.0,72,Active,2023-10-15
+A0128,Varun Singh,varun.singh35@ibl,Personal,HDFC,9001279991,400594.0,77,Active,2022-08-10
+A0129,Varun Rao,varun.rao55@okaxis,Personal,PNB,9044176798,165059.0,77,Active,2026-07-20
+A0130,SmartElectronics19,smartelectronics19@okicici,Merchant,Canara,9475841928,1778138.0,83,Active,2024-08-11
+A0131,Rahul Gupta,rahul.gupta81@okaxis,Personal,Axis,9733331024,1984482.0,20,Active,2023-01-08
+A0132,Kiran Verma,kiran.verma16@okaxis,Student,IDFC FIRST,9881660049,1751123.0,95,Active,2025-06-26
+A0133,DailyNeeds98,dailyneeds98@okaxis,Merchant,Canara,9618664439,1651239.0,86,Active,2025-10-22
+A0134,Divya Singh,divya.singh52@oksbi,Personal,Canara,9712857256,19676.0,69,Active,2025-01-24
+A0135,Rahul Kulkarni,rahul.kulkarni25@paytm,Personal,Union Bank,9395246385,1740740.0,89,Active,2021-07-10
+A0136,ABC Pvt Ltd,abcpvtltd80@ibl,Business,Union Bank,9229813031,349114.0,100,Active,2022-10-27
+A0137,Vikram Verma,vikram.verma47@ybl,Student,SBI,9218039534,1403672.0,71,Active,2024-02-20
+A0138,Amit Sharma,amit.sharma91@okhdfcbank,Personal,SBI,9567284365,911095.0,90,Active,2026-08-03
+A0139,BBMP,bbmp@ybl,Government,IDFC FIRST,9357156504,1656321.0,77,Active,2021-06-28
+A0140,Asha Verma,asha.verma43@ybl,Personal,IDFC FIRST,9471464478,1261366.0,79,Active,2025-05-15
+A0141,Amit Patel,amit.patel45@paytm,Personal,Union Bank,9824201766,263797.0,74,Active,2022-07-08
+A0142,KarnatakaGas,karnatakagas@ybl,Utility,IDFC FIRST,9066438305,1008977.0,91,Blocked,2026-02-21
+A0143,Sneha Shetty,sneha.shetty33@okicici,Student,SBI,9584352147,573049.0,69,Active,2023-06-17
+A0144,Nikhil Patel,nikhil.patel99@ibl,Student,HDFC,9938736410,1959254.0,70,Active,2022-11-21
+A0145,HelpIndia,helpindia49@okhdfcbank,NGO,Union Bank,9616149416,1887061.0,66,Active,2024-06-02
+A0146,Anjali Gupta,anjali.gupta81@ybl,Personal,Axis,9545577301,436290.0,88,Active,2024-05-01
+A0147,KarnatakaGas,karnatakagasa0147@okhdfcbank,Utility,Kotak,9959512773,1261044.0,15,Active,2026-05-08
+A0148,Varun Nair,varun.nair61@ibl,Personal,Union Bank,9894086311,883237.0,70,Blocked,2025-06-24
+A0149,Anjali Gupta,anjali.gupta80@paytm,Personal,IDFC FIRST,9207362426,1996480.0,70,Active,2023-03-09
+A0150,Nova Solutions,novasolutions11@okhdfcbank,Business,SBI,9483031980,669880.0,66,Active,2022-04-15
+A0151,Vikram Nair,vikram.nair3@okhdfcbank,Student,IDFC FIRST,9434177778,584922.0,96,Active,2023-11-22
+A0152,Sneha Rao,sneha.rao30@oksbi,Personal,Kotak,9513423349,235570.0,64,Active,2021-03-18
+A0153,Divya Sharma,divya.sharma35@okhdfcbank,Personal,IDFC FIRST,9991450688,189550.0,84,Active,2026-10-10
+A0154,Kavya Nair,kavya.nair55@okaxis,Personal,PNB,9745758759,1101650.0,15,Active,2025-03-06
+A0155,Varun Singh,varun.singh88@ibl,Personal,PNB,9303129732,1442599.0,62,Active,2025-06-20
+A0156,Anjali Kulkarni,anjali.kulkarni26@oksbi,Student,Kotak,9510216377,1737813.0,18,Active,2026-07-06
+A0157,CityPharmacy56,citypharmacy56@okicici,Merchant,IDFC FIRST,9211381385,337070.0,63,Active,2021-06-20
+A0158,CityWater,citywater@paytm,Utility,Canara,9123340144,1818861.0,99,Active,2024-12-21
+A0159,Kavya Nair,kavya.nair48@okhdfcbank,Personal,IDFC FIRST,9637090605,478189.0,73,Active,2026-05-15
+A0160,Neha Gupta,neha.gupta19@okhdfcbank,Personal,HDFC,9520371347,462103.0,78,Active,2026-11-08
+A0161,Nikhil Nair,nikhil.nair18@paytm,Personal,Canara,9547308466,1549241.0,86,Active,2026-11-22
+A0162,Deepa Sharma,deepa.sharma76@okaxis,Personal,Axis,9589513720,1581013.0,67,Suspended,2023-11-04
+A0163,Divya Shetty,divya.shetty35@oksbi,Personal,HDFC,9675138963,655761.0,88,Active,2021-12-16
+A0164,Pooja Gupta,pooja.gupta96@okicici,Student,PNB,9700309447,62936.0,85,Active,2025-07-18
+A0165,Nikhil Verma,nikhil.verma97@okhdfcbank,Personal,HDFC,9949386654,1149937.0,76,Active,2024-01-05
+A0166,Pooja Nair,pooja.nair42@paytm,Personal,Axis,9455066731,37801.0,85,Active,2024-05-27
+A0167,IncomeTax,incometax@okhdfcbank,Government,Axis,9668389544,1847419.0,82,Active,2022-05-27
+A0168,BWSSB,bwssb@okhdfcbank,Utility,Union Bank,9036670795,524887.0,74,Active,2022-11-10
+A0169,KarnatakaTransport,karnatakatransport@ybl,Government,IDFC FIRST,9976821257,1823409.0,98,Active,2021-10-11
+A0170,Neha Reddy,neha.reddy35@okhdfcbank,Personal,HDFC,9455644025,1743231.0,97,Active,2023-03-20
+A0171,PassportOffice,passportoffice@paytm,Government,Axis,9117321007,1053778.0,86,Active,2026-10-15
+A0172,Neha Singh,neha.singh23@okaxis,Student,PNB,9818525563,1857138.0,91,Active,2021-03-15
+A0173,Manoj Rao,manoj.rao47@okaxis,Personal,PNB,9246231937,48443.0,66,Active,2024-01-19
+A0174,Varun Shetty,varun.shetty34@okhdfcbank,Personal,HDFC,9526890091,1537475.0,75,Active,2025-09-05
+A0175,BESCOM,bescoma0175@paytm,Utility,Axis,9702740073,299323.0,69,Active,2021-01-28
+A0176,Rohan Patel,rohan.patel41@paytm,Personal,PNB,9173369629,466318.0,62,Active,2021-12-07
+A0177,Arjun Patel,arjun.patel55@ybl,Personal,HDFC,9368713636,1354651.0,93,Active,2026-05-25
+A0178,Pooja Patel,pooja.patel48@ybl,Personal,Axis,9717578265,1408497.0,92,Active,2021-10-25
+A0179,ABC Pvt Ltd,abcpvtltd65@okaxis,Business,Union Bank,9247023398,1929071.0,71,Active,2022-04-10
+A0180,Pooja Sharma,pooja.sharma29@ybl,Personal,SBI,9995025562,1432315.0,98,Active,2023-03-09
+A0181,Vikram Gupta,vikram.gupta16@oksbi,Personal,PNB,9499131805,1447942.0,100,Active,2022-04-12
+A0182,Amit Singh,amit.singh36@paytm,Personal,PNB,9602513406,259242.0,73,Active,2025-01-05
+A0183,Anjali Nair,anjali.nair25@ibl,Personal,IDFC FIRST,9322850243,1437826.0,79,Active,2022-11-14
+A0184,DailyNeeds74,dailyneeds74@okicici,Merchant,Union Bank,9089298220,895939.0,74,Suspended,2026-08-18
+A0185,Varun Patel,varun.patel95@ibl,Personal,SBI,9455148374,908480.0,74,Active,2021-12-27
+A0186,Manoj Gupta,manoj.gupta67@okhdfcbank,Personal,SBI,9101237490,1463079.0,61,Active,2021-12-09
+A0187,MegaStore93,megastore93@ybl,Merchant,SBI,9846035026,1952019.0,97,Active,2023-10-07
+A0188,MegaStore37,megastore37@okhdfcbank,Merchant,Axis,9538713798,1529250.0,11,Active,2021-11-16
+A0189,Varun Verma,varun.verma15@okhdfcbank,Personal,SBI,9560360176,535535.0,83,Active,2021-09-18
+A0190,Deepa Verma,deepa.verma78@ibl,Personal,IDFC FIRST,9408094436,529772.0,70,Active,2021-06-09
+A0191,KarnatakaGas,karnatakagasa0191@okhdfcbank,Utility,Union Bank,9857789627,1677151.0,90,Active,2026-12-15
+A0192,TechWorld81,techworld81@ibl,Merchant,Canara,9232194945,1156786.0,82,Active,2021-11-22
+A0193,Nikhil Sharma,nikhil.sharma2@okhdfcbank,Student,IDFC FIRST,9421900671,1375971.0,75,Active,2025-01-08
+A0194,Deepa Shetty,deepa.shetty43@okaxis,Student,SBI,9244060634,1094441.0,62,Active,2022-02-19
+A0195,Rahul Patel,rahul.patel79@ibl,Personal,Axis,9956157333,285273.0,84,Active,2024-10-26
+A0196,Deepa Patel,deepa.patel93@paytm,Personal,PNB,9758894799,944471.0,26,Active,2022-01-03
+A0197,Rahul Kulkarni,rahul.kulkarni33@okicici,Student,IDFC FIRST,9552890088,1813921.0,8,Active,2026-04-13
+A0198,KarnatakaGas,karnatakagasa0198@okhdfcbank,Utility,Canara,9764780254,1533109.0,92,Active,2021-12-10
+A0199,HelpIndia,helpindia64@okhdfcbank,NGO,Axis,9133950583,181156.0,92,Active,2022-04-14
+A0200,CityWater,citywater@okicici,Utility,ICICI,9823372018,1961935.0,94,Active,2022-06-19
+A0201,Deepa Rao,deepa.rao56@okhdfcbank,Personal,Canara,9847068963,1994913.0,64,Active,2023-02-19
+A0202,Arjun Singh,arjun.singh48@okicici,Student,PNB,9361695862,995509.0,73,Active,2025-10-14
+A0203,Deepa Patel,deepa.patel85@oksbi,Personal,Union Bank,9074491623,1687150.0,87,Active,2026-03-08
+A0204,Anjali Patel,anjali.patel25@okaxis,Student,IDFC FIRST,9262689320,1873054.0,88,Active,2021-01-09
+A0205,MegaStore31,megastore31@paytm,Merchant,Canara,9553302672,103944.0,35,Active,2026-10-17
+A0206,Neha Shetty,neha.shetty54@okicici,Personal,Axis,9073951844,462404.0,85,Active,2023-07-04
+A0207,HopeNGO,hopengo55@okicici,NGO,HDFC,9352697491,1698756.0,76,Active,2025-05-07
+A0208,IncomeTax,incometax@paytm,Government,SBI,9890086221,807283.0,62,Active,2022-09-01
+A0209,Varun Kulkarni,varun.kulkarni90@okhdfcbank,Personal,Kotak,9381310432,746165.0,83,Active,2021-03-05
+A0210,Divya Rao,divya.rao75@okhdfcbank,Personal,ICICI,9822829333,1829450.0,95,Active,2021-01-26
+A0211,DailyNeeds90,dailyneeds90@oksbi,Merchant,ICICI,9344632345,1110371.0,99,Active,2023-11-13
+A0212,Divya Sharma,divya.sharma41@okicici,Student,PNB,9360425613,1094501.0,72,Active,2022-10-27
+A0213,Deepa Rao,deepa.rao21@oksbi,Personal,Canara,9263186267,736880.0,77,Active,2024-01-02
+A0214,SmileTrust,smiletrust94@ibl,NGO,Axis,9889032166,1417188.0,100,Active,2021-08-28
+A0215,Pooja Patel,pooja.patel97@oksbi,Student,Axis,9946167153,330651.0,62,Active,2026-06-16
+A0216,Sneha Reddy,sneha.reddy33@okaxis,Personal,Kotak,9319300235,796410.0,75,Active,2021-04-27
+A0217,Arjun Kulkarni,arjun.kulkarni4@okaxis,Personal,HDFC,9249817842,1427711.0,70,Active,2026-05-24
+A0218,Prime Industries,primeindustries80@okaxis,Business,ICICI,9637057478,135849.0,96,Active,2023-03-19
+A0219,Amit Patel,amit.patel67@okhdfcbank,Personal,HDFC,9988720538,436277.0,67,Active,2024-12-11
+A0220,Kavya Gupta,kavya.gupta30@paytm,Personal,Axis,9126268780,1204723.0,64,Active,2023-01-27
+A0221,Arjun Reddy,arjun.reddy49@paytm,Personal,Canara,9072499980,1551956.0,16,Active,2023-07-17
+A0222,KarnatakaGas,karnatakagasa0222@okicici,Utility,Axis,9659601134,151915.0,100,Active,2023-01-23
+A0223,Arjun Sharma,arjun.sharma18@okaxis,Personal,HDFC,9069725445,1762578.0,85,Active,2025-02-09
+A0224,Charan Reddy,charan.reddy54@okhdfcbank,Personal,Axis,9826731050,1815377.0,76,Active,2025-08-28
+A0225,Divya Reddy,divya.reddy30@paytm,Personal,IDFC FIRST,9632085101,1858580.0,77,Active,2024-06-08
+A0226,Priya Kulkarni,priya.kulkarni98@okicici,Personal,Union Bank,9723085743,1671697.0,5,Active,2021-12-27
+A0227,FreshMart44,freshmart44@okaxis,Merchant,Union Bank,9599886974,562234.0,77,Active,2024-08-11
+A0228,Kiran Shetty,kiran.shetty60@ibl,Personal,Canara,9862643947,538733.0,84,Blocked,2023-06-28
+A0229,Amit Patel,amit.patel5@oksbi,Personal,PNB,9663101198,273741.0,65,Active,2025-03-19
+A0230,Asha Nair,asha.nair19@paytm,Student,PNB,9928368970,949912.0,69,Active,2021-04-26
+A0231,Manoj Sharma,manoj.sharma90@okicici,Personal,PNB,9384728360,1408624.0,95,Active,2024-12-14
+A0232,SmileTrust,smiletrust32@paytm,NGO,IDFC FIRST,9449324530,842763.0,98,Active,2022-09-26
+A0233,Rohan Kulkarni,rohan.kulkarni35@okaxis,Personal,Axis,9075382309,1772737.0,97,Active,2023-06-12
+A0234,ABC Pvt Ltd,abcpvtltd24@okaxis,Business,Canara,9194490738,1543819.0,88,Active,2021-03-26
+A0235,Anjali Kulkarni,anjali.kulkarni94@oksbi,Student,PNB,9681400323,518636.0,98,Active,2023-10-05
+A0236,FreshMart31,freshmart31@paytm,Merchant,Axis,9744743298,1291253.0,94,Active,2022-04-06
+A0237,Anjali Nair,anjali.nair93@ibl,Personal,Union Bank,9432201276,844247.0,67,Active,2021-09-13
+A0238,CityPharmacy98,citypharmacy98@okicici,Merchant,Kotak,9540110101,1190481.0,95,Active,2024-06-12
+A0239,Rohan Patel,rohan.patel69@paytm,Personal,Canara,9322105154,1170370.0,86,Active,2023-04-19
+A0240,PowerGrid,powergrid@ybl,Utility,Union Bank,9916120059,263532.0,72,Active,2022-04-01
+A0241,Prime Industries,primeindustries66@oksbi,Business,SBI,9473988648,1959144.0,100,Active,2022-09-07
+A0242,Meera Reddy,meera.reddy89@okicici,Personal,ICICI,9498612501,1312997.0,98,Active,2023-03-28
+A0243,Arjun Reddy,arjun.reddy15@paytm,Student,Kotak,9440380296,1642020.0,73,Active,2024-07-20
+A0244,Sneha Shetty,sneha.shetty44@okicici,Student,Kotak,9185439368,1277717.0,73,Active,2021-03-18
+A0245,FreshMart47,freshmart47@oksbi,Merchant,SBI,9867746503,954847.0,79,Active,2025-11-18
+A0246,Amit Kulkarni,amit.kulkarni66@paytm,Personal,PNB,9506952098,1809285.0,76,Active,2021-01-07
+A0247,ABC Pvt Ltd,abcpvtltd96@paytm,Business,Canara,9095754584,1424258.0,77,Active,2023-02-09
+A0248,Amit Patel,amit.patel55@paytm,Personal,Kotak,9288608628,804656.0,63,Active,2025-03-11
+A0249,CityPharmacy65,citypharmacy65@oksbi,Merchant,ICICI,9030760076,1866001.0,87,Active,2025-08-14
+A0250,Asha Sharma,asha.sharma30@ibl,Personal,Axis,9520224183,347988.0,87,Active,2023-10-08
+A0251,BBMP,bbmp@okicici,Government,Canara,9453301739,585404.0,80,Active,2024-02-06
+A0252,DailyNeeds34,dailyneeds34@ybl,Merchant,Union Bank,9286384804,177175.0,71,Active,2024-05-09
+A0253,Pooja Rao,pooja.rao59@ybl,Personal,PNB,9731899753,1275304.0,7,Active,2025-10-24
+A0254,Manoj Patel,manoj.patel64@okaxis,Personal,PNB,9995192893,930959.0,87,Active,2025-01-16
+A0255,Sneha Kulkarni,sneha.kulkarni20@okicici,Personal,Union Bank,9339566461,579591.0,79,Active,2021-05-01
+A0256,Anjali Rao,anjali.rao85@oksbi,Personal,HDFC,9703026931,1042117.0,70,Active,2026-09-05
+A0257,SmartElectronics80,smartelectronics80@okhdfcbank,Merchant,HDFC,9882885662,688137.0,8,Active,2026-06-07
+A0258,Divya Sharma,divya.sharma38@okaxis,Student,HDFC,9667480914,999885.0,100,Active,2022-07-10
+A0259,Nikhil Kulkarni,nikhil.kulkarni72@ibl,Personal,Canara,9143953878,47432.0,64,Active,2021-04-17
+A0260,Nova Solutions,novasolutions79@okhdfcbank,Business,PNB,9098770843,558520.0,81,Active,2022-08-02
+A0261,Asha Rao,asha.rao36@okaxis,Student,PNB,9161903055,1562116.0,95,Active,2023-12-04
+A0262,ABC Pvt Ltd,abcpvtltd45@paytm,Business,ICICI,9504967552,714809.0,77,Active,2021-07-27
+A0263,Rohan Verma,rohan.verma78@okhdfcbank,Personal,ICICI,9724872717,1173934.0,99,Active,2022-02-12
+A0264,Anjali Shetty,anjali.shetty7@okhdfcbank,Student,Axis,9590778014,76744.0,78,Active,2024-10-13
+A0265,FreshMart46,freshmart46@okaxis,Merchant,Canara,9386782301,940315.0,35,Active,2021-12-11
+A0266,Rohan Patel,rohan.patel33@ibl,Personal,Axis,9937277170,163761.0,73,Active,2024-05-18
+A0267,Kiran Patel,kiran.patel8@ybl,Student,IDFC FIRST,9693286026,918014.0,66,Active,2026-09-09
+A0268,TechWorld90,techworld90@paytm,Merchant,Canara,9388905757,917152.0,91,Active,2021-11-18
+A0269,CityPharmacy89,citypharmacy89@okaxis,Merchant,ICICI,9774291824,1163245.0,5,Active,2024-03-06
+A0270,Prime Industries,primeindustries15@paytm,Business,PNB,9660639149,1894315.0,65,Active,2025-10-04
+A0271,CityPharmacy78,citypharmacy78@okhdfcbank,Merchant,HDFC,9475034966,1053562.0,98,Active,2021-07-06
+A0272,Arjun Shetty,arjun.shetty39@okhdfcbank,Personal,Canara,9826668924,1676905.0,74,Active,2024-05-23
+A0273,Priya Shetty,priya.shetty45@oksbi,Personal,ICICI,9540472094,128245.0,27,Active,2026-08-15
+A0274,HelpIndia,helpindia57@oksbi,NGO,Union Bank,9360882321,855184.0,62,Active,2023-04-03
+A0275,Meera Nair,meera.nair87@okicici,Personal,ICICI,9588838546,1697814.0,64,Active,2022-03-17
+A0276,Manoj Verma,manoj.verma30@oksbi,Personal,PNB,9673306816,1824584.0,76,Active,2025-02-11
+A0277,Neha Sharma,neha.sharma66@okaxis,Personal,Axis,9064149008,1618167.0,87,Active,2025-11-03
+A0278,DailyNeeds84,dailyneeds84@okicici,Merchant,Kotak,9892839436,225569.0,89,Active,2024-07-16
+A0279,CityWater,citywater@ybl,Utility,Axis,9022796073,1115555.0,85,Active,2024-12-08
+A0280,Prime Industries,primeindustries30@paytm,Business,Kotak,9592294597,1320499.0,72,Active,2025-09-17
+A0281,Priya Gupta,priya.gupta26@okhdfcbank,Personal,ICICI,9543848568,720015.0,91,Active,2023-05-09
+A0282,DailyNeeds62,dailyneeds62@paytm,Merchant,IDFC FIRST,9696442407,1193065.0,76,Active,2026-12-26
+A0283,Neha Patel,neha.patel19@ybl,Student,ICICI,9673135923,1093996.0,69,Active,2025-12-14
+A0284,Vikram Sharma,vikram.sharma88@ybl,Personal,IDFC FIRST,9618968707,1861156.0,77,Active,2022-06-04
+A0285,ABC Pvt Ltd,abcpvtltd83@ibl,Business,Axis,9974020702,1021634.0,100,Active,2026-10-27
+A0286,Neha Sharma,neha.sharma4@okhdfcbank,Personal,Axis,9693642140,1156198.0,98,Active,2023-04-08
+A0287,Arjun Reddy,arjun.reddy45@okhdfcbank,Personal,HDFC,9386491477,443085.0,74,Active,2021-07-16
+A0288,MegaStore13,megastore13@ybl,Merchant,SBI,9939467741,477626.0,65,Active,2025-01-24
+A0289,Amit Reddy,amit.reddy76@paytm,Personal,Axis,9974419241,815180.0,86,Active,2021-02-22
+A0290,Charan Nair,charan.nair64@ibl,Personal,IDFC FIRST,9584628649,1659769.0,93,Active,2023-09-17
+A0291,MegaStore6,megastore6@ybl,Merchant,Canara,9893155863,1171763.0,9,Active,2023-08-12
+A0292,Sneha Gupta,sneha.gupta55@okicici,Student,IDFC FIRST,9625408705,948271.0,69,Active,2026-08-17
+A0293,Priya Singh,priya.singh45@okhdfcbank,Personal,SBI,9980264107,341386.0,86,Active,2023-03-01
+A0294,TechWorld45,techworld45@okaxis,Merchant,Canara,9112619040,1910630.0,66,Active,2022-10-21
+A0295,ABC Pvt Ltd,abcpvtltd16@ibl,Business,Canara,9611608455,518408.0,69,Active,2026-12-24
+A0296,Charan Patel,charan.patel83@okaxis,Personal,HDFC,9651136937,600823.0,87,Active,2023-01-11
+A0297,Manoj Verma,manoj.verma96@ybl,Personal,IDFC FIRST,9972577078,897419.0,12,Active,2022-06-01
+A0298,BBMP,bbmp@okaxis,Government,PNB,9583052113,2352.0,87,Active,2026-09-25
+A0299,Rohan Patel,rohan.patel35@oksbi,Student,PNB,9155435156,699028.0,87,Active,2022-03-18
+A0300,Rahul Kulkarni,rahul.kulkarni73@okicici,Personal,IDFC FIRST,9734531191,746817.0,83,Active,2024-12-22
+A0301,Divya Rao,divya.rao31@ibl,Personal,HDFC,9161318185,1763022.0,69,Active,2022-06-03
+A0302,Varun Verma,varun.verma24@okicici,Personal,SBI,9224291597,1751587.0,60,Active,2024-11-26
+A0303,Varun Singh,varun.singh96@ybl,Personal,IDFC FIRST,9356119223,968571.0,74,Active,2021-02-22
+A0304,Rohan Reddy,rohan.reddy12@okaxis,Personal,Canara,9092685985,99192.0,98,Active,2025-11-17
+A0305,Pooja Rao,pooja.rao62@paytm,Personal,PNB,9726454800,838434.0,67,Active,2023-09-14
+A0306,Anjali Patel,anjali.patel54@okicici,Student,SBI,9373289341,1546679.0,67,Active,2024-07-05
+A0307,Manoj Gupta,manoj.gupta69@okicici,Personal,PNB,9264100422,1956548.0,78,Active,2025-01-14
+A0308,Varun Kulkarni,varun.kulkarni23@okhdfcbank,Personal,Kotak,9762290094,1014163.0,60,Active,2022-04-13
+A0309,MegaStore19,megastore19@oksbi,Merchant,HDFC,9313472431,1182523.0,29,Active,2021-06-01
+A0310,Priya Patel,priya.patel69@okicici,Student,HDFC,9704897199,1534628.0,67,Blocked,2026-12-27
+A0311,Pooja Rao,pooja.rao63@ibl,Personal,Canara,9453724703,1350715.0,77,Active,2025-04-21
+A0312,Kiran Rao,kiran.rao47@ybl,Student,Canara,9302801946,911964.0,81,Active,2025-05-09
+A0313,Meera Reddy,meera.reddy65@okaxis,Personal,IDFC FIRST,9904691713,1288946.0,88,Active,2022-05-14
+A0314,Meera Verma,meera.verma77@okaxis,Personal,PNB,9376253861,1473151.0,11,Active,2024-03-25
+A0315,KarnatakaGas,karnatakagasa0315@ibl,Utility,Canara,9215790607,1761548.0,60,Suspended,2026-05-15
+A0316,Meera Nair,meera.nair28@paytm,Student,Kotak,9285704212,1279315.0,68,Active,2022-01-08
+A0317,Rahul Sharma,rahul.sharma25@okicici,Personal,PNB,9362382264,1528239.0,96,Active,2022-03-01
+A0318,HelpIndia,helpindia87@okaxis,NGO,SBI,9613087357,760195.0,62,Active,2024-12-27
+A0319,MegaStore69,megastore69@okhdfcbank,Merchant,Canara,9107725914,51062.0,90,Active,2025-11-24
+A0320,Amit Gupta,amit.gupta15@okaxis,Personal,Union Bank,9772367298,39931.0,61,Active,2023-12-26
+A0321,PowerGrid,powergrid@oksbi,Utility,Union Bank,9445077527,1111557.0,66,Active,2025-04-26
+A0322,Anjali Patel,anjali.patel35@okhdfcbank,Personal,ICICI,9961981311,1088732.0,74,Active,2025-03-16
+A0323,Asha Reddy,asha.reddy91@okicici,Personal,SBI,9067135622,1697738.0,90,Active,2024-01-20
+A0324,Divya Rao,divya.rao66@ybl,Personal,ICICI,9736049239,137316.0,82,Active,2024-03-22
+A0325,SmileTrust,smiletrust77@ibl,NGO,IDFC FIRST,9709271646,519747.0,30,Active,2024-03-16
+A0326,FreshMart6,freshmart6@okicici,Merchant,PNB,9338025212,197426.0,93,Active,2025-11-04
+A0327,Divya Gupta,divya.gupta58@oksbi,Personal,HDFC,9586828599,426253.0,92,Active,2022-07-17
+A0328,Rahul Shetty,rahul.shetty20@oksbi,Student,Union Bank,9569046119,1178356.0,75,Active,2026-06-15
+A0329,Nikhil Gupta,nikhil.gupta49@ybl,Personal,Kotak,9609189068,1503617.0,83,Active,2023-12-01
+A0330,Rahul Patel,rahul.patel84@oksbi,Personal,PNB,9409279893,1513673.0,86,Active,2024-01-04
+A0331,Kavya Verma,kavya.verma80@oksbi,Personal,Kotak,9683227351,1356116.0,65,Active,2022-08-12
+A0332,Arjun Rao,arjun.rao83@paytm,Personal,PNB,9782356901,1139793.0,81,Active,2024-02-17
+A0333,Priya Verma,priya.verma35@okhdfcbank,Personal,Kotak,9087835862,507720.0,66,Suspended,2025-05-12
+A0334,Rahul Reddy,rahul.reddy72@ibl,Student,Axis,9584066731,1871322.0,61,Active,2023-07-10
+A0335,DailyNeeds61,dailyneeds61@ybl,Merchant,SBI,9293090761,32547.0,92,Active,2025-04-22
+A0336,CareFoundation,carefoundation70@ybl,NGO,IDFC FIRST,9298332235,1861625.0,76,Active,2024-06-09
+A0337,Charan Rao,charan.rao50@okhdfcbank,Personal,Canara,9338693961,756361.0,82,Active,2021-05-01
+A0338,Amit Verma,amit.verma48@oksbi,Personal,Axis,9573455762,680809.0,73,Active,2023-07-27
+A0339,Meera Sharma,meera.sharma4@oksbi,Personal,Canara,9883912622,449963.0,63,Active,2026-03-05
+A0340,Pooja Rao,pooja.rao89@ibl,Personal,ICICI,9039840482,1093726.0,97,Suspended,2024-09-26
+A0341,CityPharmacy22,citypharmacy22@okaxis,Merchant,ICICI,9192003128,490075.0,96,Active,2023-07-14
+A0342,Manoj Sharma,manoj.sharma44@ibl,Personal,Canara,9126127078,382926.0,71,Active,2024-02-18
+A0343,Asha Sharma,asha.sharma46@ybl,Personal,ICICI,9372251365,1333683.0,88,Suspended,2021-07-26
+A0344,Asha Shetty,asha.shetty98@okicici,Personal,Canara,9729961097,217843.0,86,Active,2026-02-21
+A0345,Varun Patel,varun.patel51@okaxis,Personal,Union Bank,9490816467,1920769.0,88,Active,2024-10-28
+A0346,Pooja Kulkarni,pooja.kulkarni95@okicici,Personal,Union Bank,9732162186,700912.0,32,Blocked,2026-05-28
+A0347,Vikram Shetty,vikram.shetty33@paytm,Personal,Kotak,9729662248,1583703.0,97,Active,2023-05-07
+A0348,Meera Patel,meera.patel47@ybl,Student,SBI,9427959596,1520635.0,78,Blocked,2023-03-06
+A0349,Kiran Reddy,kiran.reddy3@oksbi,Student,SBI,9342332442,1149796.0,87,Active,2024-03-27
+A0350,Sneha Gupta,sneha.gupta66@ybl,Personal,SBI,9138711520,1269245.0,96,Active,2021-02-08
+A0351,CityWater,citywatera0351@okaxis,Utility,Axis,9942903764,627819.0,80,Active,2023-12-04
+A0352,Divya Kulkarni,divya.kulkarni62@okicici,Student,IDFC FIRST,9740227630,1136904.0,95,Active,2024-06-07
+A0353,Neha Kulkarni,neha.kulkarni18@oksbi,Student,PNB,9890694290,299165.0,80,Active,2023-03-08
+A0354,Anjali Singh,anjali.singh21@ibl,Personal,HDFC,9225356355,998199.0,65,Active,2024-07-05
+A0355,ABC Pvt Ltd,abcpvtltd12@paytm,Business,Canara,9236294319,282129.0,100,Active,2024-01-06
+A0356,BBMP,bbmpa0356@ibl,Government,Kotak,9482707404,804084.0,98,Active,2023-10-21
+A0357,Deepa Reddy,deepa.reddy5@okicici,Personal,Axis,9991003141,467438.0,89,Active,2025-12-25
+A0358,Rohan Rao,rohan.rao27@ybl,Personal,IDFC FIRST,9543875631,648788.0,40,Active,2021-01-25
+A0359,Meera Reddy,meera.reddy74@okicici,Personal,SBI,9132382705,1016376.0,68,Active,2026-09-25
+A0360,Manoj Nair,manoj.nair30@okicici,Personal,Kotak,9462766261,638782.0,63,Active,2022-06-16
+A0361,Arjun Sharma,arjun.sharma20@okaxis,Personal,Canara,9344096499,21228.0,94,Active,2021-09-19
+A0362,Pooja Patel,pooja.patel66@ybl,Personal,SBI,9829681664,149694.0,92,Active,2022-12-20
+A0363,Neha Patel,neha.patel54@ybl,Student,PNB,9797075971,1093876.0,76,Active,2026-07-24
+A0364,Amit Kulkarni,amit.kulkarni10@okaxis,Personal,IDFC FIRST,9068202899,451090.0,99,Active,2026-12-18
+A0365,Divya Kulkarni,divya.kulkarni72@ybl,Personal,SBI,9629357009,327555.0,98,Active,2025-09-16
+A0366,Neha Reddy,neha.reddy67@ibl,Personal,ICICI,9372140961,1603080.0,13,Active,2024-11-18
+A0367,Amit Patel,amit.patel7@ibl,Student,Axis,9314133948,1209220.0,14,Active,2021-05-24
+A0368,Sneha Reddy,sneha.reddy35@ibl,Personal,HDFC,9625056306,1804466.0,98,Blocked,2023-03-27
+A0369,Prime Industries,primeindustries69@okicici,Business,Kotak,9461981118,1547859.0,88,Active,2022-05-08
+A0370,ABC Pvt Ltd,abcpvtltd28@ibl,Business,PNB,9292802987,900521.0,63,Active,2024-05-19
+A0371,Asha Nair,asha.nair14@okhdfcbank,Personal,Union Bank,9077074493,1950390.0,95,Active,2022-09-04
+A0372,Neha Shetty,neha.shetty86@ibl,Student,ICICI,9851185203,1296964.0,89,Active,2026-07-08
+A0373,MegaStore37,megastore37@oksbi,Merchant,IDFC FIRST,9008244419,1065148.0,73,Active,2025-04-16
+A0374,MegaStore97,megastore97@ibl,Merchant,Canara,9199470006,1197036.0,88,Active,2023-09-26
+A0375,MegaStore4,megastore4@paytm,Merchant,ICICI,9106189866,684126.0,66,Active,2024-06-10
+A0376,Charan Shetty,charan.shetty47@okaxis,Personal,IDFC FIRST,9850863339,140900.0,95,Active,2026-09-23
+A0377,Divya Gupta,divya.gupta70@okaxis,Student,Kotak,9214198581,1107546.0,74,Suspended,2021-06-14
+A0378,Prime Industries,primeindustries39@okhdfcbank,Business,HDFC,9483548154,1728447.0,62,Active,2021-05-13
+A0379,Amit Kulkarni,amit.kulkarni4@paytm,Personal,Union Bank,9535866109,1476681.0,76,Blocked,2026-08-05
+A0380,Kiran Singh,kiran.singh85@okicici,Personal,Union Bank,9185380951,1158172.0,60,Active,2025-10-06
+A0381,Varun Reddy,varun.reddy27@okaxis,Student,HDFC,9774878747,177007.0,69,Active,2024-04-13
+A0382,Asha Shetty,asha.shetty50@ibl,Student,ICICI,9029159629,624302.0,60,Active,2021-05-06
+A0383,Divya Nair,divya.nair26@okaxis,Personal,HDFC,9409869883,1866160.0,84,Active,2026-12-28
+A0384,BWSSB,bwssba0384@paytm,Utility,SBI,9590544815,1461374.0,67,Active,2025-07-26
+A0385,Meera Singh,meera.singh65@okicici,Personal,IDFC FIRST,9565869945,1521291.0,76,Active,2026-09-11
+A0386,Sneha Sharma,sneha.sharma78@okicici,Personal,IDFC FIRST,9622245733,185723.0,88,Active,2023-05-23
+A0387,CareFoundation,carefoundation54@paytm,NGO,Canara,9327604770,904404.0,90,Suspended,2023-04-06
+A0388,Prime Industries,primeindustries44@ibl,Business,PNB,9475083309,428601.0,61,Active,2021-05-03
+A0389,Rohan Shetty,rohan.shetty30@okaxis,Personal,PNB,9554660627,1726791.0,65,Active,2024-02-18
+A0390,Varun Singh,varun.singh77@ybl,Personal,PNB,9145890485,357882.0,77,Active,2025-03-25
+A0391,Asha Patel,asha.patel15@oksbi,Personal,HDFC,9257390651,1520251.0,97,Active,2022-09-16
+A0392,Prime Industries,primeindustries35@oksbi,Business,HDFC,9207122288,1470200.0,93,Active,2025-01-06
+A0393,Varun Patel,varun.patel54@paytm,Personal,SBI,9499378361,179651.0,80,Active,2021-01-06
+A0394,DailyNeeds15,dailyneeds15@okhdfcbank,Merchant,Union Bank,9013213944,339585.0,81,Suspended,2022-12-15
+A0395,Anjali Rao,anjali.rao29@okaxis,Personal,PNB,9984705671,1439495.0,70,Active,2022-12-21
+A0396,FreshMart30,freshmart30@okicici,Merchant,HDFC,9833245179,1429111.0,92,Suspended,2021-11-03
+A0397,CareFoundation,carefoundation48@oksbi,NGO,IDFC FIRST,9014025210,745755.0,28,Active,2023-04-26
+A0398,Kiran Gupta,kiran.gupta52@ybl,Personal,Canara,9983525051,494869.0,100,Active,2023-01-26
+A0399,Priya Patel,priya.patel37@paytm,Personal,ICICI,9638440552,1250293.0,25,Blocked,2026-08-21
+A0400,Varun Verma,varun.verma64@okaxis,Personal,IDFC FIRST,9953526821,1061487.0,73,Blocked,2025-05-17
+A0401,IncomeTax,incometax@oksbi,Government,Kotak,9482551946,1372603.0,93,Active,2024-06-05
+A0402,Meera Gupta,meera.gupta50@okhdfcbank,Student,IDFC FIRST,9407270920,1183021.0,77,Active,2024-04-09
+A0403,Kiran Rao,kiran.rao76@oksbi,Personal,Union Bank,9416750022,1616599.0,95,Active,2023-01-12
+A0404,Charan Gupta,charan.gupta44@okhdfcbank,Student,Kotak,9492136641,333360.0,98,Active,2022-06-27
+A0405,Deepa Nair,deepa.nair75@okaxis,Personal,Canara,9345109995,854210.0,62,Active,2026-11-20
+A0406,BESCOM,bescom@ybl,Utility,IDFC FIRST,9678954443,1233229.0,91,Active,2026-04-28
+A0407,SmileTrust,smiletrust96@ibl,NGO,IDFC FIRST,9134418942,1238586.0,85,Active,2024-12-05
+A0408,Asha Sharma,asha.sharma89@oksbi,Personal,Kotak,9920017594,1412965.0,85,Active,2026-01-10
+A0409,CityPharmacy89,citypharmacy89@paytm,Merchant,IDFC FIRST,9946727204,1042085.0,99,Active,2021-12-04
+A0410,Anjali Sharma,anjali.sharma83@paytm,Student,Axis,9657444624,1435448.0,92,Active,2026-04-22
+A0411,Neha Gupta,neha.gupta9@ibl,Personal,Axis,9295351826,475053.0,74,Active,2026-11-11
+A0412,Vikram Gupta,vikram.gupta50@paytm,Personal,HDFC,9351615719,438370.0,67,Active,2024-10-02
+A0413,SmileTrust,smiletrust72@paytm,NGO,Union Bank,9235562828,739387.0,68,Active,2022-12-19
+A0414,Kiran Verma,kiran.verma28@okicici,Student,Axis,9454429343,1486724.0,70,Active,2026-02-17
+A0415,Meera Nair,meera.nair19@paytm,Personal,IDFC FIRST,9752016747,1697248.0,71,Active,2026-06-02
+A0416,Deepa Kulkarni,deepa.kulkarni82@okicici,Personal,Axis,9625737838,1064594.0,87,Active,2025-04-17
+A0417,Priya Kulkarni,priya.kulkarni33@ibl,Personal,HDFC,9823528668,1625630.0,100,Active,2024-04-27
+A0418,KarnatakaTransport,karnatakatransport@okaxis,Government,ICICI,9445159864,1792604.0,93,Active,2023-05-26
+A0419,Rahul Verma,rahul.verma44@okhdfcbank,Student,Union Bank,9770040502,254364.0,92,Active,2023-11-07
+A0420,Arjun Reddy,arjun.reddy38@oksbi,Personal,Union Bank,9522503559,468601.0,76,Active,2021-04-04
+A0421,Kavya Reddy,kavya.reddy60@ybl,Student,Kotak,9302273365,806907.0,92,Active,2022-06-09
+A0422,Anjali Nair,anjali.nair62@oksbi,Personal,ICICI,9868050639,820199.0,22,Active,2021-06-19
+A0423,Charan Patel,charan.patel97@oksbi,Personal,IDFC FIRST,9258519551,1999979.0,66,Blocked,2023-06-19
+A0424,Rohan Verma,rohan.verma13@paytm,Personal,HDFC,9670751277,1345255.0,92,Active,2024-12-17
+A0425,CityPharmacy67,citypharmacy67@ybl,Merchant,Canara,9235458212,639049.0,78,Active,2022-02-24
+A0426,FreshMart78,freshmart78@okicici,Merchant,IDFC FIRST,9020828750,806256.0,81,Active,2022-09-05
+A0427,Rahul Rao,rahul.rao97@ybl,Personal,Union Bank,9374146516,218182.0,98,Active,2025-10-06
+A0428,HelpIndia,helpindia17@okhdfcbank,NGO,Union Bank,9742376213,1673289.0,73,Active,2021-09-25
+A0429,Divya Patel,divya.patel78@oksbi,Personal,SBI,9825028601,904747.0,95,Active,2025-03-17
+A0430,Neha Verma,neha.verma50@okhdfcbank,Student,SBI,9950283056,1331855.0,66,Active,2022-10-12
+A0431,SmartElectronics35,smartelectronics35@okicici,Merchant,SBI,9739424642,1190375.0,84,Active,2021-08-09
+A0432,Nikhil Kulkarni,nikhil.kulkarni20@okhdfcbank,Personal,Kotak,9815122896,1049675.0,72,Active,2022-10-03
+A0433,Sneha Verma,sneha.verma14@paytm,Personal,IDFC FIRST,9440724942,765010.0,35,Active,2025-04-13
+A0434,Divya Nair,divya.nair22@ibl,Personal,Kotak,9680832448,1290297.0,67,Active,2024-12-05
+A0435,BWSSB,bwssb@okaxis,Utility,Kotak,9664420906,596974.0,82,Active,2025-05-13
+A0436,Priya Sharma,priya.sharma38@okhdfcbank,Personal,ICICI,9510794678,1409749.0,79,Active,2023-10-24
+A0437,Charan Patel,charan.patel63@ibl,Personal,PNB,9889121635,1981808.0,98,Active,2026-02-01
+A0438,Rohan Gupta,rohan.gupta79@okicici,Personal,Canara,9951913081,1516659.0,77,Active,2023-10-27
+A0439,Meera Verma,meera.verma7@okicici,Personal,HDFC,9034743565,177366.0,87,Suspended,2026-11-04
+A0440,TechWorld75,techworld75@oksbi,Merchant,IDFC FIRST,9989805131,47251.0,87,Active,2023-10-23
+A0441,Varun Shetty,varun.shetty51@ibl,Personal,ICICI,9027385541,829473.0,94,Active,2025-11-01
+A0442,Rahul Reddy,rahul.reddy98@ibl,Personal,Kotak,9355109765,1117688.0,100,Active,2024-10-27
+A0443,Rahul Patel,rahul.patel53@okhdfcbank,Student,ICICI,9676309478,816484.0,77,Active,2025-12-28
+A0444,Arjun Shetty,arjun.shetty97@ybl,Personal,HDFC,9744316885,1118420.0,99,Active,2022-12-27
+A0445,CityPharmacy63,citypharmacy63@okicici,Merchant,Kotak,9403327102,548000.0,68,Active,2026-01-15
+A0446,Prime Industries,primeindustries73@oksbi,Business,Union Bank,9700577944,1312597.0,69,Active,2024-04-20
+A0447,DailyNeeds29,dailyneeds29@paytm,Merchant,PNB,9337461092,1554458.0,63,Active,2021-12-20
+A0448,Meera Singh,meera.singh74@paytm,Personal,PNB,9990818377,624656.0,18,Active,2023-11-25
+A0449,Vikram Shetty,vikram.shetty92@ybl,Student,ICICI,9963955983,921719.0,72,Active,2021-02-20
+A0450,Meera Gupta,meera.gupta95@okaxis,Personal,ICICI,9292809936,125079.0,71,Active,2023-01-20
+A0451,Rohan Verma,rohan.verma54@okhdfcbank,Personal,Axis,9926554203,642640.0,69,Active,2024-04-24
+A0452,Sneha Sharma,sneha.sharma8@oksbi,Student,IDFC FIRST,9316553087,461233.0,95,Active,2024-11-08
+A0453,Nikhil Shetty,nikhil.shetty74@ibl,Personal,Axis,9857854071,679732.0,89,Active,2022-09-25
+A0454,BESCOM,bescoma0454@ybl,Utility,Union Bank,9840255213,495603.0,64,Active,2026-12-27
+A0455,Varun Nair,varun.nair5@okhdfcbank,Personal,HDFC,9214527205,850898.0,87,Active,2023-02-13
+A0456,PassportOffice,passportoffice@okhdfcbank,Government,IDFC FIRST,9206025810,1747983.0,67,Active,2024-02-26
+A0457,Kiran Singh,kiran.singh61@oksbi,Student,PNB,9381384541,827927.0,60,Active,2024-03-16
+A0458,CityPharmacy98,citypharmacy98a0458@okicici,Merchant,Axis,9838092953,1469448.0,64,Active,2021-07-04
+A0459,Rahul Sharma,rahul.sharma66@okhdfcbank,Personal,PNB,9095457190,1909446.0,86,Active,2023-06-20
+A0460,Amit Rao,amit.rao44@oksbi,Student,SBI,9149673094,394243.0,78,Active,2022-10-25
+A0461,Meera Sharma,meera.sharma27@okhdfcbank,Student,ICICI,9027597525,506402.0,88,Suspended,2024-09-07
+A0462,Amit Shetty,amit.shetty6@ibl,Personal,Canara,9164956239,419615.0,99,Active,2023-07-06
+A0463,Neha Patel,neha.patel18@ybl,Personal,Kotak,9945283393,1083315.0,61,Active,2023-11-01
+A0464,Vikram Verma,vikram.verma74@okaxis,Student,PNB,9864262712,1877414.0,91,Active,2022-09-24
+A0465,Priya Sharma,priya.sharma23@ybl,Personal,Axis,9763431434,202406.0,81,Active,2023-11-09
+A0466,Divya Gupta,divya.gupta22@oksbi,Personal,Axis,9500502364,1880110.0,79,Active,2024-11-17
+A0467,Rohan Reddy,rohan.reddy77@ibl,Personal,SBI,9414362832,323676.0,74,Suspended,2021-02-17
+A0468,CareFoundation,carefoundation36@okicici,NGO,IDFC FIRST,9234346311,116863.0,83,Active,2023-11-14
+A0469,Rohan Rao,rohan.rao96@ibl,Student,Canara,9153627612,458544.0,91,Active,2024-03-11
+A0470,SmartElectronics19,smartelectronics19a0470@okicici,Merchant,ICICI,9448055118,375584.0,81,Active,2021-04-09
+A0471,Divya Sharma,divya.sharma80@paytm,Student,Axis,9853200898,1290895.0,65,Active,2025-07-05
+A0472,MegaStore37,megastore37a0472@okhdfcbank,Merchant,ICICI,9379013114,289933.0,87,Active,2025-03-17
+A0473,BESCOM,bescom@oksbi,Utility,SBI,9552302358,384442.0,95,Active,2026-05-19
+A0474,Manoj Reddy,manoj.reddy65@oksbi,Student,PNB,9007908627,733387.0,88,Active,2026-04-14
+A0475,FreshMart91,freshmart91@okhdfcbank,Merchant,PNB,9928533350,813985.0,71,Active,2022-05-01
+A0476,Pooja Verma,pooja.verma73@ybl,Personal,Canara,9625886624,1658340.0,69,Active,2025-01-14
+A0477,XYZ Logistics,xyzlogistics28@ibl,Business,SBI,9060689377,773026.0,88,Active,2021-08-22
+A0478,Neha Nair,neha.nair2@okaxis,Personal,ICICI,9961979825,1652130.0,17,Active,2021-11-26
+A0479,Sneha Shetty,sneha.shetty73@oksbi,Personal,Canara,9556546338,459416.0,74,Active,2021-12-05
+A0480,Varun Shetty,varun.shetty51@paytm,Personal,Kotak,9369375107,649125.0,70,Active,2022-02-09
+A0481,FreshMart34,freshmart34@okaxis,Merchant,Kotak,9484776445,1512988.0,92,Active,2026-01-26
+A0482,FreshMart52,freshmart52@ibl,Merchant,Axis,9718653809,1536507.0,90,Active,2023-04-02
+A0483,Sneha Verma,sneha.verma21@ybl,Personal,Kotak,9936350879,716749.0,60,Active,2022-05-09
+A0484,MegaStore60,megastore60@ybl,Merchant,Axis,9416911298,954858.0,75,Active,2026-08-22
+A0485,Asha Rao,asha.rao19@ibl,Personal,PNB,9291532347,1296059.0,71,Active,2021-03-06
+A0486,Charan Singh,charan.singh58@ibl,Personal,IDFC FIRST,9420508184,822258.0,85,Active,2024-11-20
+A0487,IncomeTax,incometaxa0487@oksbi,Government,SBI,9868323101,525510.0,78,Active,2024-05-25
+A0488,Nova Solutions,novasolutions65@okicici,Business,Union Bank,9649699360,619515.0,87,Active,2021-01-06
+A0489,CareFoundation,carefoundation55@okaxis,NGO,ICICI,9481710471,1769634.0,27,Active,2023-10-25
+A0490,Asha Kulkarni,asha.kulkarni7@ybl,Personal,Axis,9223355235,5891.0,87,Active,2025-09-10
+A0491,Rohan Singh,rohan.singh91@oksbi,Personal,SBI,9718502233,679339.0,87,Active,2025-09-20
+A0492,Arjun Rao,arjun.rao87@okhdfcbank,Personal,ICICI,9461942114,1716463.0,61,Active,2021-05-16
+A0493,IncomeTax,incometax@ybl,Government,Canara,9467316779,1631753.0,90,Active,2026-05-10
+A0494,Deepa Gupta,deepa.gupta99@ibl,Student,SBI,9667288497,1262670.0,64,Active,2022-12-28
+A0495,Manoj Shetty,manoj.shetty40@paytm,Personal,HDFC,9338298634,754236.0,99,Active,2022-08-19
+A0496,Anjali Reddy,anjali.reddy70@oksbi,Personal,IDFC FIRST,9090108181,773502.0,27,Active,2025-02-12
+A0497,Meera Reddy,meera.reddy25@oksbi,Personal,Axis,9719007424,1860983.0,85,Active,2022-10-01
+A0498,Neha Gupta,neha.gupta26@okaxis,Personal,SBI,9648580904,875815.0,94,Active,2022-05-08
+A0499,Priya Reddy,priya.reddy69@ybl,Student,SBI,9674577633,1078185.0,66,Active,2021-07-02
+A0500,Arjun Gupta,arjun.gupta73@ybl,Personal,Axis,9175394400,1456762.0,71,Active,2026-01-06

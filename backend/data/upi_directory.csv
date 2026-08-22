@@ -1,0 +1,501 @@
+upi_id,account_id,account_name,bank_name,account_type,account_status,is_verified
+rahul.sharma77@paytm,A0001,Rahul Sharma,SBI,Personal,Active,Yes
+charan.nair9@okaxis,A0002,Charan Nair,Union Bank,Personal,Active,Yes
+bbmp@oksbi,A0003,BBMP,Canara,Government,Active,Yes
+amit.verma61@okhdfcbank,A0004,Amit Verma,Axis,Personal,Active,Yes
+meera.shetty67@ibl,A0005,Meera Shetty,Union Bank,Personal,Active,Yes
+meera.singh8@paytm,A0006,Meera Singh,Canara,Personal,Active,Yes
+bwssb@paytm_A0007,A0007,BWSSB,Canara,Utility,Active,Yes
+kiran.rao76@okicici,A0008,Kiran Rao,Union Bank,Personal,Active,Yes
+rohan.patel35@okicici,A0009,Rohan Patel,PNB,Personal,Active,Yes
+priya.gupta9@ibl,A0010,Priya Gupta,Kotak,Personal,Active,Yes
+kavya.verma75@ibl,A0011,Kavya Verma,HDFC,Personal,Active,Yes
+citywater@okaxis_A0012,A0012,CityWater,IDFC FIRST,Utility,Active,Yes
+deepa.kulkarni58@oksbi,A0013,Deepa Kulkarni,Kotak,Personal,Active,Yes
+sneha.verma44@okaxis,A0014,Sneha Verma,Axis,Student,Active,Yes
+bbmp@ibl_A0015,A0015,BBMP,Union Bank,Government,Active,Yes
+amit.gupta28@okaxis,A0016,Amit Gupta,PNB,Personal,Active,Yes
+manoj.gupta80@paytm,A0017,Manoj Gupta,ICICI,Personal,Active,Yes
+vikram.gupta23@ybl,A0018,Vikram Gupta,Union Bank,Student,Active,Yes
+powergrid@paytm_A0019,A0019,PowerGrid,Axis,Utility,Active,Yes
+helpindia31@okaxis,A0020,HelpIndia,SBI,NGO,Active,Yes
+techworld52@oksbi,A0021,TechWorld52,HDFC,Merchant,Active,Yes
+karnatakagas@ibl_A0022,A0022,KarnatakaGas,Union Bank,Utility,Active,Yes
+bescom@ibl,A0023,BESCOM,SBI,Utility,Active,Yes
+bwssb@ibl,A0024,BWSSB,IDFC FIRST,Utility,Active,Yes
+priya.nair94@ibl,A0025,Priya Nair,Canara,Personal,Active,Yes
+anjali.patel28@okaxis,A0026,Anjali Patel,PNB,Personal,Suspended,No
+vikram.verma18@ibl,A0027,Vikram Verma,ICICI,Personal,Active,Yes
+freshmart33@oksbi,A0028,FreshMart33,Canara,Merchant,Active,Yes
+kiran.singh25@ibl,A0029,Kiran Singh,SBI,Personal,Active,Yes
+citypharmacy49@okicici,A0030,CityPharmacy49,HDFC,Merchant,Active,Yes
+freshmart85@ibl,A0031,FreshMart85,HDFC,Merchant,Active,Yes
+abcpvtltd49@oksbi,A0032,ABC Pvt Ltd,Union Bank,Business,Active,Yes
+abcpvtltd20@oksbi,A0033,ABC Pvt Ltd,PNB,Business,Active,Yes
+arjun.singh20@ibl,A0034,Arjun Singh,Axis,Personal,Active,Yes
+carefoundation7@ybl,A0035,CareFoundation,Canara,NGO,Active,Yes
+smiletrust89@okicici,A0036,SmileTrust,Canara,NGO,Active,Yes
+techworld37@paytm,A0037,TechWorld37,Union Bank,Merchant,Active,Yes
+kavya.kulkarni17@ibl,A0038,Kavya Kulkarni,Canara,Personal,Active,Yes
+divya.singh29@okaxis,A0039,Divya Singh,ICICI,Personal,Active,Yes
+karnatakatransport@okicici_A0040,A0040,KarnatakaTransport,Union Bank,Government,Active,Yes
+manoj.reddy1@ibl,A0041,Manoj Reddy,HDFC,Personal,Active,Yes
+pooja.kulkarni16@oksbi,A0042,Pooja Kulkarni,HDFC,Personal,Active,Yes
+deepa.verma96@oksbi,A0043,Deepa Verma,PNB,Personal,Active,Yes
+rahul.sharma99@okaxis,A0044,Rahul Sharma,HDFC,Personal,Active,Yes
+carefoundation74@paytm,A0045,CareFoundation,HDFC,NGO,Active,Yes
+kavya.kulkarni51@ibl,A0046,Kavya Kulkarni,PNB,Student,Active,Yes
+pooja.singh94@oksbi,A0047,Pooja Singh,PNB,Personal,Active,Yes
+novasolutions11@ibl,A0048,Nova Solutions,HDFC,Business,Suspended,No
+arjun.verma92@okaxis,A0049,Arjun Verma,Union Bank,Personal,Active,Yes
+smartelectronics42@ybl,A0050,SmartElectronics42,ICICI,Merchant,Active,Yes
+charan.rao17@oksbi,A0051,Charan Rao,Axis,Personal,Active,Yes
+anjali.sharma39@ybl,A0052,Anjali Sharma,Canara,Student,Active,Yes
+freshmart70@okaxis,A0053,FreshMart70,Union Bank,Merchant,Active,Yes
+rohan.gupta27@paytm,A0054,Rohan Gupta,Kotak,Personal,Active,Yes
+techworld21@okhdfcbank,A0055,TechWorld21,PNB,Merchant,Active,Yes
+bescom@paytm_A0056,A0056,BESCOM,Union Bank,Utility,Active,Yes
+citypharmacy40@okhdfcbank,A0057,CityPharmacy40,Axis,Merchant,Active,Yes
+freshmart17@okaxis,A0058,FreshMart17,PNB,Merchant,Active,Yes
+varun.patel93@oksbi,A0059,Varun Patel,HDFC,Personal,Active,Yes
+rahul.reddy87@okicici,A0060,Rahul Reddy,SBI,Personal,Active,Yes
+megastore95@paytm,A0061,MegaStore95,IDFC FIRST,Merchant,Active,Yes
+deepa.shetty22@ybl,A0062,Deepa Shetty,IDFC FIRST,Personal,Active,Yes
+meera.verma21@okhdfcbank,A0063,Meera Verma,IDFC FIRST,Personal,Active,Yes
+deepa.kulkarni68@paytm,A0064,Deepa Kulkarni,PNB,Personal,Active,Yes
+pooja.verma78@paytm,A0065,Pooja Verma,Axis,Student,Active,Yes
+sneha.reddy9@oksbi,A0066,Sneha Reddy,SBI,Personal,Active,Yes
+arjun.shetty13@ibl,A0067,Arjun Shetty,Kotak,Personal,Active,Yes
+anjali.patel10@okaxis,A0068,Anjali Patel,ICICI,Personal,Active,Yes
+sneha.patel91@okicici,A0069,Sneha Patel,Axis,Personal,Active,Yes
+dailyneeds20@paytm,A0070,DailyNeeds20,Canara,Merchant,Active,Yes
+charan.gupta17@ibl,A0071,Charan Gupta,HDFC,Personal,Active,Yes
+anjali.kulkarni20@paytm,A0072,Anjali Kulkarni,HDFC,Personal,Suspended,No
+xyzlogistics85@okicici,A0073,XYZ Logistics,Kotak,Business,Active,Yes
+xyzlogistics45@okaxis,A0074,XYZ Logistics,Canara,Business,Active,Yes
+dailyneeds91@okicici,A0075,DailyNeeds91,SBI,Merchant,Active,Yes
+arjun.kulkarni8@okhdfcbank,A0076,Arjun Kulkarni,Kotak,Personal,Active,Yes
+kiran.patel20@paytm,A0077,Kiran Patel,SBI,Personal,Active,Yes
+incometax@ibl,A0078,IncomeTax,ICICI,Government,Active,Yes
+manoj.shetty36@okicici,A0079,Manoj Shetty,IDFC FIRST,Personal,Active,Yes
+anjali.singh70@okhdfcbank,A0080,Anjali Singh,Canara,Student,Active,Yes
+arjun.reddy88@ybl,A0081,Arjun Reddy,ICICI,Personal,Active,Yes
+pooja.shetty88@paytm,A0082,Pooja Shetty,Canara,Personal,Active,Yes
+varun.patel5@ibl,A0083,Varun Patel,IDFC FIRST,Student,Active,Yes
+sneha.sharma31@okhdfcbank,A0084,Sneha Sharma,SBI,Personal,Active,Yes
+sneha.gupta31@ibl,A0085,Sneha Gupta,Kotak,Personal,Active,Yes
+karnatakatransport@okicici_A0086,A0086,KarnatakaTransport,Axis,Government,Active,Yes
+deepa.singh24@ybl,A0087,Deepa Singh,PNB,Personal,Active,Yes
+pooja.shetty50@okicici,A0088,Pooja Shetty,Canara,Student,Active,Yes
+kavya.rao83@okaxis,A0089,Kavya Rao,Canara,Personal,Active,Yes
+kavya.shetty42@ybl,A0090,Kavya Shetty,SBI,Personal,Active,Yes
+meera.shetty22@ibl,A0091,Meera Shetty,IDFC FIRST,Student,Blocked,No
+divya.singh56@oksbi,A0092,Divya Singh,Union Bank,Student,Active,Yes
+deepa.sharma37@okaxis,A0093,Deepa Sharma,ICICI,Personal,Active,Yes
+karnatakagas@okhdfcbank_A0094,A0094,KarnatakaGas,HDFC,Utility,Suspended,No
+techworld36@ibl,A0095,TechWorld36,Kotak,Merchant,Active,Yes
+priya.gupta18@paytm,A0096,Priya Gupta,PNB,Student,Active,Yes
+citypharmacy47@oksbi,A0097,CityPharmacy47,Union Bank,Merchant,Active,Yes
+karnatakagas@okicici_A0098,A0098,KarnatakaGas,Kotak,Utility,Active,Yes
+citypharmacy69@ibl,A0099,CityPharmacy69,SBI,Merchant,Active,Yes
+incometax@okicici,A0100,IncomeTax,Canara,Government,Active,Yes
+manoj.verma25@okhdfcbank,A0101,Manoj Verma,IDFC FIRST,Personal,Active,Yes
+charan.gupta64@paytm,A0102,Charan Gupta,Kotak,Student,Active,Yes
+deepa.nair86@paytm,A0103,Deepa Nair,HDFC,Student,Active,Yes
+smartelectronics36@ybl,A0104,SmartElectronics36,ICICI,Merchant,Active,Yes
+asha.sharma70@ibl,A0105,Asha Sharma,SBI,Personal,Active,Yes
+techworld5@okicici,A0106,TechWorld5,IDFC FIRST,Merchant,Active,Yes
+rohan.nair33@paytm,A0107,Rohan Nair,PNB,Student,Active,Yes
+powergrid@paytm_A0108,A0108,PowerGrid,Union Bank,Utility,Active,Yes
+abcpvtltd26@paytm,A0109,ABC Pvt Ltd,SBI,Business,Active,Yes
+vikram.reddy46@ibl,A0110,Vikram Reddy,ICICI,Student,Active,Yes
+kiran.rao91@ibl,A0111,Kiran Rao,Union Bank,Personal,Active,Yes
+rohan.gupta20@paytm,A0112,Rohan Gupta,SBI,Student,Active,Yes
+abcpvtltd14@oksbi,A0113,ABC Pvt Ltd,IDFC FIRST,Business,Active,Yes
+dailyneeds65@paytm,A0114,DailyNeeds65,ICICI,Merchant,Active,Yes
+nikhil.sharma23@okhdfcbank,A0115,Nikhil Sharma,HDFC,Personal,Active,Yes
+dailyneeds1@okicici,A0116,DailyNeeds1,Kotak,Merchant,Active,Yes
+meera.singh24@okicici,A0117,Meera Singh,HDFC,Personal,Active,Yes
+abcpvtltd85@okaxis,A0118,ABC Pvt Ltd,PNB,Business,Active,Yes
+passportoffice@ibl,A0119,PassportOffice,Canara,Government,Active,Yes
+charan.verma21@ybl,A0120,Charan Verma,PNB,Student,Active,Yes
+vikram.kulkarni75@ibl,A0121,Vikram Kulkarni,HDFC,Personal,Active,Yes
+megastore6@okhdfcbank,A0122,MegaStore6,PNB,Merchant,Active,Yes
+charan.kulkarni15@ibl,A0123,Charan Kulkarni,Union Bank,Personal,Active,Yes
+kiran.verma23@okicici,A0124,Kiran Verma,IDFC FIRST,Personal,Active,Yes
+manoj.reddy79@okicici,A0125,Manoj Reddy,Union Bank,Student,Active,Yes
+rohan.sharma40@ibl,A0126,Rohan Sharma,ICICI,Student,Active,Yes
+citywater@oksbi,A0127,CityWater,PNB,Utility,Active,Yes
+varun.singh35@ibl,A0128,Varun Singh,HDFC,Personal,Active,Yes
+varun.rao55@okaxis,A0129,Varun Rao,PNB,Personal,Active,Yes
+smartelectronics19@okicici_A0130,A0130,SmartElectronics19,Canara,Merchant,Active,Yes
+rahul.gupta81@okaxis,A0131,Rahul Gupta,Axis,Personal,Active,Yes
+kiran.verma16@okaxis,A0132,Kiran Verma,IDFC FIRST,Student,Active,Yes
+dailyneeds98@okaxis,A0133,DailyNeeds98,Canara,Merchant,Active,Yes
+divya.singh52@oksbi,A0134,Divya Singh,Canara,Personal,Active,Yes
+rahul.kulkarni25@paytm,A0135,Rahul Kulkarni,Union Bank,Personal,Active,Yes
+abcpvtltd80@ibl,A0136,ABC Pvt Ltd,Union Bank,Business,Active,Yes
+vikram.verma47@ybl,A0137,Vikram Verma,SBI,Student,Active,Yes
+amit.sharma91@okhdfcbank,A0138,Amit Sharma,SBI,Personal,Active,Yes
+bbmp@ybl,A0139,BBMP,IDFC FIRST,Government,Active,Yes
+asha.verma43@ybl,A0140,Asha Verma,IDFC FIRST,Personal,Active,Yes
+amit.patel45@paytm,A0141,Amit Patel,Union Bank,Personal,Active,Yes
+karnatakagas@ybl,A0142,KarnatakaGas,IDFC FIRST,Utility,Blocked,No
+sneha.shetty33@okicici,A0143,Sneha Shetty,SBI,Student,Active,Yes
+nikhil.patel99@ibl,A0144,Nikhil Patel,HDFC,Student,Active,Yes
+helpindia49@okhdfcbank,A0145,HelpIndia,Union Bank,NGO,Active,Yes
+anjali.gupta81@ybl,A0146,Anjali Gupta,Axis,Personal,Active,Yes
+karnatakagas@okhdfcbank_A0147,A0147,KarnatakaGas,Kotak,Utility,Active,Yes
+varun.nair61@ibl,A0148,Varun Nair,Union Bank,Personal,Blocked,No
+anjali.gupta80@paytm,A0149,Anjali Gupta,IDFC FIRST,Personal,Active,Yes
+novasolutions11@okhdfcbank,A0150,Nova Solutions,SBI,Business,Active,Yes
+vikram.nair3@okhdfcbank,A0151,Vikram Nair,IDFC FIRST,Student,Active,Yes
+sneha.rao30@oksbi,A0152,Sneha Rao,Kotak,Personal,Active,Yes
+divya.sharma35@okhdfcbank,A0153,Divya Sharma,IDFC FIRST,Personal,Active,Yes
+kavya.nair55@okaxis,A0154,Kavya Nair,PNB,Personal,Active,Yes
+varun.singh88@ibl,A0155,Varun Singh,PNB,Personal,Active,Yes
+anjali.kulkarni26@oksbi,A0156,Anjali Kulkarni,Kotak,Student,Active,Yes
+citypharmacy56@okicici,A0157,CityPharmacy56,IDFC FIRST,Merchant,Active,Yes
+citywater@paytm,A0158,CityWater,Canara,Utility,Active,Yes
+kavya.nair48@okhdfcbank,A0159,Kavya Nair,IDFC FIRST,Personal,Active,Yes
+neha.gupta19@okhdfcbank,A0160,Neha Gupta,HDFC,Personal,Active,Yes
+nikhil.nair18@paytm,A0161,Nikhil Nair,Canara,Personal,Active,Yes
+deepa.sharma76@okaxis,A0162,Deepa Sharma,Axis,Personal,Suspended,No
+divya.shetty35@oksbi,A0163,Divya Shetty,HDFC,Personal,Active,Yes
+pooja.gupta96@okicici,A0164,Pooja Gupta,PNB,Student,Active,Yes
+nikhil.verma97@okhdfcbank,A0165,Nikhil Verma,HDFC,Personal,Active,Yes
+pooja.nair42@paytm,A0166,Pooja Nair,Axis,Personal,Active,Yes
+incometax@okhdfcbank,A0167,IncomeTax,Axis,Government,Active,Yes
+bwssb@okhdfcbank,A0168,BWSSB,Union Bank,Utility,Active,Yes
+karnatakatransport@ybl,A0169,KarnatakaTransport,IDFC FIRST,Government,Active,Yes
+neha.reddy35@okhdfcbank,A0170,Neha Reddy,HDFC,Personal,Active,Yes
+passportoffice@paytm,A0171,PassportOffice,Axis,Government,Active,Yes
+neha.singh23@okaxis,A0172,Neha Singh,PNB,Student,Active,Yes
+manoj.rao47@okaxis,A0173,Manoj Rao,PNB,Personal,Active,Yes
+varun.shetty34@okhdfcbank,A0174,Varun Shetty,HDFC,Personal,Active,Yes
+bescom@paytm_A0175,A0175,BESCOM,Axis,Utility,Active,Yes
+rohan.patel41@paytm,A0176,Rohan Patel,PNB,Personal,Active,Yes
+arjun.patel55@ybl,A0177,Arjun Patel,HDFC,Personal,Active,Yes
+pooja.patel48@ybl,A0178,Pooja Patel,Axis,Personal,Active,Yes
+abcpvtltd65@okaxis,A0179,ABC Pvt Ltd,Union Bank,Business,Active,Yes
+pooja.sharma29@ybl,A0180,Pooja Sharma,SBI,Personal,Active,Yes
+vikram.gupta16@oksbi,A0181,Vikram Gupta,PNB,Personal,Active,Yes
+amit.singh36@paytm,A0182,Amit Singh,PNB,Personal,Active,Yes
+anjali.nair25@ibl,A0183,Anjali Nair,IDFC FIRST,Personal,Active,Yes
+dailyneeds74@okicici,A0184,DailyNeeds74,Union Bank,Merchant,Suspended,No
+varun.patel95@ibl,A0185,Varun Patel,SBI,Personal,Active,Yes
+manoj.gupta67@okhdfcbank,A0186,Manoj Gupta,SBI,Personal,Active,Yes
+megastore93@ybl,A0187,MegaStore93,SBI,Merchant,Active,Yes
+megastore37@okhdfcbank_A0188,A0188,MegaStore37,Axis,Merchant,Active,Yes
+varun.verma15@okhdfcbank,A0189,Varun Verma,SBI,Personal,Active,Yes
+deepa.verma78@ibl,A0190,Deepa Verma,IDFC FIRST,Personal,Active,Yes
+karnatakagas@okhdfcbank_A0191,A0191,KarnatakaGas,Union Bank,Utility,Active,Yes
+techworld81@ibl,A0192,TechWorld81,Canara,Merchant,Active,Yes
+nikhil.sharma2@okhdfcbank,A0193,Nikhil Sharma,IDFC FIRST,Student,Active,Yes
+deepa.shetty43@okaxis,A0194,Deepa Shetty,SBI,Student,Active,Yes
+rahul.patel79@ibl,A0195,Rahul Patel,Axis,Personal,Active,Yes
+deepa.patel93@paytm,A0196,Deepa Patel,PNB,Personal,Active,Yes
+rahul.kulkarni33@okicici,A0197,Rahul Kulkarni,IDFC FIRST,Student,Active,Yes
+karnatakagas@okhdfcbank_A0198,A0198,KarnatakaGas,Canara,Utility,Active,Yes
+helpindia64@okhdfcbank,A0199,HelpIndia,Axis,NGO,Active,Yes
+citywater@okicici,A0200,CityWater,ICICI,Utility,Active,Yes
+deepa.rao56@okhdfcbank,A0201,Deepa Rao,Canara,Personal,Active,Yes
+arjun.singh48@okicici,A0202,Arjun Singh,PNB,Student,Active,Yes
+deepa.patel85@oksbi,A0203,Deepa Patel,Union Bank,Personal,Active,Yes
+anjali.patel25@okaxis,A0204,Anjali Patel,IDFC FIRST,Student,Active,Yes
+megastore31@paytm,A0205,MegaStore31,Canara,Merchant,Active,Yes
+neha.shetty54@okicici,A0206,Neha Shetty,Axis,Personal,Active,Yes
+hopengo55@okicici,A0207,HopeNGO,HDFC,NGO,Active,Yes
+incometax@paytm,A0208,IncomeTax,SBI,Government,Active,Yes
+varun.kulkarni90@okhdfcbank,A0209,Varun Kulkarni,Kotak,Personal,Active,Yes
+divya.rao75@okhdfcbank,A0210,Divya Rao,ICICI,Personal,Active,Yes
+dailyneeds90@oksbi,A0211,DailyNeeds90,ICICI,Merchant,Active,Yes
+divya.sharma41@okicici,A0212,Divya Sharma,PNB,Student,Active,Yes
+deepa.rao21@oksbi,A0213,Deepa Rao,Canara,Personal,Active,Yes
+smiletrust94@ibl,A0214,SmileTrust,Axis,NGO,Active,Yes
+pooja.patel97@oksbi,A0215,Pooja Patel,Axis,Student,Active,Yes
+sneha.reddy33@okaxis,A0216,Sneha Reddy,Kotak,Personal,Active,Yes
+arjun.kulkarni4@okaxis,A0217,Arjun Kulkarni,HDFC,Personal,Active,Yes
+primeindustries80@okaxis,A0218,Prime Industries,ICICI,Business,Active,Yes
+amit.patel67@okhdfcbank,A0219,Amit Patel,HDFC,Personal,Active,Yes
+kavya.gupta30@paytm,A0220,Kavya Gupta,Axis,Personal,Active,Yes
+arjun.reddy49@paytm,A0221,Arjun Reddy,Canara,Personal,Active,Yes
+karnatakagas@okicici_A0222,A0222,KarnatakaGas,Axis,Utility,Active,Yes
+arjun.sharma18@okaxis,A0223,Arjun Sharma,HDFC,Personal,Active,Yes
+charan.reddy54@okhdfcbank,A0224,Charan Reddy,Axis,Personal,Active,Yes
+divya.reddy30@paytm,A0225,Divya Reddy,IDFC FIRST,Personal,Active,Yes
+priya.kulkarni98@okicici,A0226,Priya Kulkarni,Union Bank,Personal,Active,Yes
+freshmart44@okaxis,A0227,FreshMart44,Union Bank,Merchant,Active,Yes
+kiran.shetty60@ibl,A0228,Kiran Shetty,Canara,Personal,Blocked,No
+amit.patel5@oksbi,A0229,Amit Patel,PNB,Personal,Active,Yes
+asha.nair19@paytm,A0230,Asha Nair,PNB,Student,Active,Yes
+manoj.sharma90@okicici,A0231,Manoj Sharma,PNB,Personal,Active,Yes
+smiletrust32@paytm,A0232,SmileTrust,IDFC FIRST,NGO,Active,Yes
+rohan.kulkarni35@okaxis,A0233,Rohan Kulkarni,Axis,Personal,Active,Yes
+abcpvtltd24@okaxis,A0234,ABC Pvt Ltd,Canara,Business,Active,Yes
+anjali.kulkarni94@oksbi,A0235,Anjali Kulkarni,PNB,Student,Active,Yes
+freshmart31@paytm,A0236,FreshMart31,Axis,Merchant,Active,Yes
+anjali.nair93@ibl,A0237,Anjali Nair,Union Bank,Personal,Active,Yes
+citypharmacy98@okicici_A0238,A0238,CityPharmacy98,Kotak,Merchant,Active,Yes
+rohan.patel69@paytm,A0239,Rohan Patel,Canara,Personal,Active,Yes
+powergrid@ybl,A0240,PowerGrid,Union Bank,Utility,Active,Yes
+primeindustries66@oksbi,A0241,Prime Industries,SBI,Business,Active,Yes
+meera.reddy89@okicici,A0242,Meera Reddy,ICICI,Personal,Active,Yes
+arjun.reddy15@paytm,A0243,Arjun Reddy,Kotak,Student,Active,Yes
+sneha.shetty44@okicici,A0244,Sneha Shetty,Kotak,Student,Active,Yes
+freshmart47@oksbi,A0245,FreshMart47,SBI,Merchant,Active,Yes
+amit.kulkarni66@paytm,A0246,Amit Kulkarni,PNB,Personal,Active,Yes
+abcpvtltd96@paytm,A0247,ABC Pvt Ltd,Canara,Business,Active,Yes
+amit.patel55@paytm,A0248,Amit Patel,Kotak,Personal,Active,Yes
+citypharmacy65@oksbi,A0249,CityPharmacy65,ICICI,Merchant,Active,Yes
+asha.sharma30@ibl,A0250,Asha Sharma,Axis,Personal,Active,Yes
+bbmp@okicici,A0251,BBMP,Canara,Government,Active,Yes
+dailyneeds34@ybl,A0252,DailyNeeds34,Union Bank,Merchant,Active,Yes
+pooja.rao59@ybl,A0253,Pooja Rao,PNB,Personal,Active,Yes
+manoj.patel64@okaxis,A0254,Manoj Patel,PNB,Personal,Active,Yes
+sneha.kulkarni20@okicici,A0255,Sneha Kulkarni,Union Bank,Personal,Active,Yes
+anjali.rao85@oksbi,A0256,Anjali Rao,HDFC,Personal,Active,Yes
+smartelectronics80@okhdfcbank,A0257,SmartElectronics80,HDFC,Merchant,Active,Yes
+divya.sharma38@okaxis,A0258,Divya Sharma,HDFC,Student,Active,Yes
+nikhil.kulkarni72@ibl,A0259,Nikhil Kulkarni,Canara,Personal,Active,Yes
+novasolutions79@okhdfcbank,A0260,Nova Solutions,PNB,Business,Active,Yes
+asha.rao36@okaxis,A0261,Asha Rao,PNB,Student,Active,Yes
+abcpvtltd45@paytm,A0262,ABC Pvt Ltd,ICICI,Business,Active,Yes
+rohan.verma78@okhdfcbank,A0263,Rohan Verma,ICICI,Personal,Active,Yes
+anjali.shetty7@okhdfcbank,A0264,Anjali Shetty,Axis,Student,Active,Yes
+freshmart46@okaxis,A0265,FreshMart46,Canara,Merchant,Active,Yes
+rohan.patel33@ibl,A0266,Rohan Patel,Axis,Personal,Active,Yes
+kiran.patel8@ybl,A0267,Kiran Patel,IDFC FIRST,Student,Active,Yes
+techworld90@paytm,A0268,TechWorld90,Canara,Merchant,Active,Yes
+citypharmacy89@okaxis,A0269,CityPharmacy89,ICICI,Merchant,Active,Yes
+primeindustries15@paytm,A0270,Prime Industries,PNB,Business,Active,Yes
+citypharmacy78@okhdfcbank,A0271,CityPharmacy78,HDFC,Merchant,Active,Yes
+arjun.shetty39@okhdfcbank,A0272,Arjun Shetty,Canara,Personal,Active,Yes
+priya.shetty45@oksbi,A0273,Priya Shetty,ICICI,Personal,Active,Yes
+helpindia57@oksbi,A0274,HelpIndia,Union Bank,NGO,Active,Yes
+meera.nair87@okicici,A0275,Meera Nair,ICICI,Personal,Active,Yes
+manoj.verma30@oksbi,A0276,Manoj Verma,PNB,Personal,Active,Yes
+neha.sharma66@okaxis,A0277,Neha Sharma,Axis,Personal,Active,Yes
+dailyneeds84@okicici,A0278,DailyNeeds84,Kotak,Merchant,Active,Yes
+citywater@ybl,A0279,CityWater,Axis,Utility,Active,Yes
+primeindustries30@paytm,A0280,Prime Industries,Kotak,Business,Active,Yes
+priya.gupta26@okhdfcbank,A0281,Priya Gupta,ICICI,Personal,Active,Yes
+dailyneeds62@paytm,A0282,DailyNeeds62,IDFC FIRST,Merchant,Active,Yes
+neha.patel19@ybl,A0283,Neha Patel,ICICI,Student,Active,Yes
+vikram.sharma88@ybl,A0284,Vikram Sharma,IDFC FIRST,Personal,Active,Yes
+abcpvtltd83@ibl,A0285,ABC Pvt Ltd,Axis,Business,Active,Yes
+neha.sharma4@okhdfcbank,A0286,Neha Sharma,Axis,Personal,Active,Yes
+arjun.reddy45@okhdfcbank,A0287,Arjun Reddy,HDFC,Personal,Active,Yes
+megastore13@ybl,A0288,MegaStore13,SBI,Merchant,Active,Yes
+amit.reddy76@paytm,A0289,Amit Reddy,Axis,Personal,Active,Yes
+charan.nair64@ibl,A0290,Charan Nair,IDFC FIRST,Personal,Active,Yes
+megastore6@ybl,A0291,MegaStore6,Canara,Merchant,Active,Yes
+sneha.gupta55@okicici,A0292,Sneha Gupta,IDFC FIRST,Student,Active,Yes
+priya.singh45@okhdfcbank,A0293,Priya Singh,SBI,Personal,Active,Yes
+techworld45@okaxis,A0294,TechWorld45,Canara,Merchant,Active,Yes
+abcpvtltd16@ibl,A0295,ABC Pvt Ltd,Canara,Business,Active,Yes
+charan.patel83@okaxis,A0296,Charan Patel,HDFC,Personal,Active,Yes
+manoj.verma96@ybl,A0297,Manoj Verma,IDFC FIRST,Personal,Active,Yes
+bbmp@okaxis,A0298,BBMP,PNB,Government,Active,Yes
+rohan.patel35@oksbi,A0299,Rohan Patel,PNB,Student,Active,Yes
+rahul.kulkarni73@okicici,A0300,Rahul Kulkarni,IDFC FIRST,Personal,Active,Yes
+divya.rao31@ibl,A0301,Divya Rao,HDFC,Personal,Active,Yes
+varun.verma24@okicici,A0302,Varun Verma,SBI,Personal,Active,Yes
+varun.singh96@ybl,A0303,Varun Singh,IDFC FIRST,Personal,Active,Yes
+rohan.reddy12@okaxis,A0304,Rohan Reddy,Canara,Personal,Active,Yes
+pooja.rao62@paytm,A0305,Pooja Rao,PNB,Personal,Active,Yes
+anjali.patel54@okicici,A0306,Anjali Patel,SBI,Student,Active,Yes
+manoj.gupta69@okicici,A0307,Manoj Gupta,PNB,Personal,Active,Yes
+varun.kulkarni23@okhdfcbank,A0308,Varun Kulkarni,Kotak,Personal,Active,Yes
+megastore19@oksbi,A0309,MegaStore19,HDFC,Merchant,Active,Yes
+priya.patel69@okicici,A0310,Priya Patel,HDFC,Student,Blocked,No
+pooja.rao63@ibl,A0311,Pooja Rao,Canara,Personal,Active,Yes
+kiran.rao47@ybl,A0312,Kiran Rao,Canara,Student,Active,Yes
+meera.reddy65@okaxis,A0313,Meera Reddy,IDFC FIRST,Personal,Active,Yes
+meera.verma77@okaxis,A0314,Meera Verma,PNB,Personal,Active,Yes
+karnatakagas@ibl_A0315,A0315,KarnatakaGas,Canara,Utility,Suspended,No
+meera.nair28@paytm,A0316,Meera Nair,Kotak,Student,Active,Yes
+rahul.sharma25@okicici,A0317,Rahul Sharma,PNB,Personal,Active,Yes
+helpindia87@okaxis,A0318,HelpIndia,SBI,NGO,Active,Yes
+megastore69@okhdfcbank,A0319,MegaStore69,Canara,Merchant,Active,Yes
+amit.gupta15@okaxis,A0320,Amit Gupta,Union Bank,Personal,Active,Yes
+powergrid@oksbi,A0321,PowerGrid,Union Bank,Utility,Active,Yes
+anjali.patel35@okhdfcbank,A0322,Anjali Patel,ICICI,Personal,Active,Yes
+asha.reddy91@okicici,A0323,Asha Reddy,SBI,Personal,Active,Yes
+divya.rao66@ybl,A0324,Divya Rao,ICICI,Personal,Active,Yes
+smiletrust77@ibl,A0325,SmileTrust,IDFC FIRST,NGO,Active,Yes
+freshmart6@okicici,A0326,FreshMart6,PNB,Merchant,Active,Yes
+divya.gupta58@oksbi,A0327,Divya Gupta,HDFC,Personal,Active,Yes
+rahul.shetty20@oksbi,A0328,Rahul Shetty,Union Bank,Student,Active,Yes
+nikhil.gupta49@ybl,A0329,Nikhil Gupta,Kotak,Personal,Active,Yes
+rahul.patel84@oksbi,A0330,Rahul Patel,PNB,Personal,Active,Yes
+kavya.verma80@oksbi,A0331,Kavya Verma,Kotak,Personal,Active,Yes
+arjun.rao83@paytm,A0332,Arjun Rao,PNB,Personal,Active,Yes
+priya.verma35@okhdfcbank,A0333,Priya Verma,Kotak,Personal,Suspended,No
+rahul.reddy72@ibl,A0334,Rahul Reddy,Axis,Student,Active,Yes
+dailyneeds61@ybl,A0335,DailyNeeds61,SBI,Merchant,Active,Yes
+carefoundation70@ybl,A0336,CareFoundation,IDFC FIRST,NGO,Active,Yes
+charan.rao50@okhdfcbank,A0337,Charan Rao,Canara,Personal,Active,Yes
+amit.verma48@oksbi,A0338,Amit Verma,Axis,Personal,Active,Yes
+meera.sharma4@oksbi,A0339,Meera Sharma,Canara,Personal,Active,Yes
+pooja.rao89@ibl,A0340,Pooja Rao,ICICI,Personal,Suspended,No
+citypharmacy22@okaxis,A0341,CityPharmacy22,ICICI,Merchant,Active,Yes
+manoj.sharma44@ibl,A0342,Manoj Sharma,Canara,Personal,Active,Yes
+asha.sharma46@ybl,A0343,Asha Sharma,ICICI,Personal,Suspended,No
+asha.shetty98@okicici,A0344,Asha Shetty,Canara,Personal,Active,Yes
+varun.patel51@okaxis,A0345,Varun Patel,Union Bank,Personal,Active,Yes
+pooja.kulkarni95@okicici,A0346,Pooja Kulkarni,Union Bank,Personal,Blocked,No
+vikram.shetty33@paytm,A0347,Vikram Shetty,Kotak,Personal,Active,Yes
+meera.patel47@ybl,A0348,Meera Patel,SBI,Student,Blocked,No
+kiran.reddy3@oksbi,A0349,Kiran Reddy,SBI,Student,Active,Yes
+sneha.gupta66@ybl,A0350,Sneha Gupta,SBI,Personal,Active,Yes
+citywater@okaxis_A0351,A0351,CityWater,Axis,Utility,Active,Yes
+divya.kulkarni62@okicici,A0352,Divya Kulkarni,IDFC FIRST,Student,Active,Yes
+neha.kulkarni18@oksbi,A0353,Neha Kulkarni,PNB,Student,Active,Yes
+anjali.singh21@ibl,A0354,Anjali Singh,HDFC,Personal,Active,Yes
+abcpvtltd12@paytm,A0355,ABC Pvt Ltd,Canara,Business,Active,Yes
+bbmp@ibl_A0356,A0356,BBMP,Kotak,Government,Active,Yes
+deepa.reddy5@okicici,A0357,Deepa Reddy,Axis,Personal,Active,Yes
+rohan.rao27@ybl,A0358,Rohan Rao,IDFC FIRST,Personal,Active,Yes
+meera.reddy74@okicici,A0359,Meera Reddy,SBI,Personal,Active,Yes
+manoj.nair30@okicici,A0360,Manoj Nair,Kotak,Personal,Active,Yes
+arjun.sharma20@okaxis,A0361,Arjun Sharma,Canara,Personal,Active,Yes
+pooja.patel66@ybl,A0362,Pooja Patel,SBI,Personal,Active,Yes
+neha.patel54@ybl,A0363,Neha Patel,PNB,Student,Active,Yes
+amit.kulkarni10@okaxis,A0364,Amit Kulkarni,IDFC FIRST,Personal,Active,Yes
+divya.kulkarni72@ybl,A0365,Divya Kulkarni,SBI,Personal,Active,Yes
+neha.reddy67@ibl,A0366,Neha Reddy,ICICI,Personal,Active,Yes
+amit.patel7@ibl,A0367,Amit Patel,Axis,Student,Active,Yes
+sneha.reddy35@ibl,A0368,Sneha Reddy,HDFC,Personal,Blocked,No
+primeindustries69@okicici,A0369,Prime Industries,Kotak,Business,Active,Yes
+abcpvtltd28@ibl,A0370,ABC Pvt Ltd,PNB,Business,Active,Yes
+asha.nair14@okhdfcbank,A0371,Asha Nair,Union Bank,Personal,Active,Yes
+neha.shetty86@ibl,A0372,Neha Shetty,ICICI,Student,Active,Yes
+megastore37@oksbi,A0373,MegaStore37,IDFC FIRST,Merchant,Active,Yes
+megastore97@ibl,A0374,MegaStore97,Canara,Merchant,Active,Yes
+megastore4@paytm,A0375,MegaStore4,ICICI,Merchant,Active,Yes
+charan.shetty47@okaxis,A0376,Charan Shetty,IDFC FIRST,Personal,Active,Yes
+divya.gupta70@okaxis,A0377,Divya Gupta,Kotak,Student,Suspended,No
+primeindustries39@okhdfcbank,A0378,Prime Industries,HDFC,Business,Active,Yes
+amit.kulkarni4@paytm,A0379,Amit Kulkarni,Union Bank,Personal,Blocked,No
+kiran.singh85@okicici,A0380,Kiran Singh,Union Bank,Personal,Active,Yes
+varun.reddy27@okaxis,A0381,Varun Reddy,HDFC,Student,Active,Yes
+asha.shetty50@ibl,A0382,Asha Shetty,ICICI,Student,Active,Yes
+divya.nair26@okaxis,A0383,Divya Nair,HDFC,Personal,Active,Yes
+bwssb@paytm_A0384,A0384,BWSSB,SBI,Utility,Active,Yes
+meera.singh65@okicici,A0385,Meera Singh,IDFC FIRST,Personal,Active,Yes
+sneha.sharma78@okicici,A0386,Sneha Sharma,IDFC FIRST,Personal,Active,Yes
+carefoundation54@paytm,A0387,CareFoundation,Canara,NGO,Suspended,No
+primeindustries44@ibl,A0388,Prime Industries,PNB,Business,Active,Yes
+rohan.shetty30@okaxis,A0389,Rohan Shetty,PNB,Personal,Active,Yes
+varun.singh77@ybl,A0390,Varun Singh,PNB,Personal,Active,Yes
+asha.patel15@oksbi,A0391,Asha Patel,HDFC,Personal,Active,Yes
+primeindustries35@oksbi,A0392,Prime Industries,HDFC,Business,Active,Yes
+varun.patel54@paytm,A0393,Varun Patel,SBI,Personal,Active,Yes
+dailyneeds15@okhdfcbank,A0394,DailyNeeds15,Union Bank,Merchant,Suspended,No
+anjali.rao29@okaxis,A0395,Anjali Rao,PNB,Personal,Active,Yes
+freshmart30@okicici,A0396,FreshMart30,HDFC,Merchant,Suspended,No
+carefoundation48@oksbi,A0397,CareFoundation,IDFC FIRST,NGO,Active,Yes
+kiran.gupta52@ybl,A0398,Kiran Gupta,Canara,Personal,Active,Yes
+priya.patel37@paytm,A0399,Priya Patel,ICICI,Personal,Blocked,No
+varun.verma64@okaxis,A0400,Varun Verma,IDFC FIRST,Personal,Blocked,No
+incometax@oksbi_A0401,A0401,IncomeTax,Kotak,Government,Active,Yes
+meera.gupta50@okhdfcbank,A0402,Meera Gupta,IDFC FIRST,Student,Active,Yes
+kiran.rao76@oksbi,A0403,Kiran Rao,Union Bank,Personal,Active,Yes
+charan.gupta44@okhdfcbank,A0404,Charan Gupta,Kotak,Student,Active,Yes
+deepa.nair75@okaxis,A0405,Deepa Nair,Canara,Personal,Active,Yes
+bescom@ybl_A0406,A0406,BESCOM,IDFC FIRST,Utility,Active,Yes
+smiletrust96@ibl,A0407,SmileTrust,IDFC FIRST,NGO,Active,Yes
+asha.sharma89@oksbi,A0408,Asha Sharma,Kotak,Personal,Active,Yes
+citypharmacy89@paytm,A0409,CityPharmacy89,IDFC FIRST,Merchant,Active,Yes
+anjali.sharma83@paytm,A0410,Anjali Sharma,Axis,Student,Active,Yes
+neha.gupta9@ibl,A0411,Neha Gupta,Axis,Personal,Active,Yes
+vikram.gupta50@paytm,A0412,Vikram Gupta,HDFC,Personal,Active,Yes
+smiletrust72@paytm,A0413,SmileTrust,Union Bank,NGO,Active,Yes
+kiran.verma28@okicici,A0414,Kiran Verma,Axis,Student,Active,Yes
+meera.nair19@paytm,A0415,Meera Nair,IDFC FIRST,Personal,Active,Yes
+deepa.kulkarni82@okicici,A0416,Deepa Kulkarni,Axis,Personal,Active,Yes
+priya.kulkarni33@ibl,A0417,Priya Kulkarni,HDFC,Personal,Active,Yes
+karnatakatransport@okaxis,A0418,KarnatakaTransport,ICICI,Government,Active,Yes
+rahul.verma44@okhdfcbank,A0419,Rahul Verma,Union Bank,Student,Active,Yes
+arjun.reddy38@oksbi,A0420,Arjun Reddy,Union Bank,Personal,Active,Yes
+kavya.reddy60@ybl,A0421,Kavya Reddy,Kotak,Student,Active,Yes
+anjali.nair62@oksbi,A0422,Anjali Nair,ICICI,Personal,Active,Yes
+charan.patel97@oksbi,A0423,Charan Patel,IDFC FIRST,Personal,Blocked,No
+rohan.verma13@paytm,A0424,Rohan Verma,HDFC,Personal,Active,Yes
+citypharmacy67@ybl,A0425,CityPharmacy67,Canara,Merchant,Active,Yes
+freshmart78@okicici,A0426,FreshMart78,IDFC FIRST,Merchant,Active,Yes
+rahul.rao97@ybl,A0427,Rahul Rao,Union Bank,Personal,Active,Yes
+helpindia17@okhdfcbank,A0428,HelpIndia,Union Bank,NGO,Active,Yes
+divya.patel78@oksbi,A0429,Divya Patel,SBI,Personal,Active,Yes
+neha.verma50@okhdfcbank,A0430,Neha Verma,SBI,Student,Active,Yes
+smartelectronics35@okicici,A0431,SmartElectronics35,SBI,Merchant,Active,Yes
+nikhil.kulkarni20@okhdfcbank,A0432,Nikhil Kulkarni,Kotak,Personal,Active,Yes
+sneha.verma14@paytm,A0433,Sneha Verma,IDFC FIRST,Personal,Active,Yes
+divya.nair22@ibl,A0434,Divya Nair,Kotak,Personal,Active,Yes
+bwssb@okaxis,A0435,BWSSB,Kotak,Utility,Active,Yes
+priya.sharma38@okhdfcbank,A0436,Priya Sharma,ICICI,Personal,Active,Yes
+charan.patel63@ibl,A0437,Charan Patel,PNB,Personal,Active,Yes
+rohan.gupta79@okicici,A0438,Rohan Gupta,Canara,Personal,Active,Yes
+meera.verma7@okicici,A0439,Meera Verma,HDFC,Personal,Suspended,No
+techworld75@oksbi,A0440,TechWorld75,IDFC FIRST,Merchant,Active,Yes
+varun.shetty51@ibl,A0441,Varun Shetty,ICICI,Personal,Active,Yes
+rahul.reddy98@ibl,A0442,Rahul Reddy,Kotak,Personal,Active,Yes
+rahul.patel53@okhdfcbank,A0443,Rahul Patel,ICICI,Student,Active,Yes
+arjun.shetty97@ybl,A0444,Arjun Shetty,HDFC,Personal,Active,Yes
+citypharmacy63@okicici,A0445,CityPharmacy63,Kotak,Merchant,Active,Yes
+primeindustries73@oksbi,A0446,Prime Industries,Union Bank,Business,Active,Yes
+dailyneeds29@paytm,A0447,DailyNeeds29,PNB,Merchant,Active,Yes
+meera.singh74@paytm,A0448,Meera Singh,PNB,Personal,Active,Yes
+vikram.shetty92@ybl,A0449,Vikram Shetty,ICICI,Student,Active,Yes
+meera.gupta95@okaxis,A0450,Meera Gupta,ICICI,Personal,Active,Yes
+rohan.verma54@okhdfcbank,A0451,Rohan Verma,Axis,Personal,Active,Yes
+sneha.sharma8@oksbi,A0452,Sneha Sharma,IDFC FIRST,Student,Active,Yes
+nikhil.shetty74@ibl,A0453,Nikhil Shetty,Axis,Personal,Active,Yes
+bescom@ybl_A0454,A0454,BESCOM,Union Bank,Utility,Active,Yes
+varun.nair5@okhdfcbank,A0455,Varun Nair,HDFC,Personal,Active,Yes
+passportoffice@okhdfcbank,A0456,PassportOffice,IDFC FIRST,Government,Active,Yes
+kiran.singh61@oksbi,A0457,Kiran Singh,PNB,Student,Active,Yes
+citypharmacy98@okicici_A0458,A0458,CityPharmacy98,Axis,Merchant,Active,Yes
+rahul.sharma66@okhdfcbank,A0459,Rahul Sharma,PNB,Personal,Active,Yes
+amit.rao44@oksbi,A0460,Amit Rao,SBI,Student,Active,Yes
+meera.sharma27@okhdfcbank,A0461,Meera Sharma,ICICI,Student,Suspended,No
+amit.shetty6@ibl,A0462,Amit Shetty,Canara,Personal,Active,Yes
+neha.patel18@ybl,A0463,Neha Patel,Kotak,Personal,Active,Yes
+vikram.verma74@okaxis,A0464,Vikram Verma,PNB,Student,Active,Yes
+priya.sharma23@ybl,A0465,Priya Sharma,Axis,Personal,Active,Yes
+divya.gupta22@oksbi,A0466,Divya Gupta,Axis,Personal,Active,Yes
+rohan.reddy77@ibl,A0467,Rohan Reddy,SBI,Personal,Suspended,No
+carefoundation36@okicici,A0468,CareFoundation,IDFC FIRST,NGO,Active,Yes
+rohan.rao96@ibl,A0469,Rohan Rao,Canara,Student,Active,Yes
+smartelectronics19@okicici_A0470,A0470,SmartElectronics19,ICICI,Merchant,Active,Yes
+divya.sharma80@paytm,A0471,Divya Sharma,Axis,Student,Active,Yes
+megastore37@okhdfcbank_A0472,A0472,MegaStore37,ICICI,Merchant,Active,Yes
+bescom@oksbi,A0473,BESCOM,SBI,Utility,Active,Yes
+manoj.reddy65@oksbi,A0474,Manoj Reddy,PNB,Student,Active,Yes
+freshmart91@okhdfcbank,A0475,FreshMart91,PNB,Merchant,Active,Yes
+pooja.verma73@ybl,A0476,Pooja Verma,Canara,Personal,Active,Yes
+xyzlogistics28@ibl,A0477,XYZ Logistics,SBI,Business,Active,Yes
+neha.nair2@okaxis,A0478,Neha Nair,ICICI,Personal,Active,Yes
+sneha.shetty73@oksbi,A0479,Sneha Shetty,Canara,Personal,Active,Yes
+varun.shetty51@paytm,A0480,Varun Shetty,Kotak,Personal,Active,Yes
+freshmart34@okaxis,A0481,FreshMart34,Kotak,Merchant,Active,Yes
+freshmart52@ibl,A0482,FreshMart52,Axis,Merchant,Active,Yes
+sneha.verma21@ybl,A0483,Sneha Verma,Kotak,Personal,Active,Yes
+megastore60@ybl,A0484,MegaStore60,Axis,Merchant,Active,Yes
+asha.rao19@ibl,A0485,Asha Rao,PNB,Personal,Active,Yes
+charan.singh58@ibl,A0486,Charan Singh,IDFC FIRST,Personal,Active,Yes
+incometax@oksbi_A0487,A0487,IncomeTax,SBI,Government,Active,Yes
+novasolutions65@okicici,A0488,Nova Solutions,Union Bank,Business,Active,Yes
+carefoundation55@okaxis,A0489,CareFoundation,ICICI,NGO,Active,Yes
+asha.kulkarni7@ybl,A0490,Asha Kulkarni,Axis,Personal,Active,Yes
+rohan.singh91@oksbi,A0491,Rohan Singh,SBI,Personal,Active,Yes
+arjun.rao87@okhdfcbank,A0492,Arjun Rao,ICICI,Personal,Active,Yes
+incometax@ybl,A0493,IncomeTax,Canara,Government,Active,Yes
+deepa.gupta99@ibl,A0494,Deepa Gupta,SBI,Student,Active,Yes
+manoj.shetty40@paytm,A0495,Manoj Shetty,HDFC,Personal,Active,Yes
+anjali.reddy70@oksbi,A0496,Anjali Reddy,IDFC FIRST,Personal,Active,Yes
+meera.reddy25@oksbi,A0497,Meera Reddy,Axis,Personal,Active,Yes
+neha.gupta26@okaxis,A0498,Neha Gupta,SBI,Personal,Active,Yes
+priya.reddy69@ybl,A0499,Priya Reddy,SBI,Student,Active,Yes
+arjun.gupta73@ybl,A0500,Arjun Gupta,Axis,Personal,Active,Yes

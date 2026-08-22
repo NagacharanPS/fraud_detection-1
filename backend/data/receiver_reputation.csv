@@ -1,0 +1,501 @@
+account_id,upi_id,account_name,account_type,total_received_transactions,suspicious_received_transactions,high_value_received_transactions,average_fraud_probability,trust_score,risk_level,reasons
+A0001,rahul.sharma77@paytm,Rahul Sharma,Personal,92,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0002,charan.nair9@okaxis,Charan Nair,Personal,90,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0003,bbmp@oksbi,BBMP,Government,86,7,7,0.24,68,MEDIUM,7 suspicious incoming transactions
+A0004,amit.verma61@okhdfcbank,Amit Verma,Personal,75,34,34,0.49,0,HIGH,34 suspicious incoming transactions | Many high-value credits
+A0005,meera.shetty67@ibl,Meera Shetty,Personal,90,4,4,0.2,81,LOW,4 suspicious incoming transactions
+A0006,meera.singh8@paytm,Meera Singh,Personal,81,7,7,0.23,68,MEDIUM,7 suspicious incoming transactions
+A0007,bwssb@paytm,BWSSB,Utility,142,8,8,0.22,64,MEDIUM,8 suspicious incoming transactions
+A0008,kiran.rao76@okicici,Kiran Rao,Personal,63,2,2,0.2,88,LOW,2 suspicious incoming transactions
+A0009,rohan.patel35@okicici,Rohan Patel,Personal,93,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0010,priya.gupta9@ibl,Priya Gupta,Personal,69,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0011,kavya.verma75@ibl,Kavya Verma,Personal,67,31,31,0.5,0,HIGH,31 suspicious incoming transactions | Many high-value credits
+A0012,citywater@okaxis,CityWater,Utility,159,13,13,0.24,44,MEDIUM,13 suspicious incoming transactions | Many high-value credits
+A0013,deepa.kulkarni58@oksbi,Deepa Kulkarni,Personal,81,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0014,sneha.verma44@okaxis,Sneha Verma,Student,85,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0015,bbmp@ibl,BBMP,Government,72,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0016,amit.gupta28@okaxis,Amit Gupta,Personal,80,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0017,manoj.gupta80@paytm,Manoj Gupta,Personal,93,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0018,vikram.gupta23@ybl,Vikram Gupta,Student,65,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0019,powergrid@paytm,PowerGrid,Utility,153,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0020,helpindia31@okaxis,HelpIndia,NGO,82,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0021,techworld52@oksbi,TechWorld52,Merchant,191,11,11,0.21,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0022,karnatakagas@ibl,KarnatakaGas,Utility,133,6,6,0.22,72,LOW,6 suspicious incoming transactions
+A0023,bescom@ibl,BESCOM,Utility,151,12,12,0.23,48,MEDIUM,12 suspicious incoming transactions | Many high-value credits
+A0024,bwssb@ibl,BWSSB,Utility,154,68,68,0.47,0,HIGH,68 suspicious incoming transactions | Many high-value credits
+A0025,priya.nair94@ibl,Priya Nair,Personal,63,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0026,anjali.patel28@okaxis,Anjali Patel,Personal,75,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0027,vikram.verma18@ibl,Vikram Verma,Personal,79,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0028,freshmart33@oksbi,FreshMart33,Merchant,169,4,4,0.2,81,LOW,4 suspicious incoming transactions
+A0029,kiran.singh25@ibl,Kiran Singh,Personal,82,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0030,citypharmacy49@okicici,CityPharmacy49,Merchant,197,10,10,0.22,56,MEDIUM,10 suspicious incoming transactions
+A0031,freshmart85@ibl,FreshMart85,Merchant,174,5,5,0.2,77,LOW,5 suspicious incoming transactions
+A0032,abcpvtltd49@oksbi,ABC Pvt Ltd,Business,74,9,9,0.25,59,MEDIUM,9 suspicious incoming transactions
+A0033,abcpvtltd20@oksbi,ABC Pvt Ltd,Business,77,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0034,arjun.singh20@ibl,Arjun Singh,Personal,78,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0035,carefoundation7@ybl,CareFoundation,NGO,65,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0036,smiletrust89@okicici,SmileTrust,NGO,76,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0037,techworld37@paytm,TechWorld37,Merchant,189,8,8,0.21,64,MEDIUM,8 suspicious incoming transactions
+A0038,kavya.kulkarni17@ibl,Kavya Kulkarni,Personal,81,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0039,divya.singh29@okaxis,Divya Singh,Personal,83,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0040,karnatakatransport@okicici,KarnatakaTransport,Government,79,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0041,manoj.reddy1@ibl,Manoj Reddy,Personal,84,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0042,pooja.kulkarni16@oksbi,Pooja Kulkarni,Personal,83,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0043,deepa.verma96@oksbi,Deepa Verma,Personal,74,2,2,0.17,89,LOW,2 suspicious incoming transactions
+A0044,rahul.sharma99@okaxis,Rahul Sharma,Personal,78,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0045,carefoundation74@paytm,CareFoundation,NGO,84,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0046,kavya.kulkarni51@ibl,Kavya Kulkarni,Student,86,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0047,pooja.singh94@oksbi,Pooja Singh,Personal,80,7,7,0.24,68,MEDIUM,7 suspicious incoming transactions
+A0048,novasolutions11@ibl,Nova Solutions,Business,70,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0049,arjun.verma92@okaxis,Arjun Verma,Personal,87,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0050,smartelectronics42@ybl,SmartElectronics42,Merchant,183,12,12,0.22,48,MEDIUM,12 suspicious incoming transactions | Many high-value credits
+A0051,charan.rao17@oksbi,Charan Rao,Personal,79,2,2,0.2,88,LOW,2 suspicious incoming transactions
+A0052,anjali.sharma39@ybl,Anjali Sharma,Student,72,7,7,0.25,68,MEDIUM,7 suspicious incoming transactions
+A0053,freshmart70@okaxis,FreshMart70,Merchant,203,7,7,0.19,69,MEDIUM,7 suspicious incoming transactions
+A0054,rohan.gupta27@paytm,Rohan Gupta,Personal,93,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0055,techworld21@okhdfcbank,TechWorld21,Merchant,191,9,9,0.21,60,MEDIUM,9 suspicious incoming transactions
+A0056,bescom@paytm,BESCOM,Utility,169,79,79,0.5,0,HIGH,79 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0057,citypharmacy40@okhdfcbank,CityPharmacy40,Merchant,161,7,7,0.2,69,MEDIUM,7 suspicious incoming transactions
+A0058,freshmart17@okaxis,FreshMart17,Merchant,198,6,6,0.2,72,LOW,6 suspicious incoming transactions
+A0059,varun.patel93@oksbi,Varun Patel,Personal,89,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0060,rahul.reddy87@okicici,Rahul Reddy,Personal,91,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0061,megastore95@paytm,MegaStore95,Merchant,198,5,5,0.2,76,LOW,5 suspicious incoming transactions
+A0062,deepa.shetty22@ybl,Deepa Shetty,Personal,72,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0063,meera.verma21@okhdfcbank,Meera Verma,Personal,89,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0064,deepa.kulkarni68@paytm,Deepa Kulkarni,Personal,77,3,3,0.2,85,LOW,3 suspicious incoming transactions
+A0065,pooja.verma78@paytm,Pooja Verma,Student,70,33,33,0.52,0,HIGH,33 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0066,sneha.reddy9@oksbi,Sneha Reddy,Personal,94,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0067,arjun.shetty13@ibl,Arjun Shetty,Personal,88,8,8,0.24,64,MEDIUM,8 suspicious incoming transactions
+A0068,anjali.patel10@okaxis,Anjali Patel,Personal,70,0,0,0.16,97,VERIFIED,Normal transaction behaviour
+A0069,sneha.patel91@okicici,Sneha Patel,Personal,67,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0070,dailyneeds20@paytm,DailyNeeds20,Merchant,196,7,7,0.22,68,MEDIUM,7 suspicious incoming transactions
+A0071,charan.gupta17@ibl,Charan Gupta,Personal,93,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0072,anjali.kulkarni20@paytm,Anjali Kulkarni,Personal,72,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0073,xyzlogistics85@okicici,XYZ Logistics,Business,72,4,4,0.2,81,LOW,4 suspicious incoming transactions
+A0074,xyzlogistics45@okaxis,XYZ Logistics,Business,76,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0075,dailyneeds91@okicici,DailyNeeds91,Merchant,178,10,10,0.21,56,MEDIUM,10 suspicious incoming transactions
+A0076,arjun.kulkarni8@okhdfcbank,Arjun Kulkarni,Personal,91,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0077,kiran.patel20@paytm,Kiran Patel,Personal,85,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0078,incometax@ibl,IncomeTax,Government,98,9,9,0.24,60,MEDIUM,9 suspicious incoming transactions
+A0079,manoj.shetty36@okicici,Manoj Shetty,Personal,92,44,44,0.49,0,HIGH,44 suspicious incoming transactions | Many high-value credits
+A0080,anjali.singh70@okhdfcbank,Anjali Singh,Student,82,10,10,0.26,55,MEDIUM,10 suspicious incoming transactions
+A0081,arjun.reddy88@ybl,Arjun Reddy,Personal,68,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0082,pooja.shetty88@paytm,Pooja Shetty,Personal,97,5,5,0.2,77,LOW,5 suspicious incoming transactions
+A0083,varun.patel5@ibl,Varun Patel,Student,76,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0084,sneha.sharma31@okhdfcbank,Sneha Sharma,Personal,81,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0085,sneha.gupta31@ibl,Sneha Gupta,Personal,80,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0086,karnatakatransport@okicici,KarnatakaTransport,Government,90,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0087,deepa.singh24@ybl,Deepa Singh,Personal,67,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0088,pooja.shetty50@okicici,Pooja Shetty,Student,72,28,28,0.44,0,HIGH,28 suspicious incoming transactions | Many high-value credits
+A0089,kavya.rao83@okaxis,Kavya Rao,Personal,83,6,6,0.24,72,LOW,6 suspicious incoming transactions
+A0090,kavya.shetty42@ybl,Kavya Shetty,Personal,83,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0091,meera.shetty22@ibl,Meera Shetty,Student,81,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0092,divya.singh56@oksbi,Divya Singh,Student,73,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0093,deepa.sharma37@okaxis,Deepa Sharma,Personal,80,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0094,karnatakagas@okhdfcbank,KarnatakaGas,Utility,159,11,11,0.22,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0095,techworld36@ibl,TechWorld36,Merchant,201,12,12,0.22,48,MEDIUM,12 suspicious incoming transactions | Many high-value credits
+A0096,priya.gupta18@paytm,Priya Gupta,Student,84,3,3,0.18,85,LOW,3 suspicious incoming transactions
+A0097,citypharmacy47@oksbi,CityPharmacy47,Merchant,182,7,7,0.2,69,MEDIUM,7 suspicious incoming transactions
+A0098,karnatakagas@okicici,KarnatakaGas,Utility,156,7,7,0.22,68,MEDIUM,7 suspicious incoming transactions
+A0099,citypharmacy69@ibl,CityPharmacy69,Merchant,186,7,7,0.2,68,MEDIUM,7 suspicious incoming transactions
+A0100,incometax@okicici,IncomeTax,Government,87,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0101,manoj.verma25@okhdfcbank,Manoj Verma,Personal,88,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0102,charan.gupta64@paytm,Charan Gupta,Student,73,4,4,0.2,81,LOW,4 suspicious incoming transactions
+A0103,deepa.nair86@paytm,Deepa Nair,Student,70,2,2,0.22,88,LOW,2 suspicious incoming transactions
+A0104,smartelectronics36@ybl,SmartElectronics36,Merchant,184,12,12,0.23,48,MEDIUM,12 suspicious incoming transactions | Many high-value credits
+A0105,asha.sharma70@ibl,Asha Sharma,Personal,84,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0106,techworld5@okicici,TechWorld5,Merchant,175,12,12,0.23,48,MEDIUM,12 suspicious incoming transactions | Many high-value credits
+A0107,rohan.nair33@paytm,Rohan Nair,Student,83,3,3,0.2,85,LOW,3 suspicious incoming transactions
+A0108,powergrid@paytm,PowerGrid,Utility,153,67,67,0.47,0,HIGH,67 suspicious incoming transactions | Many high-value credits
+A0109,abcpvtltd26@paytm,ABC Pvt Ltd,Business,75,36,36,0.49,0,HIGH,36 suspicious incoming transactions | Many high-value credits
+A0110,vikram.reddy46@ibl,Vikram Reddy,Student,88,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0111,kiran.rao91@ibl,Kiran Rao,Personal,77,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0112,rohan.gupta20@paytm,Rohan Gupta,Student,77,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0113,abcpvtltd14@oksbi,ABC Pvt Ltd,Business,80,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0114,dailyneeds65@paytm,DailyNeeds65,Merchant,188,12,12,0.21,48,MEDIUM,12 suspicious incoming transactions | Many high-value credits
+A0115,nikhil.sharma23@okhdfcbank,Nikhil Sharma,Personal,82,8,8,0.26,63,MEDIUM,8 suspicious incoming transactions
+A0116,dailyneeds1@okicici,DailyNeeds1,Merchant,214,7,7,0.21,68,MEDIUM,7 suspicious incoming transactions
+A0117,meera.singh24@okicici,Meera Singh,Personal,104,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0118,abcpvtltd85@okaxis,ABC Pvt Ltd,Business,71,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0119,passportoffice@ibl,PassportOffice,Government,86,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0120,charan.verma21@ybl,Charan Verma,Student,81,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0121,vikram.kulkarni75@ibl,Vikram Kulkarni,Personal,94,8,8,0.24,64,MEDIUM,8 suspicious incoming transactions
+A0122,megastore6@okhdfcbank,MegaStore6,Merchant,187,11,11,0.23,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0123,charan.kulkarni15@ibl,Charan Kulkarni,Personal,87,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0124,kiran.verma23@okicici,Kiran Verma,Personal,72,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0125,manoj.reddy79@okicici,Manoj Reddy,Student,83,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0126,rohan.sharma40@ibl,Rohan Sharma,Student,85,8,8,0.26,63,MEDIUM,8 suspicious incoming transactions
+A0127,citywater@oksbi,CityWater,Utility,149,9,9,0.23,60,MEDIUM,9 suspicious incoming transactions
+A0128,varun.singh35@ibl,Varun Singh,Personal,70,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0129,varun.rao55@okaxis,Varun Rao,Personal,78,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0130,smartelectronics19@okicici,SmartElectronics19,Merchant,198,11,11,0.21,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0131,rahul.gupta81@okaxis,Rahul Gupta,Personal,79,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0132,kiran.verma16@okaxis,Kiran Verma,Student,83,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0133,dailyneeds98@okaxis,DailyNeeds98,Merchant,159,4,4,0.19,81,LOW,4 suspicious incoming transactions
+A0134,divya.singh52@oksbi,Divya Singh,Personal,96,8,8,0.25,63,MEDIUM,8 suspicious incoming transactions
+A0135,rahul.kulkarni25@paytm,Rahul Kulkarni,Personal,84,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0136,abcpvtltd80@ibl,ABC Pvt Ltd,Business,86,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0137,vikram.verma47@ybl,Vikram Verma,Student,76,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0138,amit.sharma91@okhdfcbank,Amit Sharma,Personal,87,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0139,bbmp@ybl,BBMP,Government,77,4,4,0.2,81,LOW,4 suspicious incoming transactions
+A0140,asha.verma43@ybl,Asha Verma,Personal,81,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0141,amit.patel45@paytm,Amit Patel,Personal,81,6,6,0.26,71,LOW,6 suspicious incoming transactions
+A0142,karnatakagas@ybl,KarnatakaGas,Utility,160,7,7,0.21,68,MEDIUM,7 suspicious incoming transactions
+A0143,sneha.shetty33@okicici,Sneha Shetty,Student,101,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0144,nikhil.patel99@ibl,Nikhil Patel,Student,93,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0145,helpindia49@okhdfcbank,HelpIndia,NGO,83,9,9,0.25,59,MEDIUM,9 suspicious incoming transactions
+A0146,anjali.gupta81@ybl,Anjali Gupta,Personal,81,1,1,0.2,93,VERIFIED,1 suspicious incoming transactions
+A0147,karnatakagas@okhdfcbank,KarnatakaGas,Utility,178,13,13,0.23,44,MEDIUM,13 suspicious incoming transactions | Many high-value credits
+A0148,varun.nair61@ibl,Varun Nair,Personal,78,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0149,anjali.gupta80@paytm,Anjali Gupta,Personal,80,2,2,0.2,88,LOW,2 suspicious incoming transactions
+A0150,novasolutions11@okhdfcbank,Nova Solutions,Business,84,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0151,vikram.nair3@okhdfcbank,Vikram Nair,Student,100,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0152,sneha.rao30@oksbi,Sneha Rao,Personal,95,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0153,divya.sharma35@okhdfcbank,Divya Sharma,Personal,85,8,8,0.24,64,MEDIUM,8 suspicious incoming transactions
+A0154,kavya.nair55@okaxis,Kavya Nair,Personal,87,2,2,0.2,88,LOW,2 suspicious incoming transactions
+A0155,varun.singh88@ibl,Varun Singh,Personal,81,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0156,anjali.kulkarni26@oksbi,Anjali Kulkarni,Student,89,7,7,0.25,67,MEDIUM,7 suspicious incoming transactions
+A0157,citypharmacy56@okicici,CityPharmacy56,Merchant,179,5,5,0.19,77,LOW,5 suspicious incoming transactions
+A0158,citywater@paytm,CityWater,Utility,147,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0159,kavya.nair48@okhdfcbank,Kavya Nair,Personal,68,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0160,neha.gupta19@okhdfcbank,Neha Gupta,Personal,74,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0161,nikhil.nair18@paytm,Nikhil Nair,Personal,73,5,5,0.25,76,LOW,5 suspicious incoming transactions
+A0162,deepa.sharma76@okaxis,Deepa Sharma,Personal,96,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0163,divya.shetty35@oksbi,Divya Shetty,Personal,74,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0164,pooja.gupta96@okicici,Pooja Gupta,Student,76,0,0,0.18,97,VERIFIED,Normal transaction behaviour
+A0165,nikhil.verma97@okhdfcbank,Nikhil Verma,Personal,83,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0166,pooja.nair42@paytm,Pooja Nair,Personal,72,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0167,incometax@okhdfcbank,IncomeTax,Government,70,3,3,0.2,85,LOW,3 suspicious incoming transactions
+A0168,bwssb@okhdfcbank,BWSSB,Utility,145,7,7,0.23,68,MEDIUM,7 suspicious incoming transactions
+A0169,karnatakatransport@ybl,KarnatakaTransport,Government,94,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0170,neha.reddy35@okhdfcbank,Neha Reddy,Personal,79,0,0,0.18,97,VERIFIED,Normal transaction behaviour
+A0171,passportoffice@paytm,PassportOffice,Government,70,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0172,neha.singh23@okaxis,Neha Singh,Student,83,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0173,manoj.rao47@okaxis,Manoj Rao,Personal,71,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0174,varun.shetty34@okhdfcbank,Varun Shetty,Personal,76,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0175,bescom@paytm,BESCOM,Utility,146,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0176,rohan.patel41@paytm,Rohan Patel,Personal,84,1,1,0.17,93,VERIFIED,1 suspicious incoming transactions
+A0177,arjun.patel55@ybl,Arjun Patel,Personal,78,40,40,0.53,0,HIGH,40 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0178,pooja.patel48@ybl,Pooja Patel,Personal,74,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0179,abcpvtltd65@okaxis,ABC Pvt Ltd,Business,87,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0180,pooja.sharma29@ybl,Pooja Sharma,Personal,77,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0181,vikram.gupta16@oksbi,Vikram Gupta,Personal,71,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0182,amit.singh36@paytm,Amit Singh,Personal,75,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0183,anjali.nair25@ibl,Anjali Nair,Personal,108,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0184,dailyneeds74@okicici,DailyNeeds74,Merchant,185,7,7,0.2,68,MEDIUM,7 suspicious incoming transactions
+A0185,varun.patel95@ibl,Varun Patel,Personal,74,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0186,manoj.gupta67@okhdfcbank,Manoj Gupta,Personal,79,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0187,megastore93@ybl,MegaStore93,Merchant,218,8,8,0.21,64,MEDIUM,8 suspicious incoming transactions
+A0188,megastore37@okhdfcbank,MegaStore37,Merchant,170,10,10,0.22,56,MEDIUM,10 suspicious incoming transactions
+A0189,varun.verma15@okhdfcbank,Varun Verma,Personal,63,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0190,deepa.verma78@ibl,Deepa Verma,Personal,90,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0191,karnatakagas@okhdfcbank,KarnatakaGas,Utility,165,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0192,techworld81@ibl,TechWorld81,Merchant,178,7,7,0.2,69,MEDIUM,7 suspicious incoming transactions
+A0193,nikhil.sharma2@okhdfcbank,Nikhil Sharma,Student,70,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0194,deepa.shetty43@okaxis,Deepa Shetty,Student,90,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0195,rahul.patel79@ibl,Rahul Patel,Personal,70,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0196,deepa.patel93@paytm,Deepa Patel,Personal,80,1,1,0.2,93,VERIFIED,1 suspicious incoming transactions
+A0197,rahul.kulkarni33@okicici,Rahul Kulkarni,Student,79,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0198,karnatakagas@okhdfcbank,KarnatakaGas,Utility,123,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0199,helpindia64@okhdfcbank,HelpIndia,NGO,84,4,4,0.2,81,LOW,4 suspicious incoming transactions
+A0200,citywater@okicici,CityWater,Utility,170,9,9,0.22,60,MEDIUM,9 suspicious incoming transactions
+A0201,deepa.rao56@okhdfcbank,Deepa Rao,Personal,81,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0202,arjun.singh48@okicici,Arjun Singh,Student,94,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0203,deepa.patel85@oksbi,Deepa Patel,Personal,86,6,6,0.24,72,LOW,6 suspicious incoming transactions
+A0204,anjali.patel25@okaxis,Anjali Patel,Student,77,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0205,megastore31@paytm,MegaStore31,Merchant,198,11,11,0.22,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0206,neha.shetty54@okicici,Neha Shetty,Personal,79,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0207,hopengo55@okicici,HopeNGO,NGO,81,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0208,incometax@paytm,IncomeTax,Government,79,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0209,varun.kulkarni90@okhdfcbank,Varun Kulkarni,Personal,90,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0210,divya.rao75@okhdfcbank,Divya Rao,Personal,99,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0211,dailyneeds90@oksbi,DailyNeeds90,Merchant,166,10,10,0.22,56,MEDIUM,10 suspicious incoming transactions
+A0212,divya.sharma41@okicici,Divya Sharma,Student,79,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0213,deepa.rao21@oksbi,Deepa Rao,Personal,84,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0214,smiletrust94@ibl,SmileTrust,NGO,80,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0215,pooja.patel97@oksbi,Pooja Patel,Student,79,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0216,sneha.reddy33@okaxis,Sneha Reddy,Personal,62,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0217,arjun.kulkarni4@okaxis,Arjun Kulkarni,Personal,59,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0218,primeindustries80@okaxis,Prime Industries,Business,80,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0219,amit.patel67@okhdfcbank,Amit Patel,Personal,82,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0220,kavya.gupta30@paytm,Kavya Gupta,Personal,86,34,34,0.45,0,HIGH,34 suspicious incoming transactions | Many high-value credits
+A0221,arjun.reddy49@paytm,Arjun Reddy,Personal,80,2,2,0.22,88,LOW,2 suspicious incoming transactions
+A0222,karnatakagas@okicici,KarnatakaGas,Utility,128,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0223,arjun.sharma18@okaxis,Arjun Sharma,Personal,90,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0224,charan.reddy54@okhdfcbank,Charan Reddy,Personal,82,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0225,divya.reddy30@paytm,Divya Reddy,Personal,81,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0226,priya.kulkarni98@okicici,Priya Kulkarni,Personal,76,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0227,freshmart44@okaxis,FreshMart44,Merchant,177,9,9,0.22,60,MEDIUM,9 suspicious incoming transactions
+A0228,kiran.shetty60@ibl,Kiran Shetty,Personal,70,5,5,0.24,76,LOW,5 suspicious incoming transactions
+A0229,amit.patel5@oksbi,Amit Patel,Personal,76,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0230,asha.nair19@paytm,Asha Nair,Student,73,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0231,manoj.sharma90@okicici,Manoj Sharma,Personal,93,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0232,smiletrust32@paytm,SmileTrust,NGO,80,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0233,rohan.kulkarni35@okaxis,Rohan Kulkarni,Personal,86,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0234,abcpvtltd24@okaxis,ABC Pvt Ltd,Business,95,46,46,0.53,0,HIGH,46 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0235,anjali.kulkarni94@oksbi,Anjali Kulkarni,Student,81,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0236,freshmart31@paytm,FreshMart31,Merchant,199,10,10,0.21,56,MEDIUM,10 suspicious incoming transactions
+A0237,anjali.nair93@ibl,Anjali Nair,Personal,94,37,37,0.47,0,HIGH,37 suspicious incoming transactions | Many high-value credits
+A0238,citypharmacy98@okicici,CityPharmacy98,Merchant,177,88,88,0.53,0,HIGH,88 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0239,rohan.patel69@paytm,Rohan Patel,Personal,93,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0240,powergrid@ybl,PowerGrid,Utility,158,9,9,0.22,60,MEDIUM,9 suspicious incoming transactions
+A0241,primeindustries66@oksbi,Prime Industries,Business,65,7,7,0.25,67,MEDIUM,7 suspicious incoming transactions
+A0242,meera.reddy89@okicici,Meera Reddy,Personal,100,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0243,arjun.reddy15@paytm,Arjun Reddy,Student,83,8,8,0.25,63,MEDIUM,8 suspicious incoming transactions
+A0244,sneha.shetty44@okicici,Sneha Shetty,Student,73,3,3,0.2,85,LOW,3 suspicious incoming transactions
+A0245,freshmart47@oksbi,FreshMart47,Merchant,171,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0246,amit.kulkarni66@paytm,Amit Kulkarni,Personal,83,7,7,0.23,68,MEDIUM,7 suspicious incoming transactions
+A0247,abcpvtltd96@paytm,ABC Pvt Ltd,Business,78,1,1,0.2,92,VERIFIED,1 suspicious incoming transactions
+A0248,amit.patel55@paytm,Amit Patel,Personal,70,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0249,citypharmacy65@oksbi,CityPharmacy65,Merchant,181,13,13,0.23,44,MEDIUM,13 suspicious incoming transactions | Many high-value credits
+A0250,asha.sharma30@ibl,Asha Sharma,Personal,96,0,0,0.16,97,VERIFIED,Normal transaction behaviour
+A0251,bbmp@okicici,BBMP,Government,74,1,1,0.2,93,VERIFIED,1 suspicious incoming transactions
+A0252,dailyneeds34@ybl,DailyNeeds34,Merchant,213,14,14,0.23,40,MEDIUM,14 suspicious incoming transactions | Many high-value credits
+A0253,pooja.rao59@ybl,Pooja Rao,Personal,85,3,3,0.23,84,LOW,3 suspicious incoming transactions
+A0254,manoj.patel64@okaxis,Manoj Patel,Personal,90,36,36,0.47,0,HIGH,36 suspicious incoming transactions | Many high-value credits
+A0255,sneha.kulkarni20@okicici,Sneha Kulkarni,Personal,83,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0256,anjali.rao85@oksbi,Anjali Rao,Personal,93,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0257,smartelectronics80@okhdfcbank,SmartElectronics80,Merchant,184,84,84,0.48,0,HIGH,84 suspicious incoming transactions | Many high-value credits
+A0258,divya.sharma38@okaxis,Divya Sharma,Student,81,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0259,nikhil.kulkarni72@ibl,Nikhil Kulkarni,Personal,76,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0260,novasolutions79@okhdfcbank,Nova Solutions,Business,75,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0261,asha.rao36@okaxis,Asha Rao,Student,83,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0262,abcpvtltd45@paytm,ABC Pvt Ltd,Business,93,8,8,0.22,64,MEDIUM,8 suspicious incoming transactions
+A0263,rohan.verma78@okhdfcbank,Rohan Verma,Personal,99,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0264,anjali.shetty7@okhdfcbank,Anjali Shetty,Student,78,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0265,freshmart46@okaxis,FreshMart46,Merchant,220,11,11,0.23,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0266,rohan.patel33@ibl,Rohan Patel,Personal,86,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0267,kiran.patel8@ybl,Kiran Patel,Student,93,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0268,techworld90@paytm,TechWorld90,Merchant,186,8,8,0.2,65,MEDIUM,8 suspicious incoming transactions
+A0269,citypharmacy89@okaxis,CityPharmacy89,Merchant,180,10,10,0.22,56,MEDIUM,10 suspicious incoming transactions
+A0270,primeindustries15@paytm,Prime Industries,Business,76,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0271,citypharmacy78@okhdfcbank,CityPharmacy78,Merchant,163,11,11,0.24,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0272,arjun.shetty39@okhdfcbank,Arjun Shetty,Personal,81,0,0,0.18,97,VERIFIED,Normal transaction behaviour
+A0273,priya.shetty45@oksbi,Priya Shetty,Personal,90,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0274,helpindia57@oksbi,HelpIndia,NGO,89,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0275,meera.nair87@okicici,Meera Nair,Personal,86,0,0,0.17,97,VERIFIED,Normal transaction behaviour
+A0276,manoj.verma30@oksbi,Manoj Verma,Personal,87,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0277,neha.sharma66@okaxis,Neha Sharma,Personal,91,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0278,dailyneeds84@okicici,DailyNeeds84,Merchant,196,16,16,0.24,32,HIGH,16 suspicious incoming transactions | Many high-value credits
+A0279,citywater@ybl,CityWater,Utility,145,3,3,0.2,85,LOW,3 suspicious incoming transactions
+A0280,primeindustries30@paytm,Prime Industries,Business,76,3,3,0.2,85,LOW,3 suspicious incoming transactions
+A0281,priya.gupta26@okhdfcbank,Priya Gupta,Personal,71,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0282,dailyneeds62@paytm,DailyNeeds62,Merchant,190,10,10,0.21,56,MEDIUM,10 suspicious incoming transactions
+A0283,neha.patel19@ybl,Neha Patel,Student,82,2,2,0.23,88,LOW,2 suspicious incoming transactions
+A0284,vikram.sharma88@ybl,Vikram Sharma,Personal,80,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0285,abcpvtltd83@ibl,ABC Pvt Ltd,Business,80,37,37,0.51,0,HIGH,37 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0286,neha.sharma4@okhdfcbank,Neha Sharma,Personal,64,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0287,arjun.reddy45@okhdfcbank,Arjun Reddy,Personal,82,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0288,megastore13@ybl,MegaStore13,Merchant,184,10,10,0.21,56,MEDIUM,10 suspicious incoming transactions
+A0289,amit.reddy76@paytm,Amit Reddy,Personal,84,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0290,charan.nair64@ibl,Charan Nair,Personal,89,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0291,megastore6@ybl,MegaStore6,Merchant,152,3,3,0.2,85,LOW,3 suspicious incoming transactions
+A0292,sneha.gupta55@okicici,Sneha Gupta,Student,80,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0293,priya.singh45@okhdfcbank,Priya Singh,Personal,87,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0294,techworld45@okaxis,TechWorld45,Merchant,172,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0295,abcpvtltd16@ibl,ABC Pvt Ltd,Business,78,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0296,charan.patel83@okaxis,Charan Patel,Personal,79,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0297,manoj.verma96@ybl,Manoj Verma,Personal,96,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0298,bbmp@okaxis,BBMP,Government,79,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0299,rohan.patel35@oksbi,Rohan Patel,Student,88,39,39,0.46,0,HIGH,39 suspicious incoming transactions | Many high-value credits
+A0300,rahul.kulkarni73@okicici,Rahul Kulkarni,Personal,77,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0301,divya.rao31@ibl,Divya Rao,Personal,63,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0302,varun.verma24@okicici,Varun Verma,Personal,69,0,0,0.18,97,VERIFIED,Normal transaction behaviour
+A0303,varun.singh96@ybl,Varun Singh,Personal,73,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0304,rohan.reddy12@okaxis,Rohan Reddy,Personal,75,9,9,0.26,59,MEDIUM,9 suspicious incoming transactions
+A0305,pooja.rao62@paytm,Pooja Rao,Personal,77,0,0,0.19,97,VERIFIED,Normal transaction behaviour
+A0306,anjali.patel54@okicici,Anjali Patel,Student,91,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0307,manoj.gupta69@okicici,Manoj Gupta,Personal,68,2,2,0.17,89,LOW,2 suspicious incoming transactions
+A0308,varun.kulkarni23@okhdfcbank,Varun Kulkarni,Personal,79,28,28,0.42,0,HIGH,28 suspicious incoming transactions | Many high-value credits
+A0309,megastore19@oksbi,MegaStore19,Merchant,218,9,9,0.22,60,MEDIUM,9 suspicious incoming transactions
+A0310,priya.patel69@okicici,Priya Patel,Student,71,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0311,pooja.rao63@ibl,Pooja Rao,Personal,96,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0312,kiran.rao47@ybl,Kiran Rao,Student,94,4,4,0.2,81,LOW,4 suspicious incoming transactions
+A0313,meera.reddy65@okaxis,Meera Reddy,Personal,92,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0314,meera.verma77@okaxis,Meera Verma,Personal,76,5,5,0.24,76,LOW,5 suspicious incoming transactions
+A0315,karnatakagas@ibl,KarnatakaGas,Utility,180,15,15,0.24,36,HIGH,15 suspicious incoming transactions | Many high-value credits
+A0316,meera.nair28@paytm,Meera Nair,Student,70,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0317,rahul.sharma25@okicici,Rahul Sharma,Personal,74,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0318,helpindia87@okaxis,HelpIndia,NGO,82,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0319,megastore69@okhdfcbank,MegaStore69,Merchant,163,8,8,0.19,65,MEDIUM,8 suspicious incoming transactions
+A0320,amit.gupta15@okaxis,Amit Gupta,Personal,58,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0321,powergrid@oksbi,PowerGrid,Utility,165,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0322,anjali.patel35@okhdfcbank,Anjali Patel,Personal,91,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0323,asha.reddy91@okicici,Asha Reddy,Personal,62,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0324,divya.rao66@ybl,Divya Rao,Personal,69,6,6,0.24,72,LOW,6 suspicious incoming transactions
+A0325,smiletrust77@ibl,SmileTrust,NGO,74,3,3,0.24,84,LOW,3 suspicious incoming transactions
+A0326,freshmart6@okicici,FreshMart6,Merchant,169,7,7,0.21,68,MEDIUM,7 suspicious incoming transactions
+A0327,divya.gupta58@oksbi,Divya Gupta,Personal,91,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0328,rahul.shetty20@oksbi,Rahul Shetty,Student,85,35,35,0.45,0,HIGH,35 suspicious incoming transactions | Many high-value credits
+A0329,nikhil.gupta49@ybl,Nikhil Gupta,Personal,72,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0330,rahul.patel84@oksbi,Rahul Patel,Personal,82,1,1,0.2,93,VERIFIED,1 suspicious incoming transactions
+A0331,kavya.verma80@oksbi,Kavya Verma,Personal,69,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0332,arjun.rao83@paytm,Arjun Rao,Personal,80,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0333,priya.verma35@okhdfcbank,Priya Verma,Personal,90,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0334,rahul.reddy72@ibl,Rahul Reddy,Student,87,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0335,dailyneeds61@ybl,DailyNeeds61,Merchant,202,8,8,0.22,64,MEDIUM,8 suspicious incoming transactions
+A0336,carefoundation70@ybl,CareFoundation,NGO,68,5,5,0.24,76,LOW,5 suspicious incoming transactions
+A0337,charan.rao50@okhdfcbank,Charan Rao,Personal,82,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0338,amit.verma48@oksbi,Amit Verma,Personal,74,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0339,meera.sharma4@oksbi,Meera Sharma,Personal,73,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0340,pooja.rao89@ibl,Pooja Rao,Personal,86,8,8,0.24,64,MEDIUM,8 suspicious incoming transactions
+A0341,citypharmacy22@okaxis,CityPharmacy22,Merchant,187,10,10,0.22,56,MEDIUM,10 suspicious incoming transactions
+A0342,manoj.sharma44@ibl,Manoj Sharma,Personal,77,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0343,asha.sharma46@ybl,Asha Sharma,Personal,87,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0344,asha.shetty98@okicici,Asha Shetty,Personal,81,33,33,0.46,0,HIGH,33 suspicious incoming transactions | Many high-value credits
+A0345,varun.patel51@okaxis,Varun Patel,Personal,59,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0346,pooja.kulkarni95@okicici,Pooja Kulkarni,Personal,76,5,5,0.24,76,LOW,5 suspicious incoming transactions
+A0347,vikram.shetty33@paytm,Vikram Shetty,Personal,69,28,28,0.47,0,HIGH,28 suspicious incoming transactions | Many high-value credits
+A0348,meera.patel47@ybl,Meera Patel,Student,89,8,8,0.23,64,MEDIUM,8 suspicious incoming transactions
+A0349,kiran.reddy3@oksbi,Kiran Reddy,Student,93,8,8,0.23,64,MEDIUM,8 suspicious incoming transactions
+A0350,sneha.gupta66@ybl,Sneha Gupta,Personal,89,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0351,citywater@okaxis,CityWater,Utility,163,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0352,divya.kulkarni62@okicici,Divya Kulkarni,Student,90,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0353,neha.kulkarni18@oksbi,Neha Kulkarni,Student,86,34,34,0.45,0,HIGH,34 suspicious incoming transactions | Many high-value credits
+A0354,anjali.singh21@ibl,Anjali Singh,Personal,82,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0355,abcpvtltd12@paytm,ABC Pvt Ltd,Business,68,1,1,0.21,92,VERIFIED,1 suspicious incoming transactions
+A0356,bbmp@ibl,BBMP,Government,65,6,6,0.25,71,LOW,6 suspicious incoming transactions
+A0357,deepa.reddy5@okicici,Deepa Reddy,Personal,92,1,1,0.2,93,VERIFIED,1 suspicious incoming transactions
+A0358,rohan.rao27@ybl,Rohan Rao,Personal,90,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0359,meera.reddy74@okicici,Meera Reddy,Personal,71,7,7,0.23,68,MEDIUM,7 suspicious incoming transactions
+A0360,manoj.nair30@okicici,Manoj Nair,Personal,76,8,8,0.24,64,MEDIUM,8 suspicious incoming transactions
+A0361,arjun.sharma20@okaxis,Arjun Sharma,Personal,68,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0362,pooja.patel66@ybl,Pooja Patel,Personal,76,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0363,neha.patel54@ybl,Neha Patel,Student,85,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0364,amit.kulkarni10@okaxis,Amit Kulkarni,Personal,81,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0365,divya.kulkarni72@ybl,Divya Kulkarni,Personal,86,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0366,neha.reddy67@ibl,Neha Reddy,Personal,88,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0367,amit.patel7@ibl,Amit Patel,Student,76,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0368,sneha.reddy35@ibl,Sneha Reddy,Personal,68,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0369,primeindustries69@okicici,Prime Industries,Business,82,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0370,abcpvtltd28@ibl,ABC Pvt Ltd,Business,62,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0371,asha.nair14@okhdfcbank,Asha Nair,Personal,93,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0372,neha.shetty86@ibl,Neha Shetty,Student,63,4,4,0.24,80,LOW,4 suspicious incoming transactions
+A0373,megastore37@oksbi,MegaStore37,Merchant,210,11,11,0.22,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0374,megastore97@ibl,MegaStore97,Merchant,187,8,8,0.22,64,MEDIUM,8 suspicious incoming transactions
+A0375,megastore4@paytm,MegaStore4,Merchant,181,9,9,0.21,60,MEDIUM,9 suspicious incoming transactions
+A0376,charan.shetty47@okaxis,Charan Shetty,Personal,75,1,1,0.2,92,VERIFIED,1 suspicious incoming transactions
+A0377,divya.gupta70@okaxis,Divya Gupta,Student,96,5,5,0.2,76,LOW,5 suspicious incoming transactions
+A0378,primeindustries39@okhdfcbank,Prime Industries,Business,88,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0379,amit.kulkarni4@paytm,Amit Kulkarni,Personal,95,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0380,kiran.singh85@okicici,Kiran Singh,Personal,75,6,6,0.25,71,LOW,6 suspicious incoming transactions
+A0381,varun.reddy27@okaxis,Varun Reddy,Student,98,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0382,asha.shetty50@ibl,Asha Shetty,Student,75,1,1,0.17,93,VERIFIED,1 suspicious incoming transactions
+A0383,divya.nair26@okaxis,Divya Nair,Personal,80,8,8,0.25,63,MEDIUM,8 suspicious incoming transactions
+A0384,bwssb@paytm,BWSSB,Utility,182,7,7,0.21,68,MEDIUM,7 suspicious incoming transactions
+A0385,meera.singh65@okicici,Meera Singh,Personal,81,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0386,sneha.sharma78@okicici,Sneha Sharma,Personal,77,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0387,carefoundation54@paytm,CareFoundation,NGO,96,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0388,primeindustries44@ibl,Prime Industries,Business,82,5,5,0.24,76,LOW,5 suspicious incoming transactions
+A0389,rohan.shetty30@okaxis,Rohan Shetty,Personal,89,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0390,varun.singh77@ybl,Varun Singh,Personal,81,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0391,asha.patel15@oksbi,Asha Patel,Personal,97,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0392,primeindustries35@oksbi,Prime Industries,Business,91,6,6,0.22,72,LOW,6 suspicious incoming transactions
+A0393,varun.patel54@paytm,Varun Patel,Personal,75,7,7,0.24,68,MEDIUM,7 suspicious incoming transactions
+A0394,dailyneeds15@okhdfcbank,DailyNeeds15,Merchant,176,86,86,0.52,0,HIGH,86 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0395,anjali.rao29@okaxis,Anjali Rao,Personal,103,6,6,0.22,72,LOW,6 suspicious incoming transactions
+A0396,freshmart30@okicici,FreshMart30,Merchant,195,10,10,0.22,56,MEDIUM,10 suspicious incoming transactions
+A0397,carefoundation48@oksbi,CareFoundation,NGO,80,3,3,0.23,84,LOW,3 suspicious incoming transactions
+A0398,kiran.gupta52@ybl,Kiran Gupta,Personal,82,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0399,priya.patel37@paytm,Priya Patel,Personal,89,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0400,varun.verma64@okaxis,Varun Verma,Personal,83,0,0,0.17,97,VERIFIED,Normal transaction behaviour
+A0401,incometax@oksbi,IncomeTax,Government,61,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0402,meera.gupta50@okhdfcbank,Meera Gupta,Student,80,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0403,kiran.rao76@oksbi,Kiran Rao,Personal,78,2,2,0.22,88,LOW,2 suspicious incoming transactions
+A0404,charan.gupta44@okhdfcbank,Charan Gupta,Student,72,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0405,deepa.nair75@okaxis,Deepa Nair,Personal,82,7,7,0.23,68,MEDIUM,7 suspicious incoming transactions
+A0406,bescom@ybl,BESCOM,Utility,165,6,6,0.2,72,LOW,6 suspicious incoming transactions
+A0407,smiletrust96@ibl,SmileTrust,NGO,78,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0408,asha.sharma89@oksbi,Asha Sharma,Personal,70,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0409,citypharmacy89@paytm,CityPharmacy89,Merchant,186,9,9,0.21,60,MEDIUM,9 suspicious incoming transactions
+A0410,anjali.sharma83@paytm,Anjali Sharma,Student,58,3,3,0.23,84,LOW,3 suspicious incoming transactions
+A0411,neha.gupta9@ibl,Neha Gupta,Personal,80,2,2,0.21,88,LOW,2 suspicious incoming transactions
+A0412,vikram.gupta50@paytm,Vikram Gupta,Personal,77,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0413,smiletrust72@paytm,SmileTrust,NGO,79,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0414,kiran.verma28@okicici,Kiran Verma,Student,77,3,3,0.18,85,LOW,3 suspicious incoming transactions
+A0415,meera.nair19@paytm,Meera Nair,Personal,77,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0416,deepa.kulkarni82@okicici,Deepa Kulkarni,Personal,81,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0417,priya.kulkarni33@ibl,Priya Kulkarni,Personal,88,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0418,karnatakatransport@okaxis,KarnatakaTransport,Government,93,7,7,0.22,68,MEDIUM,7 suspicious incoming transactions
+A0419,rahul.verma44@okhdfcbank,Rahul Verma,Student,85,6,6,0.24,72,LOW,6 suspicious incoming transactions
+A0420,arjun.reddy38@oksbi,Arjun Reddy,Personal,75,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0421,kavya.reddy60@ybl,Kavya Reddy,Student,73,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0422,anjali.nair62@oksbi,Anjali Nair,Personal,76,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0423,charan.patel97@oksbi,Charan Patel,Personal,84,4,4,0.19,81,LOW,4 suspicious incoming transactions
+A0424,rohan.verma13@paytm,Rohan Verma,Personal,89,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0425,citypharmacy67@ybl,CityPharmacy67,Merchant,190,8,8,0.21,64,MEDIUM,8 suspicious incoming transactions
+A0426,freshmart78@okicici,FreshMart78,Merchant,173,7,7,0.2,69,MEDIUM,7 suspicious incoming transactions
+A0427,rahul.rao97@ybl,Rahul Rao,Personal,74,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0428,helpindia17@okhdfcbank,HelpIndia,NGO,92,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0429,divya.patel78@oksbi,Divya Patel,Personal,100,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0430,neha.verma50@okhdfcbank,Neha Verma,Student,79,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0431,smartelectronics35@okicici,SmartElectronics35,Merchant,169,3,3,0.19,85,LOW,3 suspicious incoming transactions
+A0432,nikhil.kulkarni20@okhdfcbank,Nikhil Kulkarni,Personal,82,6,6,0.22,72,LOW,6 suspicious incoming transactions
+A0433,sneha.verma14@paytm,Sneha Verma,Personal,98,52,52,0.55,0,HIGH,52 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0434,divya.nair22@ibl,Divya Nair,Personal,92,6,6,0.24,72,LOW,6 suspicious incoming transactions
+A0435,bwssb@okaxis,BWSSB,Utility,138,11,11,0.23,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0436,priya.sharma38@okhdfcbank,Priya Sharma,Personal,91,5,5,0.2,77,LOW,5 suspicious incoming transactions
+A0437,charan.patel63@ibl,Charan Patel,Personal,93,6,6,0.23,72,LOW,6 suspicious incoming transactions
+A0438,rohan.gupta79@okicici,Rohan Gupta,Personal,73,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0439,meera.verma7@okicici,Meera Verma,Personal,82,4,4,0.2,80,LOW,4 suspicious incoming transactions
+A0440,techworld75@oksbi,TechWorld75,Merchant,189,5,5,0.2,77,LOW,5 suspicious incoming transactions
+A0441,varun.shetty51@ibl,Varun Shetty,Personal,74,2,2,0.2,88,LOW,2 suspicious incoming transactions
+A0442,rahul.reddy98@ibl,Rahul Reddy,Personal,83,3,3,0.23,84,LOW,3 suspicious incoming transactions
+A0443,rahul.patel53@okhdfcbank,Rahul Patel,Student,81,31,31,0.44,0,HIGH,31 suspicious incoming transactions | Many high-value credits
+A0444,arjun.shetty97@ybl,Arjun Shetty,Personal,83,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0445,citypharmacy63@okicici,CityPharmacy63,Merchant,183,9,9,0.21,60,MEDIUM,9 suspicious incoming transactions
+A0446,primeindustries73@oksbi,Prime Industries,Business,89,5,5,0.24,76,LOW,5 suspicious incoming transactions
+A0447,dailyneeds29@paytm,DailyNeeds29,Merchant,216,13,13,0.22,44,MEDIUM,13 suspicious incoming transactions | Many high-value credits
+A0448,meera.singh74@paytm,Meera Singh,Personal,101,8,8,0.24,64,MEDIUM,8 suspicious incoming transactions
+A0449,vikram.shetty92@ybl,Vikram Shetty,Student,77,0,0,0.18,97,VERIFIED,Normal transaction behaviour
+A0450,meera.gupta95@okaxis,Meera Gupta,Personal,74,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0451,rohan.verma54@okhdfcbank,Rohan Verma,Personal,68,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0452,sneha.sharma8@oksbi,Sneha Sharma,Student,85,2,2,0.18,89,LOW,2 suspicious incoming transactions
+A0453,nikhil.shetty74@ibl,Nikhil Shetty,Personal,74,2,2,0.2,89,LOW,2 suspicious incoming transactions
+A0454,bescom@ybl,BESCOM,Utility,183,10,10,0.22,56,MEDIUM,10 suspicious incoming transactions
+A0455,varun.nair5@okhdfcbank,Varun Nair,Personal,79,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0456,passportoffice@okhdfcbank,PassportOffice,Government,85,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0457,kiran.singh61@oksbi,Kiran Singh,Student,65,26,26,0.45,0,HIGH,26 suspicious incoming transactions | Many high-value credits
+A0458,citypharmacy98@okicici,CityPharmacy98,Merchant,188,9,9,0.21,60,MEDIUM,9 suspicious incoming transactions
+A0459,rahul.sharma66@okhdfcbank,Rahul Sharma,Personal,100,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0460,amit.rao44@oksbi,Amit Rao,Student,84,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0461,meera.sharma27@okhdfcbank,Meera Sharma,Student,70,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0462,amit.shetty6@ibl,Amit Shetty,Personal,81,5,5,0.23,76,LOW,5 suspicious incoming transactions
+A0463,neha.patel18@ybl,Neha Patel,Personal,79,8,8,0.24,64,MEDIUM,8 suspicious incoming transactions
+A0464,vikram.verma74@okaxis,Vikram Verma,Student,80,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0465,priya.sharma23@ybl,Priya Sharma,Personal,67,36,36,0.56,0,HIGH,36 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0466,divya.gupta22@oksbi,Divya Gupta,Personal,77,5,5,0.24,76,LOW,5 suspicious incoming transactions
+A0467,rohan.reddy77@ibl,Rohan Reddy,Personal,87,0,0,0.18,97,VERIFIED,Normal transaction behaviour
+A0468,carefoundation36@okicici,CareFoundation,NGO,82,1,1,0.2,93,VERIFIED,1 suspicious incoming transactions
+A0469,rohan.rao96@ibl,Rohan Rao,Student,69,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0470,smartelectronics19@okicici,SmartElectronics19,Merchant,190,7,7,0.22,68,MEDIUM,7 suspicious incoming transactions
+A0471,divya.sharma80@paytm,Divya Sharma,Student,88,2,2,0.19,89,LOW,2 suspicious incoming transactions
+A0472,megastore37@okhdfcbank,MegaStore37,Merchant,183,7,7,0.21,68,MEDIUM,7 suspicious incoming transactions
+A0473,bescom@oksbi,BESCOM,Utility,149,6,6,0.21,72,LOW,6 suspicious incoming transactions
+A0474,manoj.reddy65@oksbi,Manoj Reddy,Student,80,0,0,0.19,97,VERIFIED,Normal transaction behaviour
+A0475,freshmart91@okhdfcbank,FreshMart91,Merchant,159,8,8,0.22,64,MEDIUM,8 suspicious incoming transactions
+A0476,pooja.verma73@ybl,Pooja Verma,Personal,74,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0477,xyzlogistics28@ibl,XYZ Logistics,Business,72,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0478,neha.nair2@okaxis,Neha Nair,Personal,68,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0479,sneha.shetty73@oksbi,Sneha Shetty,Personal,78,7,7,0.27,67,MEDIUM,7 suspicious incoming transactions
+A0480,varun.shetty51@paytm,Varun Shetty,Personal,83,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0481,freshmart34@okaxis,FreshMart34,Merchant,213,11,11,0.21,52,MEDIUM,11 suspicious incoming transactions | Many high-value credits
+A0482,freshmart52@ibl,FreshMart52,Merchant,141,5,5,0.21,76,LOW,5 suspicious incoming transactions
+A0483,sneha.verma21@ybl,Sneha Verma,Personal,74,30,30,0.46,0,HIGH,30 suspicious incoming transactions | Many high-value credits
+A0484,megastore60@ybl,MegaStore60,Merchant,198,7,7,0.19,69,MEDIUM,7 suspicious incoming transactions
+A0485,asha.rao19@ibl,Asha Rao,Personal,75,3,3,0.22,84,LOW,3 suspicious incoming transactions
+A0486,charan.singh58@ibl,Charan Singh,Personal,78,2,2,0.22,88,LOW,2 suspicious incoming transactions
+A0487,incometax@oksbi,IncomeTax,Government,73,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0488,novasolutions65@okicici,Nova Solutions,Business,70,1,1,0.19,93,VERIFIED,1 suspicious incoming transactions
+A0489,carefoundation55@okaxis,CareFoundation,NGO,74,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0490,asha.kulkarni7@ybl,Asha Kulkarni,Personal,93,4,4,0.21,80,LOW,4 suspicious incoming transactions
+A0491,rohan.singh91@oksbi,Rohan Singh,Personal,73,41,41,0.56,0,HIGH,41 suspicious incoming transactions | Many high-value credits | High average fraud probability
+A0492,arjun.rao87@okhdfcbank,Arjun Rao,Personal,68,4,4,0.22,80,LOW,4 suspicious incoming transactions
+A0493,incometax@ybl,IncomeTax,Government,77,5,5,0.22,76,LOW,5 suspicious incoming transactions
+A0494,deepa.gupta99@ibl,Deepa Gupta,Student,96,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0495,manoj.shetty40@paytm,Manoj Shetty,Personal,84,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0496,anjali.reddy70@oksbi,Anjali Reddy,Personal,82,4,4,0.23,80,LOW,4 suspicious incoming transactions
+A0497,meera.reddy25@oksbi,Meera Reddy,Personal,77,3,3,0.21,84,LOW,3 suspicious incoming transactions
+A0498,neha.gupta26@okaxis,Neha Gupta,Personal,80,1,1,0.18,93,VERIFIED,1 suspicious incoming transactions
+A0499,priya.reddy69@ybl,Priya Reddy,Student,81,3,3,0.2,84,LOW,3 suspicious incoming transactions
+A0500,arjun.gupta73@ybl,Arjun Gupta,Personal,86,7,7,0.23,68,MEDIUM,7 suspicious incoming transactions
