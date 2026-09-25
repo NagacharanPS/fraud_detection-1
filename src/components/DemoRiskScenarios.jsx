@@ -373,7 +373,13 @@ function DemoRiskScenarios({ onSelectScenario, selectedScenarioId }) {
       </div>
 
       {/* INDEPENDENT SCENARIO CARDS */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "14px",
+        }}
+      >
         {selectedCategoryData.scenarios.map((sc) => {
           const isSelected = selectedScenarioId === sc.id;
           return (

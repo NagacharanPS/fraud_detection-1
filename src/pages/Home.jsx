@@ -7,40 +7,45 @@ function Home() {
 
   const handleSelectScenario = (scenario) => {
     setSelectedScenario(scenario);
+    const formEl = document.getElementById("payment-initiation-form");
+    if (formEl) {
+      formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
     <div
       style={{
-        maxWidth: "1440px",
+        maxWidth: "1280px",
         margin: "0 auto",
-        padding: "24px 20px 48px",
+        padding: "24px 20px 60px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "36px",
       }}
     >
-      <div
+      {/* 1. TOP SECTION: LIVE DEMO RISK SCENARIOS */}
+      <section style={{ width: "100%" }}>
+        <DemoRiskScenarios
+          onSelectScenario={handleSelectScenario}
+          selectedScenarioId={selectedScenario?.id}
+        />
+      </section>
+
+      {/* 2. BOTTOM SECTION: PAYMENT INITIATION & AUTHENTICATION CHALLENGE */}
+      <section
+        id="payment-initiation-form"
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(460px, 1fr))",
-          gap: "28px",
-          alignItems: "start",
+          width: "100%",
+          maxWidth: "760px",
+          margin: "0 auto",
         }}
       >
-        {/* LEFT COLUMN: PAYMENT INITIATION & RISK VERIFICATION */}
-        <div style={{ width: "100%" }}>
-          <PaymentForm
-            selectedScenario={selectedScenario}
-            onResetScenario={() => setSelectedScenario(null)}
-          />
-        </div>
-
-        {/* RIGHT COLUMN: INTERACTIVE RISK DEMO SCENARIOS */}
-        <div style={{ width: "100%" }}>
-          <DemoRiskScenarios
-            onSelectScenario={handleSelectScenario}
-            selectedScenarioId={selectedScenario?.id}
-          />
-        </div>
-      </div>
+        <PaymentForm
+          selectedScenario={selectedScenario}
+          onResetScenario={() => setSelectedScenario(null)}
+        />
+      </section>
     </div>
   );
 }
