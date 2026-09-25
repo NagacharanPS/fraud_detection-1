@@ -110,12 +110,18 @@ class User(db.Model):
     __tablename__ = "users"
 
     user_id = db.Column(db.String(50), primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
-    salt = db.Column(db.String(64), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
-    phone_number = db.Column(db.String(20), nullable=False, index=True)
+    email_or_upi_id = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), nullable=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    salt = db.Column(db.String(64), nullable=True)
+    phone_number = db.Column(db.String(20), nullable=True)
     account_id = db.Column(db.String(50), db.ForeignKey("accounts.account_id"), nullable=True)
+    face_data = db.Column(db.Text, nullable=True)
+    face_embedding = db.Column(db.Text, nullable=True)
+    template_hash = db.Column(db.String(64), nullable=True)
+    algorithm_version = db.Column(db.String(50), default="opencv-yunet-sface-2021dec")
+    enrolled_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships

@@ -173,12 +173,9 @@ def main():
     target_db_path = BASE_DIR / "dataset" / "fraud_detection.db"
     root_db_path = BASE_DIR / "fraud_detection.db"
 
-    # Remove existing db files if any
-    if target_db_path.exists():
-        target_db_path.unlink()
-
+    # Connect to existing or new database
     print("\n=======================================================")
-    print("Generating SQLite Database for DB Browser for SQLite")
+    print("Generating/Updating SQLite Database for DB Browser for SQLite")
     print(f"Target Database: {target_db_path}")
     print("=======================================================\n")
 
@@ -191,10 +188,67 @@ def main():
     for table_name, csv_path in DATASET_MAP.items():
         import_csv_to_sqlite(conn, table_name, csv_path)
 
+    # Ensure dedicated `transactions` table exists alongside `raw_transactions_50k`
+    print("[+] Creating dedicated 'transactions' table...")
+    conn.execute("DROP TABLE IF EXISTS transactions;")
+    conn.execute("CREATE TABLE transactions AS SELECT * FROM raw_transactions_50k;")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_transactions_id ON transactions (transaction_id);")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_transactions_sender ON transactions (sender_account);")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_transactions_receiver ON transactions (receiver_account);")
+
+    # Ensure dedicated `users` credentials & biometrics table exists
+    print("[+] Creating dedicated 'users' credentials table...")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            user_id TEXT PRIMARY KEY,
+            full_name TEXT NOT NULL,
+            email_or_upi_id TEXT NOT NULL UNIQUE,
+            email TEXT,
+            phone_number TEXT,
+            password_hash TEXT NOT NULL,
+            salt TEXT,
+            account_id TEXT,
+            face_data TEXT,
+            face_embedding TEXT,
+            template_hash TEXT,
+            algorithm_version TEXT DEFAULT 'opencv-yunet-sface-2021dec',
+            enrolled_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+
+    # Create user_credentials view
+    conn.execute("""
+        CREATE VIEW IF NOT EXISTS user_credentials AS 
+        SELECT user_id, full_name, email_or_upi_id, password_hash, face_data, created_at 
+        FROM users;
+    """)
+
+    # Seed initial demo personas
+    demo_users = [
+        ("USR_A0001", "Rahul Sharma", "rahul@payguard.com", "rahul@payguard.com", "9876543210", "pbkdf2_sha512_seeded_hash_rahul", "salt1", "A0001", "[SIMULATED_128D_BIOMETRIC_VECTOR_A0001]"),
+        ("USR_A0014", "Sneha Verma", "sneha@payguard.com", "sneha@payguard.com", "9876543214", "pbkdf2_sha512_seeded_hash_sneha", "salt2", "A0014", "[SIMULATED_128D_BIOMETRIC_VECTOR_A0014]"),
+        ("USR_A0002", "Charan Nair", "charan@payguard.com", "charan@payguard.com", "9876543211", "pbkdf2_sha512_seeded_hash_charan", "salt3", "A0002", "[SIMULATED_128D_BIOMETRIC_VECTOR_A0002]"),
+        ("USR_A0004", "Amit Verma", "amit@payguard.com", "amit@payguard.com", "9876543213", "pbkdf2_sha512_seeded_hash_amit", "salt4", "A0004", "[SIMULATED_128D_BIOMETRIC_VECTOR_A0004]"),
+        ("USR_A0003", "Priya Patel", "priya@payguard.com", "priya@payguard.com", "9876543212", "pbkdf2_sha512_seeded_hash_priya", "salt5", "A0003", "[SIMULATED_128D_BIOMETRIC_VECTOR_A0003]"),
+    ]
+
+    for u in demo_users:
+        conn.execute("""
+            INSERT OR IGNORE INTO users (
+                user_id, full_name, email_or_upi_id, email, phone_number,
+                password_hash, salt, account_id, face_data, enrolled_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """, u)
+
+    conn.commit()
     conn.close()
 
-    # Create root copy for convenient direct drag-and-drop into DB Browser
+    # Create root and backend copies
     shutil.copyfile(str(target_db_path), str(root_db_path))
+    backend_db_path = BASE_DIR / "backend" / "database" / "fraud_detection.db"
+    if backend_db_path.parent.exists():
+        shutil.copyfile(str(target_db_path), str(backend_db_path))
 
     print("\nSuccessfully created SQLite databases:")
     print(f"  1. {target_db_path} ({target_db_path.stat().st_size / (1024*1024):.2f} MB)")

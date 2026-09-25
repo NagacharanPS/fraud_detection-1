@@ -5,6 +5,12 @@ import fs from "fs";
 import crypto from "crypto";
 import { execFileSync } from "child_process";
 import { createServer as createViteServer } from "vite";
+import {
+  initializeDatabaseTables as dbInitTables,
+  insertUser as dbInsertUser,
+  seedDefaultUsers as dbSeedDefaultUsers,
+  findUser as dbFindUser,
+} from "./authDatabase";
 
 interface Account {
   account_id: string;
@@ -492,6 +498,14 @@ loadDataFromCSV();
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  try {
+    await dbInitTables();
+    await dbSeedDefaultUsers(Array.from(usersStore.values()));
+    console.log("✅ Initialized dedicated `users` and `transactions` tables in fraud_detection database.");
+  } catch (err) {
+    console.warn("Notice during database initialization:", err);
+  }
 
   app.use(cors());
   app.use(express.json());
@@ -989,7 +1003,7 @@ async function startServer() {
   /* ----------------------------- AUTHENTICATION & BIOMETRIC ROUTES ----------------------------- */
 
   // Sign up
-  app.post("/api/auth/signup", (req, res) => {
+  app.post("/api/auth/signup", async (req, res) => {
     const { full_name, email, phone_number, password, face_image, face_embedding } = req.body;
 
     if (!full_name || !email || !phone_number || !password) {
@@ -1090,6 +1104,27 @@ async function startServer() {
       enrolled_at: new Date().toISOString(),
     };
     userFaceBiometricsStore.set(user_id, biometric);
+
+    // Persist directly into dedicated `users` table in `fraud_detection` SQLite database
+    try {
+      await dbInsertUser({
+        user_id: newUser.user_id,
+        full_name: newUser.full_name,
+        email_or_upi_id: newUser.email,
+        email: newUser.email,
+        phone_number: newUser.phone_number,
+        password_hash: hash,
+        salt: salt,
+        account_id: account_id,
+        face_data: face_image || JSON.stringify(embedding),
+        face_embedding: embedding,
+        template_hash: templateHash,
+        algorithm_version: biometric.algorithm_version,
+      });
+      console.log(`[DB] Persisted user credentials & biometric face data for ${newUser.user_id} (${newUser.email}) into fraud_detection database.`);
+    } catch (dbErr) {
+      console.warn("[DB] Notice saving user to SQLite fraud_detection database:", dbErr);
+    }
 
     const authToken = `TOKEN_${Buffer.from(`${user_id}:${Date.now()}`).toString("base64")}`;
 

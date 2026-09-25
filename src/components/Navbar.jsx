@@ -79,7 +79,7 @@ function Navbar() {
               fontWeight: "500",
             }}
           >
-            Real-Time Fraud Prevention & Biometric Defense
+            Real-Time Fraud Detection and Prevention
           </p>
         </div>
       </Link>

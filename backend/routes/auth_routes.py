@@ -156,12 +156,14 @@ def signup():
 
     new_user = User(
         user_id=user_id,
+        full_name=full_name,
+        email_or_upi_id=email,
         email=email,
         password_hash=pwd_hash,
         salt=salt,
-        full_name=full_name,
         phone_number=phone_number,
         account_id=account_id,
+        face_data=face_image,
         face_embedding=json.dumps(embedding),
         template_hash=template_hash,
         algorithm_version="opencv-yunet-sface-2021dec",
