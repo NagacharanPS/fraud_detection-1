@@ -1727,7 +1727,10 @@ async function startServer() {
     });
 
     // 3. Unusual Transaction Time Check
-    const formattedTime = txTime.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+    const hours12 = hr % 12 || 12;
+    const minutesStr = String(txTime.getMinutes()).padStart(2, "0");
+    const ampmStr = hr >= 12 ? "PM" : "AM";
+    const formattedTime = `${String(hours12).padStart(2, "0")}:${minutesStr} ${ampmStr}`;
     const typicalStart = "06:00 AM";
     const typicalEnd = "11:00 PM";
 
@@ -1856,9 +1859,32 @@ async function startServer() {
     let avgAmt = senderBeh && senderBeh.average_transaction_amount > 0 ? senderBeh.average_transaction_amount : defaultAvg;
     let maxAmt = senderBeh && senderBeh.maximum_transaction_amount > 0 ? senderBeh.maximum_transaction_amount : defaultMax;
 
-    const txTime = transaction_time ? new Date(transaction_time) : new Date();
+    // Parse transaction time
+    let txTime: Date;
+    if (!transaction_time) {
+      txTime = new Date();
+    } else if (transaction_time instanceof Date) {
+      txTime = transaction_time;
+    } else if (typeof transaction_time === "string") {
+      const timeMatch = transaction_time.trim().match(/^(\d{1,2}):(\d{2})(?:\s*([APap][Mm]))?$/);
+      if (timeMatch) {
+        let h = parseInt(timeMatch[1], 10);
+        const m = parseInt(timeMatch[2], 10);
+        const meridiem = timeMatch[3]?.toUpperCase();
+        if (meridiem === "PM" && h < 12) h += 12;
+        if (meridiem === "AM" && h === 12) h = 0;
+        txTime = new Date();
+        txTime.setHours(h, m, 0, 0);
+      } else {
+        const parsed = new Date(transaction_time);
+        txTime = isNaN(parsed.getTime()) ? new Date() : parsed;
+      }
+    } else {
+      txTime = new Date();
+    }
+
     const hr = txTime.getHours();
-    // Night/off-hours definition: 11 PM to 6 AM (including 5:30 AM)
+    // Night/off-hours definition: outside 06:00 AM - 11:00 PM (e.g. 11:00 PM to 05:59 AM)
     const isNightTime = hr >= 23 || hr < 6;
 
     const parseBool = (val: any) => {
