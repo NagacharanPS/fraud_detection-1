@@ -322,6 +322,7 @@ def demo_users():
 
 
 @auth_bp.route("/api/auth/verify-face", methods=["POST"])
+@auth_bp.route("/api/auth/face-verify", methods=["POST"])
 def verify_face():
     user = get_authenticated_user()
     if not user:

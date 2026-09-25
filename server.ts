@@ -1339,7 +1339,7 @@ async function startServer() {
   });
 
   // Verify Face Biometrics
-  app.post("/api/auth/verify-face", (req, res) => {
+  const handleVerifyFace = (req: any, res: any) => {
     const { user_id, account_id, face_image, face_embedding } = req.body;
 
     let targetUserId = user_id;
@@ -1386,7 +1386,10 @@ async function startServer() {
         ? `Biometric face verified with ${matchPercentage}% confidence against enrolled template.`
         : "Face verification failed. Biometric features did not match enrolled template.",
     });
-  });
+  };
+
+  app.post("/api/auth/verify-face", handleVerifyFace);
+  app.post("/api/auth/face-verify", handleVerifyFace);
 
 
   // Helper to generate grounded, traceable transaction proof records for evidence audit drawers

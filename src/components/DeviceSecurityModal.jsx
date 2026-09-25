@@ -17,6 +17,7 @@ import {
   FaExclamationTriangle
 } from "react-icons/fa";
 import API from "../api";
+import { useAuth } from "../context/AuthContext";
 
 export default function DeviceSecurityModal({
   isOpen,
@@ -29,6 +30,8 @@ export default function DeviceSecurityModal({
   onFinalizePayment,
   isProcessingPayment
 }) {
+  const { user } = useAuth();
+
   // Modal Stages:
   // "SCANNING": Scanning transaction security requirements step-by-step
   // "VERIFIED_SUMMARY": Verified overview with "Device Details" toggle and "Proceed" button
@@ -337,10 +340,26 @@ export default function DeviceSecurityModal({
     setTimeout(async () => {
       setFaceScanStep(2); // Analyzing 3D liveness & 128 landmarks
 
+      let faceImageBase64 = null;
+      if (videoRef.current && cameraActive) {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = videoRef.current.videoWidth || 320;
+          canvas.height = videoRef.current.videoHeight || 320;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          faceImageBase64 = canvas.toDataURL("image/jpeg", 0.85);
+        } catch (e) {
+          console.warn("Could not capture frame snapshot", e);
+        }
+      }
+
       try {
         // Send biometric verification request to backend
         const res = await API.post("/api/auth/verify-face", {
           account_id: senderAccount?.account_id,
+          user_id: user?.user_id,
+          face_image: faceImageBase64,
         });
 
         setTimeout(() => {
