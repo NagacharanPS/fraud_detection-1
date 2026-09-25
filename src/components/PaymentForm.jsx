@@ -11,6 +11,7 @@ import {
 import api from "../api";
 import { collectDeviceSignals } from "../utils/deviceTrust";
 import DeviceSecurityModal from "./DeviceSecurityModal";
+import GroundedEvidenceView from "./GroundedEvidenceView";
 
 function PaymentForm({ selectedScenario, onResetScenario }) {
   const navigate = useNavigate();
@@ -1015,31 +1016,7 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
                           </div>
 
                           {isExpanded && rule.evidence && (
-                            <div
-                              style={{
-                                background: "#F1F5F9",
-                                padding: "10px 14px",
-                                borderTop: "1px solid #E2E8F0",
-                                fontSize: "12px",
-                                color: "#334155",
-                              }}
-                            >
-                              <div style={{ fontWeight: "700", marginBottom: "6px", color: "#475569", display: "flex", alignItems: "center", gap: "6px" }}>
-                                <FaCheckCircle color="#10B981" /> Grounded Evidence Data:
-                              </div>
-                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "6px" }}>
-                                {Object.entries(rule.evidence).map(([k, v]) => (
-                                  <div key={k} style={{ background: "#fff", padding: "5px 9px", borderRadius: "5px", border: "1px solid #E2E8F0" }}>
-                                    <span style={{ color: "#64748B", textTransform: "capitalize", fontSize: "11px" }}>
-                                      {k.replace(/_/g, " ")}:{" "}
-                                    </span>
-                                    <strong style={{ color: "#0F172A", fontSize: "12px" }}>
-                                      {Array.isArray(v) ? v.join(", ") : String(v)}
-                                    </strong>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
+                            <GroundedEvidenceView rule={rule} />
                           )}
                         </div>
                       );

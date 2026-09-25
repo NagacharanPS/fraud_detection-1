@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaShieldAlt, FaChevronDown, FaChevronUp, FaInfoCircle, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import GroundedEvidenceView from "./GroundedEvidenceView";
 
 function RiskCard({ risk }) {
   const [expandedRules, setExpandedRules] = useState({});
@@ -158,27 +159,7 @@ function RiskCard({ risk }) {
                 </div>
 
                 {isExpanded && rule.evidence && (
-                  <div
-                    style={{
-                      background: "#F1F5F9",
-                      padding: "10px 14px",
-                      borderTop: "1px solid #E2E8F0",
-                      fontSize: "12px",
-                      color: "#334155",
-                    }}
-                  >
-                    <div style={{ fontWeight: "700", marginBottom: "6px", color: "#475569" }}>
-                      🔍 Verifiable Audit Evidence:
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "6px" }}>
-                      {Object.entries(rule.evidence).map(([k, v]) => (
-                        <div key={k} style={{ background: "#fff", padding: "4px 8px", borderRadius: "4px", border: "1px solid #E2E8F0" }}>
-                          <span style={{ color: "#64748B", textTransform: "capitalize" }}>{k.replace(/_/g, " ")}: </span>
-                          <strong style={{ color: "#0F172A" }}>{Array.isArray(v) ? v.join(", ") : String(v)}</strong>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <GroundedEvidenceView rule={rule} />
                 )}
               </div>
             );
