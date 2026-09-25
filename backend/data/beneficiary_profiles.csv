@@ -1,0 +1,8 @@
+account_id,beneficiary_type,verified_name,merchant_category,mule_risk,profile_note
+A0001,FAMILY,Rahul Sharma,,LOW,Personal beneficiary used in verified family relationships
+A0002,PERSONAL,Charan Nair,,LOW,Personal beneficiary
+A0003,GOVERNMENT,BBMP,GOVERNMENT_BILLER,LOW,Verified Bengaluru civic payment beneficiary
+A0004,PERSONAL,Amit Verma,,HIGH,Demo mule-risk beneficiary for testing only
+A0007,UTILITY,BWSSB,UTILITY_BILLER,LOW,Verified water utility beneficiary
+A0011,PERSONAL,Kavya Verma,,HIGH,Demo mule-risk beneficiary for testing only
+A0014,PERSONAL,Sneha Verma,,LOW,Student account holder

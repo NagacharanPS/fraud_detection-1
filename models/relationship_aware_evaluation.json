@@ -1,0 +1,12 @@
+{
+  "train_rows": 14561,
+  "test_rows": 3641,
+  "positive_rate_test": 0.0508,
+  "pr_auc": 0.5686,
+  "roc_auc": 0.9219,
+  "precision": 0.4758,
+  "recall": 0.6378,
+  "f1": 0.545,
+  "split": "time_based_80_20",
+  "label_note": "Synthetic source labels; do not represent bank production performance."
+}
