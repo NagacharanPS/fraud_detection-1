@@ -103,12 +103,29 @@ interface OTPSession {
   created_at: string;
 }
 
+interface RelationshipRecord {
+  sender_account: string;
+  receiver_account: string;
+  relationship_type: string;
+  relationship_label?: string;
+  verified: boolean;
+  transaction_count: number;
+  total_amount: number;
+  average_amount: number;
+  last_payment_at: string;
+}
+
 // In-Memory Storage initialized from CSV & Auth Database
 const accountsStore: Map<string, Account> = new Map();
 const behaviorStore: Map<string, AccountBehavior> = new Map();
+const relationshipsStore: Map<string, RelationshipRecord> = new Map();
 const transactionsStore: Transaction[] = [];
 const alertsStore: Alert[] = [];
 const riskLogsStore: Map<string, any> = new Map();
+
+function getRelationshipKey(sender: string, receiver: string): string {
+  return `${(sender || "").trim().toUpperCase()}_${(receiver || "").trim().toUpperCase()}`;
+}
 
 // Authentication & Biometric Stores
 const usersStore: Map<string, User> = new Map();
@@ -332,8 +349,133 @@ function loadDataFromCSV() {
     }
   }
 
+  // Load Payment Relationships Ledger
+  const paymentRelCSVPath = path.join(process.cwd(), "backend", "data", "payment_relationships.csv");
+  if (fs.existsSync(paymentRelCSVPath)) {
+    const fileContent = fs.readFileSync(paymentRelCSVPath, "utf-8");
+    const lines = fileContent.split("\n").filter((line) => line.trim().length > 0);
+    for (let i = 1; i < lines.length; i++) {
+      const row = lines[i].split(",").map((col) => col.trim());
+      if (row.length < 8) continue;
+      const sender = row[0];
+      const receiver = row[1];
+      const relType = row[2] || "PERSONAL";
+      const relLabel = row[3] || "Contact";
+      const verified = row[4].toUpperCase() === "TRUE";
+      const count = parseInt(row[5], 10) || 1;
+      const avgAmt = parseFloat(row[6]) || 1000;
+      const lastPayment = row[7] || new Date().toISOString();
+
+      const key = getRelationshipKey(sender, receiver);
+      relationshipsStore.set(key, {
+        sender_account: sender,
+        receiver_account: receiver,
+        relationship_type: relType,
+        relationship_label: relLabel,
+        verified,
+        transaction_count: count,
+        total_amount: Math.round(count * avgAmt),
+        average_amount: avgAmt,
+        last_payment_at: lastPayment,
+      });
+    }
+  }
+
+  // Load Sender-Receiver Relationships
+  const senderRecRelCSVPath = path.join(process.cwd(), "backend", "data", "sender_receiver_relationships.csv");
+  if (fs.existsSync(senderRecRelCSVPath)) {
+    const fileContent = fs.readFileSync(senderRecRelCSVPath, "utf-8");
+    const lines = fileContent.split("\n").filter((line) => line.trim().length > 0);
+    for (let i = 1; i < lines.length; i++) {
+      const row = lines[i].split(",").map((col) => col.trim());
+      if (row.length < 13) continue;
+      let sender = row[1];
+      let receiver = row[2];
+      if (/^A\d+$/.test(sender)) sender = `A${sender.slice(1).padStart(4, "0")}`;
+      if (/^A\d+$/.test(receiver)) receiver = `A${receiver.slice(1).padStart(4, "0")}`;
+
+      const relType = row[3] || "PERSONAL";
+      const relLabel = row[4] || "Contact";
+      const totalTx = parseInt(row[5], 10) || 1;
+      const totalAmt = parseFloat(row[6]) || 5000;
+      const lastPayment = row[8] || new Date().toISOString();
+      const avgAmt = parseFloat(row[9]) || (totalTx > 0 ? totalAmt / totalTx : 5000);
+      const verified = row[11].toUpperCase() === "TRUE";
+
+      const key = getRelationshipKey(sender, receiver);
+      if (!relationshipsStore.has(key)) {
+        relationshipsStore.set(key, {
+          sender_account: sender,
+          receiver_account: receiver,
+          relationship_type: relType,
+          relationship_label: relLabel,
+          verified,
+          transaction_count: totalTx,
+          total_amount: totalAmt,
+          average_amount: avgAmt,
+          last_payment_at: lastPayment,
+        });
+      }
+    }
+  }
+
+  // Seed standard demo established trusted relationships
+  const defaultRelationships: RelationshipRecord[] = [
+    {
+      sender_account: "A0001",
+      receiver_account: "A0012",
+      relationship_type: "UTILITY",
+      relationship_label: "CityWater (Utility)",
+      verified: true,
+      transaction_count: 14,
+      total_amount: 20300,
+      average_amount: 1450,
+      last_payment_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+    },
+    {
+      sender_account: "A0002",
+      receiver_account: "A0010",
+      relationship_type: "PERSONAL",
+      relationship_label: "Priya Gupta (Professional)",
+      verified: true,
+      transaction_count: 8,
+      total_amount: 19200,
+      average_amount: 2400,
+      last_payment_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+    },
+    {
+      sender_account: "A0006",
+      receiver_account: "A0021",
+      relationship_type: "MERCHANT",
+      relationship_label: "TechWorld52 (Merchant)",
+      verified: true,
+      transaction_count: 15,
+      total_amount: 52500,
+      average_amount: 3500,
+      last_payment_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+    },
+    {
+      sender_account: "A0004",
+      receiver_account: "A0020",
+      relationship_type: "WORK",
+      relationship_label: "Verified Employer",
+      verified: true,
+      transaction_count: 22,
+      total_amount: 132000,
+      average_amount: 6000,
+      last_payment_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+    },
+  ];
+
+  for (const rel of defaultRelationships) {
+    const key = getRelationshipKey(rel.sender_account, rel.receiver_account);
+    if (!relationshipsStore.has(key)) {
+      relationshipsStore.set(key, rel);
+    }
+  }
+
   seedDefaultUsers();
-  console.log(`Loaded ${accountsStore.size} accounts and ${behaviorStore.size} behavior records.`);
+  console.log(`Loaded ${accountsStore.size} accounts, ${behaviorStore.size} behavior records, and ${relationshipsStore.size} relationship ledger records.`);
 }
 
 loadDataFromCSV();
@@ -397,6 +539,68 @@ async function startServer() {
     }
 
     res.json(results.slice(0, 50));
+  });
+
+  // Automated Ledger / Dataset Lookup for Receiver Relationship
+  app.get(["/api/ledger/receiver-status", "/api/receiver-relationship"], (req, res) => {
+    const senderId = ((req.query.sender_id || req.query.sender_account || "") as string).trim().toUpperCase();
+    const receiverId = ((req.query.receiver_id || req.query.receiver_account || "") as string).trim().toUpperCase();
+
+    if (!senderId || !receiverId) {
+      return res.status(400).json({ error: "Sender and Receiver account IDs are required." });
+    }
+
+    const sender = accountsStore.get(senderId);
+    const receiver = accountsStore.get(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).json({ error: "Account not found in registry." });
+    }
+
+    const key = getRelationshipKey(senderId, receiverId);
+    const record = relationshipsStore.get(key);
+
+    const hasHistory = !!(record && record.transaction_count > 0);
+    const isFirstTime = !hasHistory;
+
+    const senderBeh = behaviorStore.get(senderId);
+    const receiverBeh = behaviorStore.get(receiverId);
+
+    res.json({
+      sender_id: senderId,
+      receiver_id: receiverId,
+      is_first_time_receiver: isFirstTime,
+      is_new_receiver: isFirstTime,
+      status: isFirstTime ? "FIRST_TIME_RECEIVER" : "EXISTING_RECEIVER",
+      status_label: isFirstTime ? "First-Time Receiver" : "Existing Receiver",
+      transaction_count: record?.transaction_count || 0,
+      total_amount: record?.total_amount || 0,
+      average_amount: record?.average_amount || 0,
+      last_payment_at: record?.last_payment_at || null,
+      relationship_type: record?.relationship_type || (isFirstTime ? "FIRST_TIME_COUNTERPARTY" : "EXISTING_CONTACT"),
+      relationship_label: record?.relationship_label || (isFirstTime ? "New Payee" : "Trusted Contact"),
+      verified_relationship: record?.verified || false,
+      sender_profile: {
+        account_id: sender.account_id,
+        account_name: sender.account_name,
+        trust_score: sender.trust_score,
+        account_status: sender.account_status,
+        historical_average: senderBeh?.average_transaction_amount || 5000,
+        total_transactions: senderBeh?.total_transactions || 0,
+        kyc_status: sender.kyc_status,
+      },
+      receiver_profile: {
+        account_id: receiver.account_id,
+        account_name: receiver.account_name,
+        trust_score: receiver.trust_score,
+        account_status: receiver.account_status,
+        verified_status: receiver.verified_status,
+        total_received: receiverBeh?.total_received_transactions || 0,
+        kyc_status: receiver.kyc_status,
+      },
+      auto_detected: true,
+      timestamp: new Date().toISOString(),
+    });
   });
 
   /* ----------------------------- AUTHENTICATION & BIOMETRIC ROUTES ----------------------------- */
@@ -849,7 +1053,14 @@ async function startServer() {
       isNewDev = device_trust.is_known_device ? 0 : 1;
     }
 
-    const isNewRec = parseBool(is_new_receiver);
+    let isNewRec: number;
+    if (is_new_receiver !== undefined && is_new_receiver !== null && is_new_receiver !== "") {
+      isNewRec = parseBool(is_new_receiver);
+    } else {
+      const relKey = getRelationshipKey(sender.account_id, receiver.account_id);
+      const rel = relationshipsStore.get(relKey);
+      isNewRec = (rel && rel.transaction_count > 0) ? 0 : 1;
+    }
     // Count recent transactions made by sender from actual transaction history
     const tenMinutesAgo = new Date(txTime.getTime() - 10 * 60 * 1000);
     const recentTxCount = transactionsStore.filter(
@@ -1251,6 +1462,25 @@ async function startServer() {
 
     transactionsStore.unshift(newTx);
     riskLogsStore.set(transaction_id, newTx);
+
+    // Update relationship history in ledger
+    const relKey = getRelationshipKey(sender_account, receiver_account);
+    const existingRel = relationshipsStore.get(relKey) || {
+      sender_account: sender_account.toUpperCase(),
+      receiver_account: receiver_account.toUpperCase(),
+      relationship_type: "PERSONAL",
+      relationship_label: "Direct Transfer",
+      verified: true,
+      transaction_count: 0,
+      total_amount: 0,
+      average_amount: 0,
+      last_payment_at: newTx.timestamp,
+    };
+    existingRel.transaction_count += 1;
+    existingRel.total_amount += amt;
+    existingRel.average_amount = Math.round(existingRel.total_amount / existingRel.transaction_count);
+    existingRel.last_payment_at = newTx.timestamp;
+    relationshipsStore.set(relKey, existingRel);
 
     res.json({
       message: "Payment successful!",

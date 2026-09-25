@@ -25,9 +25,11 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
   const [deviceTrust, setDeviceTrust] = useState(null);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
-  // Contextual Risk Controls
+  // Contextual Risk Controls & Automated Ledger Lookup
   const [isNewReceiver, setIsNewReceiver] = useState(false);
   const [transactionsLast10Min, setTransactionsLast10Min] = useState(0);
+  const [relationshipInfo, setRelationshipInfo] = useState(null);
+  const [loadingRelationship, setLoadingRelationship] = useState(false);
 
   // Transaction time – default to current time
   const [transactionTime, setTransactionTime] = useState(() => {
@@ -133,6 +135,50 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
     setError("");
     setRiskData(null);
   }, [selectedScenario, accounts]);
+
+  // Automated Ledger / Dataset Lookup for Receiver Relationship
+  useEffect(() => {
+    if (!selectedSender?.account_id || !selectedReceiver?.account_id) {
+      setRelationshipInfo(null);
+      return;
+    }
+
+    if (selectedSender.account_id === selectedReceiver.account_id) {
+      setRelationshipInfo(null);
+      return;
+    }
+
+    let isMounted = true;
+    async function fetchLedgerRelationship() {
+      try {
+        setLoadingRelationship(true);
+        const res = await api.get("/api/ledger/receiver-status", {
+          params: {
+            sender_id: selectedSender.account_id,
+            receiver_id: selectedReceiver.account_id,
+          },
+        });
+        if (!isMounted) return;
+        const data = res.data;
+        setRelationshipInfo(data);
+        setIsNewReceiver(Boolean(data.is_new_receiver));
+        if (data.is_new_receiver) {
+          setTransactionsLast10Min(0);
+        }
+        setLoadingRelationship(false);
+      } catch (err) {
+        if (!isMounted) return;
+        console.warn("Ledger relationship query fallback:", err);
+        setLoadingRelationship(false);
+      }
+    }
+
+    fetchLedgerRelationship();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedSender?.account_id, selectedReceiver?.account_id]);
 
   /* ----------------------------- FILTERED LISTS ----------------------------- */
 
@@ -569,27 +615,111 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
         />
       </div>
 
-      {/* RECEIVER STATUS CONTROLS */}
+      {/* RECEIVER STATUS CONTROLS - AUTOMATICALLY DETERMINED FROM HISTORICAL LEDGER */}
       <div style={{ marginBottom: "20px" }}>
-        <label style={labelStyle}>
-          Receiver Status
-        </label>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <label style={{ ...labelStyle, marginBottom: 0 }}>
+            Receiver Status
+          </label>
+          {loadingRelationship ? (
+            <span style={{ fontSize: "11px", color: "#2563EB", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "5px" }}>
+              <span>🔄</span> Checking Ledger...
+            </span>
+          ) : relationshipInfo ? (
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: "600",
+                color: isNewReceiver ? "#D97706" : "#16A34A",
+                background: isNewReceiver ? "#FEF3C7" : "#DCFCE7",
+                border: `1px solid ${isNewReceiver ? "#FCD34D" : "#86EFAC"}`,
+                padding: "2px 8px",
+                borderRadius: "6px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+              title="Receiver status is automatically derived from the historical transaction database and payment ledger."
+            >
+              ⚡ Auto-detected from ledger
+            </span>
+          ) : (
+            <span style={{ fontSize: "11px", color: "#94A3B8" }}>
+              Select sender &amp; receiver to evaluate
+            </span>
+          )}
+        </div>
+
         <div style={radioContainerStyle}>
-          <button
-            type="button"
-            onClick={() => setIsNewReceiver(false)}
-            style={optionButtonStyle(!isNewReceiver)}
+          <div
+            style={{
+              ...optionButtonStyle(!isNewReceiver),
+              cursor: "default",
+              userSelect: "none",
+              opacity: loadingRelationship ? 0.7 : 1,
+              boxShadow: !isNewReceiver ? "0 2px 8px rgba(37,99,235,0.12)" : "none",
+            }}
           >
             👤 Existing Receiver
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsNewReceiver(true)}
-            style={optionButtonStyle(isNewReceiver)}
+            {!isNewReceiver && relationshipInfo && (
+              <span style={{ display: "block", fontSize: "11px", marginTop: "3px", color: "#16A34A", fontWeight: "600" }}>
+                ✓ {relationshipInfo.transaction_count > 0 ? `${relationshipInfo.transaction_count} completed transfers in ledger` : "Known contact"}
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              ...optionButtonStyle(isNewReceiver),
+              cursor: "default",
+              userSelect: "none",
+              opacity: loadingRelationship ? 0.7 : 1,
+              boxShadow: isNewReceiver ? "0 2px 8px rgba(217,119,6,0.12)" : "none",
+            }}
           >
             🆕 First-Time Receiver
-          </button>
+            {isNewReceiver && relationshipInfo && (
+              <span style={{ display: "block", fontSize: "11px", marginTop: "3px", color: "#D97706", fontWeight: "600" }}>
+                ⚠️ No prior transaction history
+              </span>
+            )}
+          </div>
         </div>
+
+        {relationshipInfo && (
+          <div
+            style={{
+              marginTop: "8px",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              background: isNewReceiver ? "#FFFBEB" : "#F0FDF4",
+              border: `1px solid ${isNewReceiver ? "#FDE68A" : "#BBF7D0"}`,
+              fontSize: "12px",
+              color: isNewReceiver ? "#92400E" : "#166534",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "8px",
+            }}
+          >
+            <span>
+              {isNewReceiver
+                ? `No prior ledger records found between sender ${selectedSender?.account_id} and recipient ${selectedReceiver?.account_id}. Flagged as first-time payee.`
+                : `Found ${relationshipInfo.transaction_count} prior completed payments (Total: ₹${(relationshipInfo.total_amount || 0).toLocaleString("en-IN")}, Avg: ₹${(relationshipInfo.average_amount || 0).toLocaleString("en-IN")}).`}
+            </span>
+            <span
+              style={{
+                fontWeight: "700",
+                fontSize: "11px",
+                background: isNewReceiver ? "#FEF3C7" : "#DCFCE7",
+                padding: "3px 8px",
+                borderRadius: "6px",
+              }}
+            >
+              {isNewReceiver ? "RELATION: NEW_PAYEE" : `RELATION: ${relationshipInfo.relationship_type || "VERIFIED"}`}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* TRANSACTIONS IN LAST 10 MINUTES (Only shown/enabled for Existing Receiver) */}
