@@ -177,9 +177,12 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
         if (!isMounted) return;
         const data = res.data;
         setRelationshipInfo(data);
-        setIsNewReceiver(Boolean(data.is_new_receiver));
-        if (data.is_new_receiver) {
-          setTransactionsLast10Min(0);
+        // Only update receiver flag and velocity automatically if not actively loaded from a demo scenario
+        if (!selectedScenario) {
+          setIsNewReceiver(Boolean(data.is_new_receiver));
+          if (data.is_new_receiver) {
+            setTransactionsLast10Min(0);
+          }
         }
         setLoadingRelationship(false);
       } catch (err) {
@@ -194,7 +197,7 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
     return () => {
       isMounted = false;
     };
-  }, [selectedSender?.account_id, selectedReceiver?.account_id]);
+  }, [selectedSender?.account_id, selectedReceiver?.account_id, selectedScenario]);
 
   /* ----------------------------- FILTERED LISTS ----------------------------- */
 
@@ -292,9 +295,9 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
         sender_account: selectedSender.account_id,
         receiver_account: selectedReceiver.account_id,
         amount: Number(amount),
-        is_new_device: currentDeviceTrust?.is_known_device ? false : true,
+        is_new_device: false,
         is_new_receiver: isNewReceiver,
-        transactions_last_10min: isNewReceiver ? undefined : Number(transactionsLast10Min),
+        transactions_last_10min: Number(transactionsLast10Min) || 0,
         transaction_time: transactionTime,
         device_trust: currentDeviceTrust,
       };
@@ -331,7 +334,7 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
   /* ----------------------------- AUTH DECISION ----------------------------- */
 
   function decideAuthentication(score, authRequirement, recommendation) {
-    if (authRequirement === "BLOCKED" || recommendation === "BLOCK" || score > 80) {
+    if (authRequirement === "BLOCKED" || recommendation === "BLOCK" || score > 85) {
       setAuthType("BLOCK");
       setActionTitle("Transaction Temporarily Frozen / Blocked");
       setButtonText("Security Freeze Active");
@@ -375,9 +378,9 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
         sender_account: selectedSender.account_id,
         receiver_account: selectedReceiver.account_id,
         amount: Number(amount),
-        is_new_device: deviceTrust?.is_known_device ? false : true,
+        is_new_device: false,
         is_new_receiver: isNewReceiver,
-        transactions_last_10min: isNewReceiver ? undefined : Number(transactionsLast10Min),
+        transactions_last_10min: Number(transactionsLast10Min) || 0,
         transaction_time: transactionTime,
         device_trust: deviceTrust,
       };

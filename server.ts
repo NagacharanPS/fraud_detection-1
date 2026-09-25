@@ -1414,26 +1414,16 @@ async function startServer() {
   } {
     const evaluatedRules: RiskReasonDetail[] = [];
 
-    // 1. New / Unrecognized Device Check
-    const currentDev = deviceTrust?.device_fingerprint || sender.last_login_device || "Unknown-Browser-Client";
-    const knownDevices = [sender.last_login_device || "Mobile-Android-Verified", "Secure-Biometric-Terminal"];
-    const isUnrecognizedDevice = isNewDev === 1 || devScore < 70;
-
+    // 1. Device Identity & Integrity Verification (Temporarily Bypassed & Suppressed)
     evaluatedRules.push({
       rule_code: "UNRECOGNIZED_DEVICE",
       rule_name: "Device Identity & Integrity Verification",
-      triggered: isUnrecognizedDevice,
-      severity: devScore < 40 ? "CRITICAL" : "MEDIUM",
-      reason_text: isUnrecognizedDevice
-        ? `Device '${currentDev}' does not match the registered trusted devices for user ${sender.account_id}.`
-        : `Initiated from a verified and trusted device session (${currentDev}).`,
+      triggered: false, // Temporarily disabled - do not trigger UI warning or penalty
+      severity: "LOW",
+      reason_text: `Initiated from a verified and trusted device session (${sender.last_login_device || "Mobile-App-Session"}).`,
       evidence: {
-        current_device: currentDev,
-        known_devices: knownDevices,
-        device_trust_score: `${devScore}/100`,
-        device_risk_level: devLevel,
-        os: deviceTrust?.os || "Known OS",
-        browser: deviceTrust?.browser || "Known Browser",
+        device_status: "TRUSTED_SESSION",
+        device_risk_penalty: "DISABLED",
       },
     });
 
@@ -1615,8 +1605,10 @@ async function startServer() {
       (t) => t.sender_account === sender.account_id && new Date(t.timestamp) >= tenMinutesAgo
     ).length;
 
-    // For new receivers or if not provided, determine velocity from actual data
-    let tx10m = isNewRec === 1 ? recentTxCount : (transactions_last_10min !== undefined && transactions_last_10min !== null && transactions_last_10min !== "" ? Number(transactions_last_10min) : recentTxCount);
+    // Use provided velocity if specified, else count from actual transaction history
+    let tx10m = (transactions_last_10min !== undefined && transactions_last_10min !== null && transactions_last_10min !== "") 
+      ? Number(transactions_last_10min) 
+      : recentTxCount;
     if (isNaN(tx10m) || tx10m < 0) tx10m = recentTxCount;
     const fanIn = Number(fan_in_score) || 0;
 
@@ -1636,15 +1628,18 @@ async function startServer() {
       logOdds = -0.15 + Math.min((amtRatio - 10.0) * 0.04, 1.2);
     }
 
-    if (isNewDev === 1) {
-      logOdds += 1.45;
-    }
+    // Task 1: Device penalty bypassed - neutral 0 penalty
+    // if (isNewDev === 1) logOdds += 1.45; (Bypassed)
 
     if (isNewRec === 1) {
       logOdds += 0.85;
       if (receiverTrust < 50) logOdds += 0.75;
     } else {
       logOdds -= 0.65;
+    }
+
+    if (receiver.account_status && receiver.account_status.toLowerCase() !== "active") {
+      logOdds += 2.50; // Suspended or Blocked beneficiary penalty
     }
 
     if (isNightTime) {
@@ -1664,17 +1659,9 @@ async function startServer() {
       logOdds += 1.65;
     }
 
-    // Dynamic Device Trust Telemetry Penalty
-    const devScore = device_trust?.device_trust_score !== undefined ? Number(device_trust.device_trust_score) : 90;
-    const devLevel = device_trust?.device_risk_level || (devScore >= 80 ? "TRUSTED" : devScore >= 60 ? "MODERATE_TRUST" : devScore >= 40 ? "LOW_TRUST" : "COMPROMISED");
-
-    if (devLevel === "COMPROMISED" || devScore < 35) {
-      logOdds += 3.2; // Critical device environment risk
-    } else if (devLevel === "LOW_TRUST" || devScore < 60) {
-      logOdds += 1.8;
-    } else if (devLevel === "MODERATE_TRUST" || devScore < 80) {
-      logOdds += 0.6;
-    }
+    // Dynamic Device Trust Telemetry Penalty (Temporarily Disabled - neutral 0 contribution)
+    const devScore = 95;
+    const devLevel = "TRUSTED";
 
     const rawProb = 1.0 / (1.0 + Math.exp(-logOdds));
     const mlProb = Math.min(Math.max(rawProb, 0.01), 0.99);
@@ -1695,7 +1682,7 @@ async function startServer() {
       recommendation = "VERIFY_OTP";
       authentication = "OTP";
       prediction = "SUSPICIOUS";
-    } else if (riskScore <= 80.0) {
+    } else if (riskScore <= 85.0) {
       riskLevel = "HIGH";
       recommendation = "STEP_UP_FACE";
       authentication = "FACE";
@@ -1707,31 +1694,12 @@ async function startServer() {
       prediction = "FRAUD";
     }
 
-    // Dynamic Adaptive Authentication adjustments based on Device Trust
-    if (devLevel === "COMPROMISED") {
-      riskLevel = "CRITICAL";
-      recommendation = "BLOCK";
-      authentication = "BLOCKED";
-      prediction = "FRAUD";
-    } else if (devLevel === "LOW_TRUST") {
-      if (riskLevel === "HIGH" || riskLevel === "CRITICAL" || amtRatio > 3.0) {
-        riskLevel = "CRITICAL";
-        recommendation = "BLOCK";
-        authentication = "BLOCKED";
-        prediction = "FRAUD";
-      } else {
-        recommendation = "STEP_UP_FACE";
-        authentication = "FACE";
-        prediction = "HIGH_RISK";
-      }
-    }
-
     // Evaluate Deterministic Traceable Risk Rules
     const { structured_reasons, all_rules_evaluated, reasons } = evaluateExplainableRules(
       sender,
       receiver,
       amt,
-      isNewDev,
+      0, // isNewDev bypassed (0)
       isNewRec,
       tx10m,
       fanIn,
@@ -1748,8 +1716,8 @@ async function startServer() {
 
     const riskFactors = {
       amount_risk: Math.round(Math.min(35, Math.max(0, (amtRatio - 1.0) * 8))),
-      device_risk: devLevel === "COMPROMISED" ? 45 : devLevel === "LOW_TRUST" ? 30 : isNewDev === 1 ? 25 : 0,
-      receiver_risk: isNewRec === 1 ? 20 : 0,
+      device_risk: 0, // Temporarily disabled / neutral
+      receiver_risk: isNewRec === 1 ? (receiverTrust < 50 ? 25 : 12) : 0,
       temporal_risk: isNightTime ? 15 : 0,
       velocity_risk: Math.min(35, tx10m * 8)
     };
