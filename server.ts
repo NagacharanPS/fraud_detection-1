@@ -115,6 +115,15 @@ interface RelationshipRecord {
   last_payment_at: string;
 }
 
+interface RiskReasonDetail {
+  rule_code: string;
+  rule_name: string;
+  triggered: boolean;
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  reason_text: string;
+  evidence: Record<string, any>;
+}
+
 // In-Memory Storage initialized from CSV & Auth Database
 const accountsStore: Map<string, Account> = new Map();
 const behaviorStore: Map<string, AccountBehavior> = new Map();
@@ -603,6 +612,380 @@ async function startServer() {
     });
   });
 
+  // ----------------------------- DATASET EXPLORER & AUDIT ENGINE -----------------------------
+
+  interface DatasetExplorerRecord {
+    transaction_id: string;
+    timestamp: string;
+    sender_account: string;
+    sender_name: string;
+    receiver_account: string;
+    receiver_name: string;
+    amount: number;
+    actual_prior_count: number;
+    actual_receiver_type: "EXISTING_RECEIVER" | "FIRST_TIME_RECEIVER";
+    model_predicted_type: "EXISTING_RECEIVER" | "FIRST_TIME_RECEIVER";
+    is_discrepancy: boolean;
+    discrepancy_details?: string;
+    last_transfer_amount?: number;
+    last_transfer_timestamp?: string;
+    risk_score: number;
+    risk_level: string;
+    status: string;
+    sender_trust_score: number;
+    receiver_trust_score: number;
+    relationship_type: string;
+  }
+
+  const seededExplorerTransactions: DatasetExplorerRecord[] = [
+    {
+      transaction_id: "TXN_EXP_001",
+      timestamp: "2026-05-28T14:32:00.000Z",
+      sender_account: "A0001",
+      sender_name: "Rahul Sharma",
+      receiver_account: "A0012",
+      receiver_name: "CityWater (Utility)",
+      amount: 1450,
+      actual_prior_count: 14,
+      actual_receiver_type: "EXISTING_RECEIVER",
+      model_predicted_type: "EXISTING_RECEIVER",
+      is_discrepancy: false,
+      last_transfer_amount: 1450,
+      last_transfer_timestamp: "2026-05-25T10:30:00.000Z",
+      risk_score: 12.4,
+      risk_level: "LOW",
+      status: "SUCCESS",
+      sender_trust_score: 95,
+      receiver_trust_score: 90,
+      relationship_type: "UTILITY",
+    },
+    {
+      transaction_id: "TXN_EXP_002",
+      timestamp: "2026-05-28T18:15:00.000Z",
+      sender_account: "A0002",
+      sender_name: "Charan Nair",
+      receiver_account: "A0010",
+      receiver_name: "Priya Gupta (Professional)",
+      amount: 2400,
+      actual_prior_count: 8,
+      actual_receiver_type: "EXISTING_RECEIVER",
+      model_predicted_type: "EXISTING_RECEIVER",
+      is_discrepancy: false,
+      last_transfer_amount: 2400,
+      last_transfer_timestamp: "2026-05-20T17:45:00.000Z",
+      risk_score: 18.2,
+      risk_level: "LOW",
+      status: "SUCCESS",
+      sender_trust_score: 90,
+      receiver_trust_score: 95,
+      relationship_type: "PERSONAL",
+    },
+    {
+      transaction_id: "TXN_EXP_003",
+      timestamp: "2026-05-29T10:20:00.000Z",
+      sender_account: "A0001",
+      sender_name: "Rahul Sharma",
+      receiver_account: "A0010",
+      receiver_name: "Priya Gupta (Professional)",
+      amount: 12500,
+      actual_prior_count: 0,
+      actual_receiver_type: "FIRST_TIME_RECEIVER",
+      model_predicted_type: "FIRST_TIME_RECEIVER",
+      is_discrepancy: false,
+      risk_score: 48.6,
+      risk_level: "MEDIUM",
+      status: "SUCCESS",
+      sender_trust_score: 95,
+      receiver_trust_score: 95,
+      relationship_type: "FIRST_TIME",
+    },
+    {
+      transaction_id: "TXN_EXP_004",
+      timestamp: "2026-05-29T13:45:00.000Z",
+      sender_account: "A0002",
+      sender_name: "Charan Nair",
+      receiver_account: "A0031",
+      receiver_name: "Suresh Patel (Merchant)",
+      amount: 16000,
+      actual_prior_count: 0,
+      actual_receiver_type: "FIRST_TIME_RECEIVER",
+      model_predicted_type: "FIRST_TIME_RECEIVER",
+      is_discrepancy: false,
+      risk_score: 54.2,
+      risk_level: "MEDIUM",
+      status: "SUCCESS",
+      sender_trust_score: 90,
+      receiver_trust_score: 80,
+      relationship_type: "FIRST_TIME",
+    },
+    {
+      transaction_id: "TXN_EXP_005",
+      timestamp: "2026-05-29T19:30:00.000Z",
+      sender_account: "A0006",
+      sender_name: "Meera Singh",
+      receiver_account: "A0021",
+      receiver_name: "TechWorld52 (Merchant)",
+      amount: 3500,
+      actual_prior_count: 15,
+      actual_receiver_type: "EXISTING_RECEIVER",
+      model_predicted_type: "EXISTING_RECEIVER",
+      is_discrepancy: false,
+      last_transfer_amount: 3500,
+      last_transfer_timestamp: "2026-05-26T12:00:00.000Z",
+      risk_score: 14.5,
+      risk_level: "LOW",
+      status: "SUCCESS",
+      sender_trust_score: 92,
+      receiver_trust_score: 88,
+      relationship_type: "MERCHANT",
+    },
+    {
+      transaction_id: "TXN_EXP_006",
+      timestamp: "2026-05-29T21:10:00.000Z",
+      sender_account: "A0014",
+      sender_name: "Sneha Verma",
+      receiver_account: "A0001",
+      receiver_name: "Rahul Sharma",
+      amount: 4500,
+      actual_prior_count: 18,
+      actual_receiver_type: "EXISTING_RECEIVER",
+      model_predicted_type: "EXISTING_RECEIVER",
+      is_discrepancy: false,
+      last_transfer_amount: 4500,
+      last_transfer_timestamp: "2026-05-27T09:15:00.000Z",
+      risk_score: 8.5,
+      risk_level: "LOW",
+      status: "SUCCESS",
+      sender_trust_score: 96,
+      receiver_trust_score: 95,
+      relationship_type: "FAMILY",
+    },
+    {
+      transaction_id: "TXN_EXP_007",
+      timestamp: "2026-05-30T01:45:00.000Z",
+      sender_account: "A0004",
+      sender_name: "Amit Verma",
+      receiver_account: "A0091",
+      receiver_name: "Meera Shetty (Account Blocked)",
+      amount: 350000,
+      actual_prior_count: 0,
+      actual_receiver_type: "FIRST_TIME_RECEIVER",
+      model_predicted_type: "FIRST_TIME_RECEIVER",
+      is_discrepancy: false,
+      risk_score: 96.8,
+      risk_level: "CRITICAL",
+      status: "BLOCKED",
+      sender_trust_score: 85,
+      receiver_trust_score: 20,
+      relationship_type: "GAMBLING",
+    },
+    {
+      transaction_id: "TXN_EXP_008",
+      timestamp: "2026-05-30T02:15:00.000Z",
+      sender_account: "A0001",
+      sender_name: "Rahul Sharma",
+      receiver_account: "A0003",
+      receiver_name: "Priya Patel (Government)",
+      amount: 3600,
+      actual_prior_count: 8,
+      actual_receiver_type: "EXISTING_RECEIVER",
+      model_predicted_type: "FIRST_TIME_RECEIVER",
+      is_discrepancy: true,
+      discrepancy_details: "Model Flag Mismatch: Legacy model misclassified verified Government payee as First-Time Receiver despite 8 prior transfers in ledger.",
+      last_transfer_amount: 3600,
+      last_transfer_timestamp: "2026-05-22T11:00:00.000Z",
+      risk_score: 38.5,
+      risk_level: "MEDIUM",
+      status: "SUCCESS",
+      sender_trust_score: 95,
+      receiver_trust_score: 90,
+      relationship_type: "GOVERNMENT",
+    },
+    {
+      transaction_id: "TXN_EXP_009",
+      timestamp: "2026-05-30T04:20:00.000Z",
+      sender_account: "A0002",
+      sender_name: "Charan Nair",
+      receiver_account: "A0021",
+      receiver_name: "TechWorld52 (Merchant)",
+      amount: 8500,
+      actual_prior_count: 0,
+      actual_receiver_type: "FIRST_TIME_RECEIVER",
+      model_predicted_type: "EXISTING_RECEIVER",
+      is_discrepancy: true,
+      discrepancy_details: "Ledger Cache Lag: Model predicted Existing Receiver due to shared merchant category, but Charan has 0 prior individual transfers to this merchant in ledger.",
+      risk_score: 26.2,
+      risk_level: "LOW",
+      status: "SUCCESS",
+      sender_trust_score: 90,
+      receiver_trust_score: 88,
+      relationship_type: "MERCHANT",
+    },
+    {
+      transaction_id: "TXN_EXP_010",
+      timestamp: "2026-05-30T08:00:00.000Z",
+      sender_account: "A0014",
+      sender_name: "Sneha Verma",
+      receiver_account: "A0007",
+      receiver_name: "BWSSB (Utility)",
+      amount: 950,
+      actual_prior_count: 6,
+      actual_receiver_type: "EXISTING_RECEIVER",
+      model_predicted_type: "EXISTING_RECEIVER",
+      is_discrepancy: false,
+      last_transfer_amount: 950,
+      last_transfer_timestamp: "2026-05-20T08:30:00.000Z",
+      risk_score: 9.2,
+      risk_level: "LOW",
+      status: "SUCCESS",
+      sender_trust_score: 96,
+      receiver_trust_score: 92,
+      relationship_type: "UTILITY",
+    },
+  ];
+
+  function getAllExplorerRecords(): DatasetExplorerRecord[] {
+    const liveRecords: DatasetExplorerRecord[] = transactionsStore.map((t) => {
+      const sender = accountsStore.get(t.sender_account);
+      const receiver = accountsStore.get(t.receiver_account);
+      const relKey = getRelationshipKey(t.sender_account, t.receiver_account);
+      const rel = relationshipsStore.get(relKey);
+      const count = rel?.transaction_count || 1;
+      const actualType = count > 1 ? "EXISTING_RECEIVER" : "FIRST_TIME_RECEIVER";
+      const modelType = t.ai_analysis?.features?.is_new_receiver === 1 ? "FIRST_TIME_RECEIVER" : "EXISTING_RECEIVER";
+      const isDiscrepancy = actualType !== modelType;
+
+      return {
+        transaction_id: t.transaction_id,
+        timestamp: t.timestamp,
+        sender_account: t.sender_account,
+        sender_name: sender?.account_name || t.sender_account,
+        receiver_account: t.receiver_account,
+        receiver_name: t.receiver_name || receiver?.account_name || t.receiver_account,
+        amount: t.amount,
+        actual_prior_count: count - 1,
+        actual_receiver_type: actualType,
+        model_predicted_type: modelType,
+        is_discrepancy: isDiscrepancy,
+        discrepancy_details: isDiscrepancy ? `Model predicted ${modelType} while ledger recorded ${count} prior interactions.` : undefined,
+        last_transfer_amount: rel?.average_amount,
+        last_transfer_timestamp: rel?.last_payment_at,
+        risk_score: t.risk_score,
+        risk_level: t.risk_level,
+        status: t.status,
+        sender_trust_score: sender?.trust_score || 80,
+        receiver_trust_score: receiver?.trust_score || 75,
+        relationship_type: rel?.relationship_type || "DIRECT_TRANSFER",
+      };
+    });
+
+    return [...liveRecords, ...seededExplorerTransactions];
+  }
+
+  // Dataset Explorer & First-Time Receiver Verification Tool API
+  app.get("/api/dataset-explorer", (req, res) => {
+    const q = ((req.query.q || "") as string).toLowerCase().trim();
+    const receiverType = ((req.query.receiver_type || "ALL") as string).toUpperCase();
+    const discrepancyOnly = req.query.discrepancy_only === "true" || req.query.discrepancy === "true";
+
+    const allRecords = getAllExplorerRecords();
+    let records = allRecords;
+
+    if (q) {
+      records = records.filter(
+        (r) =>
+          r.transaction_id.toLowerCase().includes(q) ||
+          r.sender_account.toLowerCase().includes(q) ||
+          r.sender_name.toLowerCase().includes(q) ||
+          r.receiver_account.toLowerCase().includes(q) ||
+          r.receiver_name.toLowerCase().includes(q)
+      );
+    }
+
+    if (receiverType === "FIRST_TIME") {
+      records = records.filter((r) => r.actual_receiver_type === "FIRST_TIME_RECEIVER");
+    } else if (receiverType === "EXISTING") {
+      records = records.filter((r) => r.actual_receiver_type === "EXISTING_RECEIVER");
+    }
+
+    if (discrepancyOnly) {
+      records = records.filter((r) => r.is_discrepancy);
+    }
+
+    const total = records.length;
+    const discrepanciesCount = allRecords.filter((r) => r.is_discrepancy).length;
+    const firstTimeCount = allRecords.filter((r) => r.actual_receiver_type === "FIRST_TIME_RECEIVER").length;
+    const existingCount = allRecords.filter((r) => r.actual_receiver_type === "EXISTING_RECEIVER").length;
+
+    res.json({
+      total,
+      summary: {
+        total_records: allRecords.length,
+        discrepancies_count: discrepanciesCount,
+        first_time_count: firstTimeCount,
+        existing_count: existingCount,
+      },
+      records: records.slice(0, 100),
+    });
+  });
+
+  // Deep Single-Pair Ledger Audit Breakdown
+  app.get("/api/dataset-explorer/audit/:senderId/:receiverId", (req, res) => {
+    const senderId = req.params.senderId.trim().toUpperCase();
+    const receiverId = req.params.receiverId.trim().toUpperCase();
+
+    const sender = accountsStore.get(senderId);
+    const receiver = accountsStore.get(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).json({ error: "Accounts not found." });
+    }
+
+    const relKey = getRelationshipKey(senderId, receiverId);
+    const relRecord = relationshipsStore.get(relKey);
+    const priorCount = relRecord?.transaction_count || 0;
+    const isFirstTime = priorCount === 0;
+
+    const pairTransactions = transactionsStore.filter(
+      (t) => t.sender_account === senderId && t.receiver_account === receiverId
+    );
+
+    res.json({
+      sender: {
+        account_id: sender.account_id,
+        account_name: sender.account_name,
+        trust_score: sender.trust_score,
+        account_type: sender.relationship_type || sender.account_type,
+        current_balance: sender.current_balance,
+        last_login_device: sender.last_login_device,
+        registered_devices: [sender.last_login_device, "Secure-Biometric-Terminal"],
+      },
+      receiver: {
+        account_id: receiver.account_id,
+        account_name: receiver.account_name,
+        trust_score: receiver.trust_score,
+        account_type: receiver.relationship_type || receiver.account_type,
+        account_status: receiver.account_status,
+        verified_status: receiver.verified_status,
+      },
+      ledger_audit: {
+        sender_id: senderId,
+        receiver_id: receiverId,
+        actual_prior_transactions_count: priorCount,
+        actual_receiver_status: isFirstTime ? "FIRST_TIME_RECEIVER" : "EXISTING_RECEIVER",
+        actual_status_label: isFirstTime ? "First-Time Receiver (0 prior txs)" : `Existing Contact (${priorCount} prior txs)`,
+        total_historical_volume: relRecord?.total_amount || 0,
+        average_historical_amount: relRecord?.average_amount || 0,
+        last_known_transfer_timestamp: relRecord?.last_payment_at || "No previous transaction found in ledger",
+        last_known_transfer_amount: relRecord?.average_amount || null,
+        relationship_type: relRecord?.relationship_type || (isFirstTime ? "NONE" : "ESTABLISHED"),
+        verified: relRecord?.verified || false,
+        audit_verdict: isFirstTime ? "NO_PRIOR_HISTORY_FOUND" : "VERIFIED_ESTABLISHED_LEDGER_RELATIONSHIP",
+      },
+      recent_pair_transactions: pairTransactions.slice(0, 10),
+    });
+  });
+
   /* ----------------------------- AUTHENTICATION & BIOMETRIC ROUTES ----------------------------- */
 
   // Sign up
@@ -1006,7 +1389,170 @@ async function startServer() {
   });
 
 
-  // Helper for ML Risk Evaluation with Dynamic Device Trust Integration
+  // Grounded Deterministic Explainable AI Rule Evaluator
+  function evaluateExplainableRules(
+    sender: Account,
+    receiver: Account,
+    amt: number,
+    isNewDev: number,
+    isNewRec: number,
+    tx10m: number,
+    fanIn: number,
+    isNightTime: boolean,
+    hr: number,
+    txTime: Date,
+    avgAmt: number,
+    amtRatio: number,
+    devScore: number,
+    devLevel: string,
+    deviceTrust: any,
+    relRecord: RelationshipRecord | undefined
+  ): {
+    structured_reasons: RiskReasonDetail[];
+    all_rules_evaluated: RiskReasonDetail[];
+    reasons: string[];
+  } {
+    const evaluatedRules: RiskReasonDetail[] = [];
+
+    // 1. New / Unrecognized Device Check
+    const currentDev = deviceTrust?.device_fingerprint || sender.last_login_device || "Unknown-Browser-Client";
+    const knownDevices = [sender.last_login_device || "Mobile-Android-Verified", "Secure-Biometric-Terminal"];
+    const isUnrecognizedDevice = isNewDev === 1 || devScore < 70;
+
+    evaluatedRules.push({
+      rule_code: "UNRECOGNIZED_DEVICE",
+      rule_name: "Device Identity & Integrity Verification",
+      triggered: isUnrecognizedDevice,
+      severity: devScore < 40 ? "CRITICAL" : "MEDIUM",
+      reason_text: isUnrecognizedDevice
+        ? `Device '${currentDev}' does not match the registered trusted devices for user ${sender.account_id}.`
+        : `Initiated from a verified and trusted device session (${currentDev}).`,
+      evidence: {
+        current_device: currentDev,
+        known_devices: knownDevices,
+        device_trust_score: `${devScore}/100`,
+        device_risk_level: devLevel,
+        os: deviceTrust?.os || "Known OS",
+        browser: deviceTrust?.browser || "Known Browser",
+      },
+    });
+
+    // 2. First-Time Receiver Verification
+    const priorCount = relRecord?.transaction_count || 0;
+    const isFirstTime = priorCount === 0 || isNewRec === 1;
+
+    evaluatedRules.push({
+      rule_code: "FIRST_TIME_RECEIVER",
+      rule_name: "Beneficiary Ledger & History Audit",
+      triggered: isFirstTime,
+      severity: (receiver.trust_score || 70) < 60 ? "HIGH" : "MEDIUM",
+      reason_text: isFirstTime
+        ? `First-time transfer: No previous transaction history exists between sender ${sender.account_id} and recipient ${receiver.account_id} in the ledger.`
+        : `Established recipient with ${priorCount} prior completed transactions (Total: ₹${(relRecord?.total_amount || 0).toLocaleString("en-IN")}).`,
+      evidence: {
+        prior_transactions_count: priorCount,
+        total_historical_amount: relRecord?.total_amount || 0,
+        average_historical_amount: relRecord?.average_amount || 0,
+        last_transaction_timestamp: relRecord?.last_payment_at || "None",
+        relationship_type: relRecord?.relationship_type || (isFirstTime ? "NEW_COUNTERPARTY" : "EXISTING_CONTACT"),
+        receiver_trust_score: `${receiver.trust_score || 75}/100`,
+      },
+    });
+
+    // 3. Unusual Transaction Time Check
+    const formattedTime = txTime.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+    const typicalStart = "06:00 AM";
+    const typicalEnd = "11:00 PM";
+
+    evaluatedRules.push({
+      rule_code: "UNUSUAL_TRANSACTION_TIME",
+      rule_name: "Temporal Activity Window Check",
+      triggered: isNightTime,
+      severity: isNightTime && amtRatio > 3 ? "HIGH" : "MEDIUM",
+      reason_text: isNightTime
+        ? `Transaction initiated at ${formattedTime}, outside sender's typical activity window (${typicalStart} - ${typicalEnd}).`
+        : `Payment initiated during standard business operating hours (${formattedTime}).`,
+      evidence: {
+        transaction_time: formattedTime,
+        transaction_hour_24h: hr,
+        typical_activity_window: `${typicalStart} - ${typicalEnd}`,
+        temporal_anomaly_flag: isNightTime ? "OFF_HOURS_RISK" : "NORMAL_DAYTIME",
+      },
+    });
+
+    // 4. Spending Anomaly / Excessive Amount Check
+    const isAmountAnomaly = amtRatio > 2.5;
+    const ratioStr = amtRatio.toFixed(1);
+
+    evaluatedRules.push({
+      rule_code: "AMOUNT_ANOMALY",
+      rule_name: "Historical Spending Deviation",
+      triggered: isAmountAnomaly,
+      severity: amtRatio > 5 ? "HIGH" : "MEDIUM",
+      reason_text: isAmountAnomaly
+        ? `Transfer amount (₹${amt.toLocaleString("en-IN")}) is ${ratioStr}x higher than sender's historical average (₹${Math.round(avgAmt).toLocaleString("en-IN")}).`
+        : `Transfer amount (₹${amt.toLocaleString("en-IN")}) is within sender's normal transaction limits (avg ₹${Math.round(avgAmt).toLocaleString("en-IN")}).`,
+      evidence: {
+        requested_amount: amt,
+        sender_historical_average: Math.round(avgAmt),
+        deviation_multiple: `${ratioStr}x`,
+        sender_account_type: sender.relationship_type || sender.account_type || "PERSONAL",
+      },
+    });
+
+    // 5. Burst Velocity & Rapid Transfer Check
+    const isVelocityTriggered = tx10m >= 2;
+
+    evaluatedRules.push({
+      rule_code: "HIGH_VELOCITY",
+      rule_name: "Rapid Velocity & Micro-Phishing Protection",
+      triggered: isVelocityTriggered,
+      severity: tx10m >= 4 ? "CRITICAL" : "HIGH",
+      reason_text: isVelocityTriggered
+        ? `High-frequency velocity: ${tx10m} transactions initiated within the last 10 minutes (safety threshold: 1).`
+        : `Transaction velocity is within standard rate limits (${tx10m} transactions in last 10m).`,
+      evidence: {
+        transactions_last_10m: tx10m,
+        velocity_threshold: 1,
+        rapid_burst_pattern: isVelocityTriggered ? "DETECTED" : "NOMINAL",
+      },
+    });
+
+    // 6. Suspicious / Low Safety Rating Receiver
+    const isLowTrustReceiver = (receiver.trust_score || 70) < 50 || receiver.account_status !== "Active" || fanIn >= 3;
+
+    evaluatedRules.push({
+      rule_code: "SUSPICIOUS_RECEIVER",
+      rule_name: "Beneficiary Reputation & Fan-In Risk",
+      triggered: isLowTrustReceiver,
+      severity: (receiver.trust_score || 70) < 35 || receiver.account_status !== "Active" ? "CRITICAL" : "HIGH",
+      reason_text: isLowTrustReceiver
+        ? `Beneficiary account ${receiver.account_id} has a low safety rating (${receiver.trust_score}/100) or restricted status.`
+        : `Beneficiary account ${receiver.account_id} has a healthy reputation rating (${receiver.trust_score}/100).`,
+      evidence: {
+        receiver_trust_score: `${receiver.trust_score || 70}/100`,
+        receiver_status: receiver.account_status || "Active",
+        verified_status: receiver.verified_status || "VERIFIED",
+        fan_in_score: fanIn,
+      },
+    });
+
+    const triggeredRules = evaluatedRules.filter((r) => r.triggered);
+    const reasons = triggeredRules.length > 0
+      ? triggeredRules.map((r) => r.reason_text)
+      : [
+          "Transaction parameters match your regular spending patterns and trusted payees.",
+          "Payment made during standard hours through a secure session.",
+        ];
+
+    return {
+      structured_reasons: triggeredRules,
+      all_rules_evaluated: evaluatedRules,
+      reasons,
+    };
+  }
+
+  // Helper for ML Risk Evaluation with Grounded Explainable Rules
   function runAiFraudEngine(
     sender: Account,
     receiver: Account,
@@ -1054,13 +1600,15 @@ async function startServer() {
     }
 
     let isNewRec: number;
+    const relKey = getRelationshipKey(sender.account_id, receiver.account_id);
+    const relRecord = relationshipsStore.get(relKey);
+
     if (is_new_receiver !== undefined && is_new_receiver !== null && is_new_receiver !== "") {
       isNewRec = parseBool(is_new_receiver);
     } else {
-      const relKey = getRelationshipKey(sender.account_id, receiver.account_id);
-      const rel = relationshipsStore.get(relKey);
-      isNewRec = (rel && rel.transaction_count > 0) ? 0 : 1;
+      isNewRec = (relRecord && relRecord.transaction_count > 0) ? 0 : 1;
     }
+
     // Count recent transactions made by sender from actual transaction history
     const tenMinutesAgo = new Date(txTime.getTime() - 10 * 60 * 1000);
     const recentTxCount = transactionsStore.filter(
@@ -1172,58 +1720,31 @@ async function startServer() {
         authentication = "BLOCKED";
         prediction = "FRAUD";
       } else {
-        // When device trust is low, do not rely solely on SMS OTP as device could be compromised
         recommendation = "STEP_UP_FACE";
         authentication = "FACE";
         prediction = "HIGH_RISK";
       }
     }
 
-    // Dynamic User-Friendly Explainable AI Reasons
-    const reasons: string[] = [];
-
-    // Device Trust Reasons
-    if (devLevel === "COMPROMISED") {
-      reasons.push("Critical device security anomaly detected (integrity check failed or suspicious debugging environment).");
-    } else if (devLevel === "LOW_TRUST") {
-      reasons.push("Device trust evaluation identified multiple environment risk signals, requiring stepped-up verification.");
-    } else if (isNewDev === 1) {
-      reasons.push("This transaction was initiated from a new or unrecognized device that is not in your saved devices.");
-    } else if (isNewDev === 0 && riskScore < 60) {
-      reasons.push("This transaction is being made from your verified, trusted primary device.");
-    }
-
-    if (isNewRec === 1) {
-      reasons.push("This is your first transaction to this receiver, so the transaction requires additional verification.");
-    } else if (isNewRec === 0 && riskScore < 60) {
-      reasons.push("You have previously transacted with this recipient successfully.");
-    }
-
-    if (amtRatio > 3.0) {
-      reasons.push(`The transaction amount (₹${amt.toLocaleString("en-IN")}) is significantly higher than your typical average payment (₹${avgAmt.toLocaleString("en-IN")}).`);
-    } else if (amt > 50000 && amtRatio <= 3.0) {
-      reasons.push(`This is a high-value transfer (₹${amt.toLocaleString("en-IN")}), but it falls within your historical payment limits.`);
-    }
-
-    if (isNightTime) {
-      const formattedTime = hr === 5 ? "5:30 AM" : `${hr % 12 === 0 ? 12 : hr % 12}:00 ${hr >= 12 ? "PM" : "AM"}`;
-      reasons.push(`This transaction is being made at ${formattedTime}, which is outside your usual transaction hours.`);
-    }
-
-    if (tx10m >= 3) {
-      reasons.push(`Multiple transactions (${tx10m}) were initiated in the last 10 minutes, which is higher than usual velocity.`);
-    }
-
-    if (fanIn >= 3) {
-      reasons.push("This receiver account has recently received unusual high-frequency transfers from multiple different senders.");
-    } else if (receiverTrust < 45) {
-      reasons.push("The receiver account has a low trust rating and has been flagged for safety review.");
-    }
-
-    if (reasons.length === 0) {
-      reasons.push("Transaction parameters match your regular spending patterns and trusted payees.");
-      reasons.push("Payment made during standard hours through a secure session.");
-    }
+    // Evaluate Deterministic Traceable Risk Rules
+    const { structured_reasons, all_rules_evaluated, reasons } = evaluateExplainableRules(
+      sender,
+      receiver,
+      amt,
+      isNewDev,
+      isNewRec,
+      tx10m,
+      fanIn,
+      isNightTime,
+      hr,
+      txTime,
+      avgAmt,
+      amtRatio,
+      devScore,
+      devLevel,
+      device_trust,
+      relRecord
+    );
 
     const riskFactors = {
       amount_risk: Math.round(Math.min(35, Math.max(0, (amtRatio - 1.0) * 8))),
@@ -1259,6 +1780,8 @@ async function startServer() {
       recommendation,
       authentication,
       reasons,
+      structured_reasons,
+      all_rules_evaluated,
       risk_factors: riskFactors,
       device_trust: device_trust || {
         device_trust_score: devScore,
@@ -1326,6 +1849,8 @@ async function startServer() {
       recommendation: mlRes.recommendation,
       authentication: mlRes.authentication,
       reasons: mlRes.reasons,
+      structured_reasons: mlRes.structured_reasons,
+      all_rules_evaluated: mlRes.all_rules_evaluated,
       device_trust: mlRes.device_trust,
       risk_factors: mlRes.risk_factors || {
         amount_risk: 0,

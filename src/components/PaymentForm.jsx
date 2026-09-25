@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  FaChevronDown,
+  FaChevronUp,
+  FaShieldAlt,
+  FaInfoCircle,
+  FaCheckCircle,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 import api from "../api";
 import { collectDeviceSignals } from "../utils/deviceTrust";
 import DeviceSecurityModal from "./DeviceSecurityModal";
@@ -55,6 +63,14 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
   const [showTraceModal, setShowTraceModal] = useState(false);
   const [traceData, setTraceData] = useState(null);
   const [loadingTrace, setLoadingTrace] = useState(false);
+  const [expandedReasons, setExpandedReasons] = useState({});
+
+  const toggleReasonExpand = (ruleCode) => {
+    setExpandedReasons((prev) => ({
+      ...prev,
+      [ruleCode]: !prev[ruleCode],
+    }));
+  };
 
   // Evaluate Device Signals
   useEffect(() => {
@@ -907,24 +923,142 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
                 }}
               />
 
-              <h3 style={{ color: "#111827", marginBottom: "12px", fontSize: "16px" }}>
-                Why AI marked this transaction:
-              </h3>
-              <ul style={{ color: "#374151", paddingLeft: "20px", margin: 0 }}>
-                {riskData.reasons &&
-                  riskData.reasons.map((reason, index) => (
-                    <li
-                      key={index}
-                      style={{
-                        marginBottom: "8px",
-                        lineHeight: "22px",
-                        fontSize: "14px"
-                      }}
-                    >
-                      {reason}
-                    </li>
-                  ))}
-              </ul>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                <h3 style={{ color: "#111827", margin: 0, fontSize: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FaShieldAlt color="#2563EB" /> Explainable Risk Grounding:
+                </h3>
+                <span style={{ fontSize: "11px", color: "#64748B", fontWeight: "600" }}>
+                  Historical Ledger & Context Validated
+                </span>
+              </div>
+
+              {riskData.structured_reasons && riskData.structured_reasons.filter((r) => r.triggered === true).length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {riskData.structured_reasons
+                    .filter((rule) => rule.triggered === true)
+                    .map((rule) => {
+                      const isExpanded = !!expandedReasons[rule.rule_code];
+                      const isCrit = rule.severity === "CRITICAL";
+                      const isHigh = rule.severity === "HIGH";
+                      const isMed = rule.severity === "MEDIUM";
+
+                      const badgeBg = isCrit ? "#FEE2E2" : isHigh ? "#FFEDD5" : isMed ? "#FEF3C7" : "#DCFCE7";
+                      const badgeText = isCrit ? "#991B1B" : isHigh ? "#C2410C" : isMed ? "#B45309" : "#15803D";
+                      const cardBorder = isCrit ? "#FCA5A5" : isHigh ? "#FDBA74" : isMed ? "#FCD34D" : "#E2E8F0";
+
+                      return (
+                        <div
+                          key={rule.rule_code}
+                          style={{
+                            border: `1px solid ${cardBorder}`,
+                            borderRadius: "10px",
+                            background: "#FAFAFA",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: "12px 14px",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "flex-start",
+                              gap: "10px",
+                            }}
+                          >
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                                <span
+                                  style={{
+                                    background: badgeBg,
+                                    color: badgeText,
+                                    padding: "2px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "11px",
+                                    fontWeight: "800",
+                                    letterSpacing: "0.4px",
+                                  }}
+                                >
+                                  {rule.rule_code}
+                                </span>
+                                <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "600" }}>
+                                  {rule.rule_name}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: "13px", color: "#1F2937", lineHeight: "1.45", fontWeight: "500" }}>
+                                {rule.reason_text}
+                              </div>
+                            </div>
+
+                            {rule.evidence && (
+                              <button
+                                onClick={() => toggleReasonExpand(rule.rule_code)}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  color: "#2563EB",
+                                  fontSize: "12px",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontWeight: "700",
+                                  padding: "4px",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {isExpanded ? "Hide Evidence" : "Evidence"} {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                              </button>
+                            )}
+                          </div>
+
+                          {isExpanded && rule.evidence && (
+                            <div
+                              style={{
+                                background: "#F1F5F9",
+                                padding: "10px 14px",
+                                borderTop: "1px solid #E2E8F0",
+                                fontSize: "12px",
+                                color: "#334155",
+                              }}
+                            >
+                              <div style={{ fontWeight: "700", marginBottom: "6px", color: "#475569", display: "flex", alignItems: "center", gap: "6px" }}>
+                                <FaCheckCircle color="#10B981" /> Grounded Evidence Data:
+                              </div>
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "6px" }}>
+                                {Object.entries(rule.evidence).map(([k, v]) => (
+                                  <div key={k} style={{ background: "#fff", padding: "5px 9px", borderRadius: "5px", border: "1px solid #E2E8F0" }}>
+                                    <span style={{ color: "#64748B", textTransform: "capitalize", fontSize: "11px" }}>
+                                      {k.replace(/_/g, " ")}:{" "}
+                                    </span>
+                                    <strong style={{ color: "#0F172A", fontSize: "12px" }}>
+                                      {Array.isArray(v) ? v.join(", ") : String(v)}
+                                    </strong>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <ul style={{ color: "#374151", paddingLeft: "20px", margin: 0 }}>
+                  {riskData.reasons &&
+                    riskData.reasons.map((reason, index) => (
+                      <li
+                        key={index}
+                        style={{
+                          marginBottom: "8px",
+                          lineHeight: "22px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        {reason}
+                      </li>
+                    ))}
+                </ul>
+              )}
             </div>
 
             {/* TRACE TRANSACTION BUTTON */}

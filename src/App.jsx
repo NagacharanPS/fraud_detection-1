@@ -20,9 +20,9 @@ function MainLayout() {
 
       <div
         style={{
-          maxWidth: "750px",
+          maxWidth: "1360px",
           margin: "0 auto",
-          padding: "24px 20px 60px",
+          padding: "20px 20px 60px",
         }}
       >
         <Routes>
