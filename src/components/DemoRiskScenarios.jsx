@@ -332,52 +332,12 @@ function DemoRiskScenarios({ onSelectScenario, selectedScenarioId }) {
         })}
       </div>
 
-      {/* CATEGORY INFO BANNER */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: selectedCategoryData.bgColor,
-          border: `1px solid ${selectedCategoryData.borderColor}`,
-          borderRadius: "12px",
-          padding: "10px 16px",
-          flexWrap: "wrap",
-          gap: "8px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "14px" }}>{selectedCategoryData.icon}</span>
-          <span
-            style={{
-              fontSize: "13px",
-              fontWeight: "600",
-              color: selectedCategoryData.themeColor,
-            }}
-          >
-            {selectedCategoryData.tagline}
-          </span>
-        </div>
-        <span
-          style={{
-            fontSize: "11px",
-            fontWeight: "600",
-            color: selectedCategoryData.themeColor,
-            background: selectedCategoryData.badgeBg,
-            padding: "2px 8px",
-            borderRadius: "6px",
-          }}
-        >
-          {selectedCategoryData.scenarios.length} Scenarios
-        </span>
-      </div>
-
       {/* INDEPENDENT SCENARIO CARDS */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "14px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          gap: "12px",
         }}
       >
         {selectedCategoryData.scenarios.map((sc) => {
@@ -396,77 +356,19 @@ function DemoRiskScenarios({ onSelectScenario, selectedScenarioId }) {
                 border: isSelected
                   ? `2px solid ${selectedCategoryData.themeColor}`
                   : "1px solid #E2E8F0",
-                borderRadius: "14px",
-                padding: "16px",
+                borderRadius: "12px",
+                padding: "12px 14px",
                 cursor: "pointer",
                 boxShadow: isSelected
-                  ? `0 6px 20px ${selectedCategoryData.themeColor}25`
-                  : "0 2px 6px rgba(0,0,0,0.03)",
-                transition: "all 0.2s ease",
+                  ? `0 4px 14px ${selectedCategoryData.themeColor}22`
+                  : "0 1px 3px rgba(0,0,0,0.03)",
+                transition: "all 0.18s ease",
                 transform: isSelected ? "translateY(-1px)" : "none",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
               }}
             >
-              {/* TOP ROW: Title & Amount */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: "10px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div
-                    style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: selectedCategoryData.themeColor,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "14px",
-                      color: isSelected
-                        ? selectedCategoryData.themeColor
-                        : "#0F172A",
-                    }}
-                  >
-                    {sc.title}
-                  </span>
-                </div>
-
-                <span
-                  style={{
-                    fontWeight: "700",
-                    fontSize: "14px",
-                    color: "#0F172A",
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                    padding: "3px 10px",
-                    borderRadius: "8px",
-                  }}
-                >
-                  ₹{sc.amount.toLocaleString("en-IN")}
-                </span>
-              </div>
-
-              {/* DESCRIPTION */}
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "12px",
-                  color: "#64748B",
-                  lineHeight: "18px",
-                }}
-              >
-                {sc.description}
-              </p>
-
               {/* SENDER -> RECEIVER ROUTE */}
               <div
                 style={{
@@ -475,7 +377,7 @@ function DemoRiskScenarios({ onSelectScenario, selectedScenarioId }) {
                   justifyContent: "space-between",
                   background: "#F8FAFC",
                   padding: "8px 12px",
-                  borderRadius: "10px",
+                  borderRadius: "8px",
                   fontSize: "12px",
                   color: "#334155",
                   border: "1px solid #F1F5F9",
@@ -485,59 +387,37 @@ function DemoRiskScenarios({ onSelectScenario, selectedScenarioId }) {
                   <span style={{ color: "#94A3B8", fontSize: "11px" }}>From: </span>
                   <strong>{sc.sender}</strong> ({sc.senderName.split(" ")[0]})
                 </div>
-                <span style={{ color: "#CBD5E1", fontWeight: "bold" }}>➔</span>
+                <span style={{ color: "#94A3B8", fontWeight: "bold", padding: "0 6px" }}>➔</span>
                 <div>
                   <span style={{ color: "#94A3B8", fontSize: "11px" }}>To: </span>
                   <strong>{sc.receiver}</strong> ({sc.receiverName.split(" ")[0]})
                 </div>
               </div>
 
-              {/* BOTTOM ROW: EXPECTED CHALLENGE & ACTION BUTTON */}
-              <div
+              {/* ACTION BUTTON */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectScenario(sc);
+                }}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  paddingTop: "6px",
-                  borderTop: "1px solid #F1F5F9",
+                  width: "100%",
+                  background: isSelected
+                    ? selectedCategoryData.themeColor
+                    : "#F1F5F9",
+                  color: isSelected ? "#FFFFFF" : "#334155",
+                  border: "none",
+                  padding: "7px 12px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
                 }}
               >
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    color: selectedCategoryData.themeColor,
-                    background: selectedCategoryData.badgeBg,
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                  }}
-                >
-                  {sc.expectedFlow}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectScenario(sc);
-                  }}
-                  style={{
-                    background: isSelected
-                      ? selectedCategoryData.themeColor
-                      : "#F1F5F9",
-                    color: isSelected ? "#FFFFFF" : "#334155",
-                    border: "none",
-                    padding: "5px 12px",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {isSelected ? "✓ Active Scenario" : "Load Scenario →"}
-                </button>
-              </div>
+                {isSelected ? "✓ Active Scenario" : "Load Scenario →"}
+              </button>
             </div>
           );
         })}
