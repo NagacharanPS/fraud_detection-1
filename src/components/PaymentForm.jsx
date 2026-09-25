@@ -4,7 +4,7 @@ import api from "../api";
 import { collectDeviceSignals } from "../utils/deviceTrust";
 import DeviceSecurityModal from "./DeviceSecurityModal";
 
-function PaymentForm() {
+function PaymentForm({ selectedScenario, onResetScenario }) {
   const navigate = useNavigate();
 
   /* ----------------------------- STATES ----------------------------- */
@@ -99,6 +99,40 @@ function PaymentForm() {
       console.log(err);
     }
   }
+
+  // Handle Scenario pre-fill
+  useEffect(() => {
+    if (!selectedScenario || accounts.length === 0) return;
+
+    const senderAcc = accounts.find((a) => a.account_id === selectedScenario.sender);
+    const receiverAcc = accounts.find((a) => a.account_id === selectedScenario.receiver);
+
+    if (senderAcc) {
+      setSelectedSender(senderAcc);
+      setSenderSearch(senderAcc.account_id);
+    }
+    if (receiverAcc) {
+      setSelectedReceiver(receiverAcc);
+      setReceiverSearch(receiverAcc.account_id);
+    }
+    if (selectedScenario.amount !== undefined) {
+      setAmount(String(selectedScenario.amount));
+    }
+    if (selectedScenario.isNewReceiver !== undefined) {
+      setIsNewReceiver(Boolean(selectedScenario.isNewReceiver));
+    }
+    if (selectedScenario.transactionsLast10Min !== undefined) {
+      setTransactionsLast10Min(Number(selectedScenario.transactionsLast10Min));
+    }
+    if (selectedScenario.time) {
+      setTransactionTime(selectedScenario.time);
+    } else {
+      const now = new Date();
+      setTransactionTime(now.toISOString().slice(0, 16));
+    }
+    setError("");
+    setRiskData(null);
+  }, [selectedScenario, accounts]);
 
   /* ----------------------------- FILTERED LISTS ----------------------------- */
 
