@@ -135,28 +135,51 @@ function Navbar() {
               </div>
             </div>
 
-            {/* Logout Button */}
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                background: "#FEE2E2",
-                color: "#991B1B",
-                border: "1px solid #FCA5A5",
-                padding: "8px 14px",
-                borderRadius: "10px",
-                fontWeight: "700",
-                fontSize: "12px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                transition: "all 0.15s ease",
-              }}
-              title="Sign Out"
-            >
-              <FaSignOutAlt /> Logout
-            </button>
+            {/* Sign Out & Logout Controls */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  background: "#FEE2E2",
+                  color: "#991B1B",
+                  border: "1px solid #FCA5A5",
+                  padding: "8px 13px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.15s ease",
+                }}
+                title="Sign Out of your account"
+              >
+                <FaSignOutAlt /> Sign Out
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  background: "#F1F5F9",
+                  color: "#475569",
+                  border: "1px solid #CBD5E1",
+                  padding: "8px 12px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  transition: "all 0.15s ease",
+                }}
+                title="Logout"
+              >
+                <FaSignOutAlt /> Logout
+              </button>
+            </div>
           </>
         ) : (
           <>

@@ -10,6 +10,7 @@ import {
   insertUser as dbInsertUser,
   seedDefaultUsers as dbSeedDefaultUsers,
   findUser as dbFindUser,
+  getAllUsers as dbGetAllUsers,
 } from "./authDatabase";
 
 interface Account {
@@ -502,7 +503,59 @@ async function startServer() {
   try {
     await dbInitTables();
     await dbSeedDefaultUsers(Array.from(usersStore.values()));
-    console.log("✅ Initialized dedicated `users` and `transactions` tables in fraud_detection database.");
+    
+    // Sync all persisted users from SQLite database into memory
+    const dbUsers = await dbGetAllUsers();
+    for (const u of dbUsers) {
+      if (!usersStore.has(u.user_id)) {
+        const primaryEmail = (u.email || u.email_or_upi_id || "").toLowerCase();
+        const accountId = u.account_id || `A${String(accountsStore.size + 1).padStart(4, "0")}`;
+        const userObj: User = {
+          user_id: u.user_id,
+          email: primaryEmail,
+          password_hash: u.password_hash,
+          salt: u.salt || "",
+          full_name: u.full_name,
+          phone_number: u.phone_number || "",
+          account_id: accountId,
+          created_at: u.created_at || new Date().toISOString(),
+        };
+        usersStore.set(userObj.user_id, userObj);
+        if (userObj.email) usersByEmail.set(userObj.email, userObj.user_id);
+        if (u.email_or_upi_id) usersByEmail.set(u.email_or_upi_id.toLowerCase(), userObj.user_id);
+        if (userObj.phone_number) usersByPhone.set(userObj.phone_number, userObj.user_id);
+        if (userObj.account_id) usersByAccount.set(userObj.account_id, userObj.user_id);
+
+        // Ensure associated account exists in memory
+        if (!accountsStore.has(accountId)) {
+          const cleanUsername = userObj.full_name.toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
+          accountsStore.set(accountId, {
+            account_id: accountId,
+            account_name: userObj.full_name,
+            upi_id: `${cleanUsername}@payguard`,
+            account_type: "SAVINGS",
+            bank_name: "PayGuard Digital Bank",
+            mobile_number: userObj.phone_number || "9876540000",
+            current_balance: 75000,
+            trust_score: 95,
+            account_status: "Active",
+            created_at: new Date().toISOString().split("T")[0],
+            relationship_type: "PERSONAL",
+            occupation: "Verified User",
+            annual_income: 750000,
+            age_group: "26-35",
+            account_purpose: "PERSONAL",
+            verified_status: "VERIFIED",
+            kyc_status: "COMPLETED",
+            device_trust_score: 94,
+            last_login_device: "Secure-Browser-Session",
+            is_trusted_device: true,
+          });
+        }
+      }
+    }
+
+    console.log(`✅ Initialized dedicated \`users\` and \`transactions\` tables in fraud_detection database (${usersStore.size} total users active).`);
   } catch (err) {
     console.warn("Notice during database initialization:", err);
   }
@@ -1150,7 +1203,7 @@ async function startServer() {
   });
 
   // Login
-  app.post("/api/auth/login", (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     const { email_or_phone, password } = req.body;
 
     if (!email_or_phone || !password) {
@@ -1164,10 +1217,67 @@ async function startServer() {
 
     if (!userId) {
       for (const u of usersStore.values()) {
-        if (u.email === query || u.phone_number === cleanPhone || u.account_id.toLowerCase() === query) {
+        if (
+          u.email === query ||
+          u.phone_number === cleanPhone ||
+          u.account_id.toLowerCase() === query ||
+          u.email.split("@")[0] === query.split("@")[0]
+        ) {
           userId = u.user_id;
           break;
         }
+      }
+    }
+
+    // Fallback: Check SQLite fraud_detection database
+    if (!userId) {
+      try {
+        const dbUser = await dbFindUser(email_or_phone);
+        if (dbUser) {
+          userId = dbUser.user_id;
+          const userObj: User = {
+            user_id: dbUser.user_id,
+            email: (dbUser.email || dbUser.email_or_upi_id).toLowerCase(),
+            password_hash: dbUser.password_hash,
+            salt: dbUser.salt || "",
+            full_name: dbUser.full_name,
+            phone_number: dbUser.phone_number || "",
+            account_id: dbUser.account_id || `A${String(accountsStore.size + 1).padStart(4, "0")}`,
+            created_at: dbUser.created_at || new Date().toISOString(),
+          };
+          usersStore.set(userObj.user_id, userObj);
+          usersByEmail.set(userObj.email, userObj.user_id);
+          if (userObj.phone_number) usersByPhone.set(userObj.phone_number, userObj.user_id);
+          if (userObj.account_id) usersByAccount.set(userObj.account_id, userObj.user_id);
+
+          if (!accountsStore.has(userObj.account_id)) {
+            const cleanUsername = userObj.full_name.toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
+            accountsStore.set(userObj.account_id, {
+              account_id: userObj.account_id,
+              account_name: userObj.full_name,
+              upi_id: `${cleanUsername}@payguard`,
+              account_type: "SAVINGS",
+              bank_name: "PayGuard Digital Bank",
+              mobile_number: userObj.phone_number || "9876540000",
+              current_balance: 75000,
+              trust_score: 95,
+              account_status: "Active",
+              created_at: new Date().toISOString().split("T")[0],
+              relationship_type: "PERSONAL",
+              occupation: "Verified User",
+              annual_income: 750000,
+              age_group: "26-35",
+              account_purpose: "PERSONAL",
+              verified_status: "VERIFIED",
+              kyc_status: "COMPLETED",
+              device_trust_score: 94,
+              last_login_device: "Secure-Browser-Session",
+              is_trusted_device: true,
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("[Login] Notice on db lookup:", e);
       }
     }
 

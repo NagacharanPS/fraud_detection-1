@@ -1,4 +1,4 @@
-import sqlite3 from "sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import path from "path";
 import fs from "fs";
 
@@ -8,17 +8,17 @@ const DB_PATHS = [
   path.resolve(process.cwd(), "backend/database/fraud_detection.db"),
 ];
 
-function getDatabases(): sqlite3.Database[] {
-  const dbs: sqlite3.Database[] = [];
+function getDatabases(): DatabaseSync[] {
+  const dbs: DatabaseSync[] = [];
   for (const dbPath of DB_PATHS) {
     try {
       const dir = path.dirname(dbPath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      const db = new sqlite3.Database(dbPath);
-      db.run("PRAGMA journal_mode = WAL;");
-      db.run("PRAGMA foreign_keys = ON;");
+      const db = new DatabaseSync(dbPath);
+      db.exec("PRAGMA journal_mode = WAL;");
+      db.exec("PRAGMA foreign_keys = ON;");
       dbs.push(db);
     } catch (err) {
       console.warn(`[authDatabase] Could not open db at ${dbPath}:`, err);
@@ -27,34 +27,16 @@ function getDatabases(): sqlite3.Database[] {
   return dbs;
 }
 
-function runOnDb(db: sqlite3.Database, sql: string, params: any[] = []): Promise<void> {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, (err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-}
+let initialized = false;
 
-function allFromDb<T = any>(db: sqlite3.Database, sql: string, params: any[] = []): Promise<T[]> {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows as T[]);
-    });
-  });
-}
-
-let initPromise: Promise<void> | null = null;
-
-export async function initializeDatabaseTables(): Promise<void> {
+export function initializeDatabaseTables(): void {
+  if (initialized) return;
   const dbs = getDatabases();
   for (const db of dbs) {
     try {
-      // 1. Create dedicated `users` credentials & biometrics table in fraud_detection database
-      await runOnDb(
-        db,
-        `CREATE TABLE IF NOT EXISTS users (
+      // 1. Dedicated `users` credentials & biometrics table in fraud_detection database
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
           user_id TEXT PRIMARY KEY,
           full_name TEXT NOT NULL,
           email_or_upi_id TEXT NOT NULL UNIQUE,
@@ -69,10 +51,10 @@ export async function initializeDatabaseTables(): Promise<void> {
           algorithm_version TEXT DEFAULT 'opencv-yunet-sface-2021dec',
           enrolled_at DATETIME,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`
-      );
+        );
+      `);
 
-      // Add missing columns if migrating existing table
+      // Add missing columns if migrating an older database
       const columnsToAdd = [
         "full_name TEXT",
         "email_or_upi_id TEXT",
@@ -90,45 +72,48 @@ export async function initializeDatabaseTables(): Promise<void> {
       ];
       for (const col of columnsToAdd) {
         try {
-          await runOnDb(db, `ALTER TABLE users ADD COLUMN ${col}`);
+          db.exec(`ALTER TABLE users ADD COLUMN ${col};`);
         } catch {
           // Column already exists
         }
       }
 
-      // Create unique index on email_or_upi_id if not exists
       try {
-        await runOnDb(db, `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_or_upi ON users (email_or_upi_id)`);
+        db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_or_upi ON users (email_or_upi_id);`);
       } catch {
         // Index exists
       }
 
-      // 2. Ensure `transactions` table exists in fraud_detection database alongside `users`
-      const hasTransactions = await allFromDb(
-        db,
-        `SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name = 'transactions'`
-      );
+      // 2. Ensure `transactions` table exists alongside `users` in fraud_detection database
+      const hasTransactions = db.prepare(
+        "SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name = 'transactions'"
+      ).all();
 
       if (!hasTransactions || hasTransactions.length === 0) {
-        const hasRaw = await allFromDb(
-          db,
-          `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'raw_transactions_50k'`
-        );
+        const hasRaw = db.prepare(
+          "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'raw_transactions_50k'"
+        ).all();
         if (hasRaw && hasRaw.length > 0) {
           try {
-            await runOnDb(db, `CREATE TABLE IF NOT EXISTS transactions AS SELECT * FROM raw_transactions_50k`);
-            await runOnDb(db, `CREATE INDEX IF NOT EXISTS idx_transactions_id ON transactions (transaction_id)`);
-            await runOnDb(db, `CREATE INDEX IF NOT EXISTS idx_transactions_sender ON transactions (sender_account)`);
-            await runOnDb(db, `CREATE INDEX IF NOT EXISTS idx_transactions_receiver ON transactions (receiver_account)`);
+            db.exec(`
+              CREATE TABLE IF NOT EXISTS transactions AS SELECT * FROM raw_transactions_50k;
+              CREATE INDEX IF NOT EXISTS idx_transactions_id ON transactions (transaction_id);
+              CREATE INDEX IF NOT EXISTS idx_transactions_sender ON transactions (sender_account);
+              CREATE INDEX IF NOT EXISTS idx_transactions_receiver ON transactions (receiver_account);
+            `);
           } catch (e) {
             console.warn("[authDatabase] Notice creating transactions table:", e);
           }
         }
       }
 
-      // Also create alias view `user_credentials` for explicit query support
+      // User credentials view alias
       try {
-        await runOnDb(db, `CREATE VIEW IF NOT EXISTS user_credentials AS SELECT user_id, full_name, email_or_upi_id, password_hash, face_data, created_at FROM users`);
+        db.exec(`
+          CREATE VIEW IF NOT EXISTS user_credentials AS 
+          SELECT user_id, full_name, email_or_upi_id, password_hash, face_data, created_at 
+          FROM users;
+        `);
       } catch {
         // View exists
       }
@@ -136,42 +121,76 @@ export async function initializeDatabaseTables(): Promise<void> {
       console.warn("[authDatabase] Init error on db:", err);
     }
   }
+  initialized = true;
 }
 
-export function ensureTables(): Promise<void> {
-  if (!initPromise) {
-    initPromise = initializeDatabaseTables();
+export function ensureTables(): void {
+  initializeDatabaseTables();
+}
+
+export function getAllUsers(): any[] {
+  ensureTables();
+  const dbs = getDatabases();
+  for (const db of dbs) {
+    try {
+      const rows = db.prepare(`
+        SELECT user_id, full_name, email_or_upi_id, email, phone_number, password_hash, salt, account_id, face_data, face_embedding, template_hash, algorithm_version, enrolled_at, created_at
+        FROM users
+      `).all();
+      if (rows && rows.length > 0) {
+        return rows as any[];
+      }
+    } catch {
+      // Continue
+    }
   }
-  return initPromise;
+  return [];
 }
 
-export async function findUser(identifier: string): Promise<any | null> {
-  await ensureTables();
+export function findUser(identifier: string): any | null {
+  ensureTables();
   const dbs = getDatabases();
   const cleanPhone = identifier.replace(/\D/g, "");
   const normalized = identifier.toLowerCase().trim();
+  const withDomain = normalized.includes("@") && !normalized.includes(".") ? `${normalized}.com` : normalized;
+  const username = normalized.split("@")[0];
 
   for (const db of dbs) {
     try {
-      const rows = await allFromDb(
-        db,
-        `SELECT user_id, full_name, email_or_upi_id, email, phone_number, password_hash, salt, account_id, face_data, face_embedding, template_hash, algorithm_version, enrolled_at, created_at
-         FROM users
-         WHERE email_or_upi_id = ? OR email = ? OR phone_number = ? OR account_id = ? OR user_id = ?
-         LIMIT 1`,
-        [normalized, normalized, cleanPhone || normalized, identifier.toUpperCase(), identifier]
+      const stmt = db.prepare(`
+        SELECT user_id, full_name, email_or_upi_id, email, phone_number, password_hash, salt, account_id, face_data, face_embedding, template_hash, algorithm_version, enrolled_at, created_at
+        FROM users
+        WHERE email_or_upi_id = ? 
+           OR email = ? 
+           OR email_or_upi_id = ? 
+           OR email = ? 
+           OR email_or_upi_id LIKE ?
+           OR phone_number = ? 
+           OR account_id = ? 
+           OR user_id = ?
+        LIMIT 1
+      `);
+      const row = stmt.get(
+        normalized,
+        normalized,
+        withDomain,
+        withDomain,
+        `${username}%`,
+        cleanPhone || normalized,
+        identifier.toUpperCase(),
+        identifier
       );
-      if (rows && rows.length > 0) {
-        return rows[0];
+      if (row) {
+        return row;
       }
     } catch {
-      // Continue to next db fallback
+      // Continue
     }
   }
   return null;
 }
 
-export async function insertUser(user: {
+export function insertUser(user: {
   user_id: string;
   full_name: string;
   email_or_upi_id?: string;
@@ -184,8 +203,8 @@ export async function insertUser(user: {
   face_embedding?: any;
   template_hash?: string;
   algorithm_version?: string;
-}): Promise<void> {
-  await ensureTables();
+}): void {
+  ensureTables();
   const dbs = getDatabases();
   const emailOrUpi = user.email_or_upi_id || user.email;
   const embeddingJson = user.face_embedding ? JSON.stringify(user.face_embedding) : null;
@@ -193,9 +212,8 @@ export async function insertUser(user: {
 
   for (const db of dbs) {
     try {
-      await runOnDb(
-        db,
-        `INSERT INTO users (
+      const stmt = db.prepare(`
+        INSERT INTO users (
           user_id, full_name, email_or_upi_id, email, phone_number,
           password_hash, salt, account_id, face_data, face_embedding,
           template_hash, algorithm_version, enrolled_at, created_at
@@ -212,21 +230,21 @@ export async function insertUser(user: {
           face_embedding = excluded.face_embedding,
           template_hash = excluded.template_hash,
           algorithm_version = excluded.algorithm_version,
-          enrolled_at = excluded.enrolled_at`,
-        [
-          user.user_id,
-          user.full_name,
-          emailOrUpi,
-          user.email,
-          user.phone_number || "",
-          user.password_hash,
-          user.salt || "",
-          user.account_id || "",
-          faceData,
-          embeddingJson,
-          user.template_hash || "",
-          user.algorithm_version || "opencv-yunet-sface-2021dec",
-        ]
+          enrolled_at = excluded.enrolled_at
+      `);
+      stmt.run(
+        user.user_id,
+        user.full_name,
+        emailOrUpi,
+        user.email,
+        user.phone_number || "",
+        user.password_hash,
+        user.salt || "",
+        user.account_id || "",
+        faceData,
+        embeddingJson,
+        user.template_hash || "",
+        user.algorithm_version || "opencv-yunet-sface-2021dec"
       );
     } catch (err) {
       console.warn("[authDatabase] Error inserting user to DB:", err);
@@ -234,11 +252,11 @@ export async function insertUser(user: {
   }
 }
 
-export async function seedDefaultUsers(demoUsers: any[]): Promise<void> {
-  await ensureTables();
+export function seedDefaultUsers(demoUsers: any[]): void {
+  ensureTables();
   for (const u of demoUsers) {
     try {
-      await insertUser({
+      insertUser({
         user_id: u.user_id,
         full_name: u.full_name,
         email_or_upi_id: u.email || u.upi_id,
@@ -258,12 +276,12 @@ export async function seedDefaultUsers(demoUsers: any[]): Promise<void> {
   }
 }
 
-export async function deleteUserData(userId: string): Promise<void> {
-  await ensureTables();
+export function deleteUserData(userId: string): void {
+  ensureTables();
   const dbs = getDatabases();
   for (const db of dbs) {
     try {
-      await runOnDb(db, "DELETE FROM users WHERE user_id = ?", [userId]);
+      db.prepare("DELETE FROM users WHERE user_id = ?").run(userId);
     } catch {
       // Continue
     }

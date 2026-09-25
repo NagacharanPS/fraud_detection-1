@@ -125,6 +125,7 @@ export function AuthProvider({ children }) {
         login,
         signup,
         logout,
+        signout: logout,
         switchAccount,
         refreshBalance,
       }}
