@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import PaymentForm from "../components/PaymentForm";
 import DemoRiskScenarios from "../components/DemoRiskScenarios";
 import TransactionGraph from "../components/TransactionGraph";
@@ -6,8 +7,31 @@ import DatasetExplorer from "../components/DatasetExplorer";
 import { FaBolt, FaTable, FaShieldAlt } from "react-icons/fa";
 
 function Home() {
-  const [activeTab, setActiveTab] = useState("simulator"); // "simulator" | "explorer"
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTxn = searchParams.get("txn");
+  const urlTab = searchParams.get("tab");
+
+  const [activeTab, setActiveTab] = useState(
+    urlTxn || urlTab === "graph" ? "graph" : urlTab === "explorer" ? "explorer" : "simulator"
+  );
   const [selectedScenario, setSelectedScenario] = useState(null);
+  const [targetTxnId, setTargetTxnId] = useState(urlTxn || null);
+
+  useEffect(() => {
+    if (urlTxn) {
+      setTargetTxnId(urlTxn);
+      setActiveTab("graph");
+    } else if (urlTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTxn, urlTab]);
+
+  const handleNavigateToGraphWithTxn = (txnId) => {
+    setTargetTxnId(txnId);
+    setActiveTab("graph");
+    setSearchParams({ tab: "graph", txn: txnId });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleSelectScenario = (scenario) => {
     setSelectedScenario(scenario);
@@ -160,6 +184,7 @@ function Home() {
             <PaymentForm
               selectedScenario={selectedScenario}
               onResetScenario={() => setSelectedScenario(null)}
+              onViewInGraph={handleNavigateToGraphWithTxn}
             />
           </section>
         </>
@@ -173,7 +198,13 @@ function Home() {
       ) : (
         /* TRANSACTION NETWORK GRAPH TAB */
         <section style={{ width: "100%" }}>
-          <TransactionGraph />
+          <TransactionGraph
+            initialTxnId={targetTxnId}
+            onClearTargetTxn={() => {
+              setTargetTxnId(null);
+              setSearchParams({ tab: "graph" });
+            }}
+          />
         </section>
       )}
     </div>

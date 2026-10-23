@@ -4,6 +4,7 @@ import {
   FaHome,
   FaReceipt,
   FaShieldAlt,
+  FaProjectDiagram,
 } from "react-icons/fa";
 
 function PaymentSuccess() {
@@ -116,7 +117,9 @@ function PaymentSuccess() {
           <Row title="Transaction ID" value={state.transaction_id} />
           <Row title="Sender" value={state.sender_account} />
           <Row title="Receiver" value={state.receiver_account} />
-          <Row title="Receiver Name" value={state.receiver_name} />
+          {Boolean(state.receiver_name && state.receiver_name.trim() && state.receiver_name !== "Name not available" && state.receiver_name !== "Unknown") && (
+            <Row title="Receiver Name" value={state.receiver_name} />
+          )}
           <Row
             title="Amount"
             value={`₹${Number(state.amount).toLocaleString("en-IN")}`}
@@ -182,6 +185,21 @@ function PaymentSuccess() {
             <FaHome />
             Back Home
           </button>
+
+          {state.transaction_id && (
+            <button
+              onClick={() => navigate(`/?tab=graph&txn=${encodeURIComponent(state.transaction_id)}`)}
+              style={{
+                ...buttonStyle,
+                background: "#0284C7",
+                color: "#fff",
+                gridColumn: "span 2",
+              }}
+            >
+              <FaProjectDiagram />
+              View in Transaction Network Graph
+            </button>
+          )}
         </div>
       </div>
     </div>

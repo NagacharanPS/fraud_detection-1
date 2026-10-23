@@ -57,9 +57,11 @@ function RiskCard({ risk }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "16px" }}>
-        <p style={{ margin: 0 }}>
-          <strong>Receiver :</strong> {risk.receiver_name}
-        </p>
+        {Boolean(risk.receiver_name && risk.receiver_name.trim() && risk.receiver_name !== "Name not available" && risk.receiver_name !== "Unknown") && (
+          <p style={{ margin: 0 }}>
+            <strong>Receiver :</strong> {risk.receiver_name}
+          </p>
+        )}
         <p style={{ margin: 0 }}>
           <strong>Risk Score :</strong> {risk.risk_score}%
         </p>

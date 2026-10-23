@@ -4,8 +4,8 @@ import fs from "fs";
 
 export interface AccountMetadata {
   account_id: string;
-  account_name: string; // "Name not available" if unmapped
-  upi_id: string; // "Not available" if unmapped
+  account_name: string | null;
+  upi_id: string | null;
   account_type: string;
   trust_score: number | string;
   current_balance: number | string;
@@ -93,8 +93,8 @@ export function resolveAccountMetadata(accountId: string, fallbackType?: string)
   // ACC_xxxx accounts from transaction dataset have no verified personal directory record in database
   return {
     account_id: cleanId,
-    account_name: "Name not available",
-    upi_id: "Not available",
+    account_name: null,
+    upi_id: null,
     account_type: fallbackType || "Unknown",
     trust_score: "Unknown",
     current_balance: "Unknown",
@@ -532,6 +532,7 @@ export interface GraphQueryOptions {
   limit?: number;
   accountId?: string;
   search?: string;
+  transactionId?: string;
   riskLevel?: string; // 'ALL' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
   suspiciousOnly?: boolean;
   minAmount?: number;
@@ -546,6 +547,7 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
   const limit = Math.min(Math.max(Number(options.limit) || 120, 10), 1000);
   const accountIdFilter = options.accountId?.trim().toUpperCase();
   const searchQuery = options.search?.trim().toLowerCase();
+  const targetTxnId = options.transactionId?.trim();
   const riskLevelFilter = options.riskLevel?.toUpperCase() || "ALL";
   const suspiciousOnly = options.suspiciousOnly === true || options.suspiciousOnly === ("true" as any);
   const minAmount = Number(options.minAmount) || 0;
@@ -562,7 +564,11 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
 
       const sAcc = (lt.sender_account || "").trim().toUpperCase();
       const rAcc = (lt.receiver_account || "").trim().toUpperCase();
-      const txId = (lt.transaction_id || "").toLowerCase();
+      const txId = (lt.transaction_id || "").trim();
+
+      if (targetTxnId && txId.toLowerCase() !== targetTxnId.toLowerCase()) {
+        continue;
+      }
 
       if (accountIdFilter && sAcc !== accountIdFilter && rAcc !== accountIdFilter) {
         continue;
@@ -570,7 +576,7 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
 
       if (
         searchQuery &&
-        !txId.includes(searchQuery) &&
+        !txId.toLowerCase().includes(searchQuery) &&
         !sAcc.toLowerCase().includes(searchQuery) &&
         !rAcc.toLowerCase().includes(searchQuery)
       ) {
@@ -634,6 +640,12 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
       let query =
         "SELECT transaction_id, sender_account, receiver_account, amount, timestamp, sender_account_type, sender_trust_score, receiver_trust_score, is_fraud FROM transactions WHERE 1=1";
       const params: any[] = [];
+
+      // Filter by targeted transaction ID
+      if (targetTxnId) {
+        query += " AND transaction_id = ?";
+        params.push(targetTxnId);
+      }
 
       // Filter by minimum amount
       if (minAmount > 0) {
@@ -763,8 +775,8 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
             id: accId,
             label: accId,
             account_id: accId,
-            account_name: meta.account_name, // "Name not available" for ACC_xxxx unless verified
-            upi_id: meta.upi_id,
+            account_name: meta.is_verified_identity ? meta.account_name : null,
+            upi_id: meta.is_verified_identity ? meta.upi_id : null,
             account_type: meta.account_type,
             trust_score: meta.trust_score,
             current_balance: meta.current_balance,
@@ -846,8 +858,8 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
         risk_reasons: t.risk_reasons || [],
         sender_id: t.sender_account,
         receiver_id: t.receiver_account,
-        sender_name: senderMeta.account_name, // "Name not available" if unmapped
-        receiver_name: receiverMeta.account_name, // "Name not available" if unmapped
+        sender_name: senderMeta.is_verified_identity ? senderMeta.account_name : null,
+        receiver_name: receiverMeta.is_verified_identity ? receiverMeta.account_name : null,
         sender_is_verified: senderMeta.is_verified_identity,
         receiver_is_verified: receiverMeta.is_verified_identity,
         risk_conclusion: t.risk_conclusion,
@@ -997,11 +1009,57 @@ export function fetchAccountDeepAudit(accountId: string) {
     accountPatterns.push("Multi-Hop Transit Account (48-hour chained flow)");
   }
 
+  const enrichedRecentTxs = transactions.slice(0, 15).map((t) => {
+    const evaluated = computeIndependentTransactionRisk({
+      amount: Number(t.amount) || 0,
+      sender_trust_score: t.sender_trust_score,
+      receiver_trust_score: t.receiver_trust_score,
+      timestamp: t.timestamp,
+      sender_account: t.sender_account,
+      receiver_account: t.receiver_account,
+    });
+
+    const sMeta = resolveAccountMetadata(t.sender_account);
+    const rMeta = resolveAccountMetadata(t.receiver_account);
+
+    const relatedPatterns: string[] = [];
+    if (patterns.fanInAccounts.has(t.receiver_account)) {
+      const p = patterns.fanInAccounts.get(t.receiver_account)!;
+      relatedPatterns.push(`Receiver is Fan-In Hub (${p.distinct_senders_72h} senders in 72h)`);
+    }
+    if (patterns.fanOutAccounts.has(t.sender_account)) {
+      const p = patterns.fanOutAccounts.get(t.sender_account)!;
+      relatedPatterns.push(`Sender is Fan-Out Hub (${p.distinct_receivers_72h} receivers in 72h)`);
+    }
+    if (patterns.circularTxIds.has(t.transaction_id)) {
+      relatedPatterns.push("Participates in directed circular cycle");
+    }
+
+    return {
+      transaction_id: t.transaction_id,
+      sender_account: t.sender_account,
+      receiver_account: t.receiver_account,
+      amount: Number(t.amount) || 0,
+      timestamp: t.timestamp,
+      is_fraud: t.is_fraud,
+      risk_score: evaluated.risk_score,
+      risk_level: evaluated.risk_level,
+      risk_factors: evaluated.risk_factors || [],
+      risk_reasons: evaluated.reasons || [],
+      risk_conclusion: evaluated.risk_conclusion,
+      sender_is_verified: sMeta.is_verified_identity,
+      sender_name: sMeta.is_verified_identity && sMeta.account_name !== "Name not available" ? sMeta.account_name : null,
+      receiver_is_verified: rMeta.is_verified_identity,
+      receiver_name: rMeta.is_verified_identity && rMeta.account_name !== "Name not available" ? rMeta.account_name : null,
+      patterns: relatedPatterns,
+    };
+  });
+
   return {
     account_id: cleanId,
-    account_name: meta.account_name, // "Name not available" for ACC_xxxx unless verified
-    account_holder: meta.account_name,
-    upi_id: meta.upi_id, // "Not available"
+    account_name: meta.is_verified_identity && meta.account_name !== "Name not available" ? meta.account_name : null,
+    account_holder: meta.is_verified_identity && meta.account_name !== "Name not available" ? meta.account_name : null,
+    upi_id: meta.is_verified_identity && meta.upi_id !== "Not available" ? meta.upi_id : null,
     account_type: meta.account_type,
     trust_score: meta.is_verified_identity ? meta.trust_score : avgObservedTrust,
     observed_transaction_trust: avgObservedTrust,
@@ -1017,6 +1075,6 @@ export function fetchAccountDeepAudit(accountId: string) {
     fraud_rate_percentage: transactions.length > 0 ? Math.round((suspiciousTxs.length / transactions.length) * 1000) / 10 : 0,
     patterns: accountPatterns,
     pattern_details: patternDetails,
-    recent_transactions: transactions.slice(0, 10),
+    recent_transactions: enrichedRecentTxs,
   };
 }

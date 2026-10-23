@@ -525,7 +525,9 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                             {r.sender_account}
                           </span>
                         </div>
-                        <div style={{ fontSize: "12px", color: "#475569" }}>{r.sender_name}</div>
+                        {Boolean(r.sender_name && r.sender_name.trim() && r.sender_name !== "Name not available" && r.sender_name !== "Unknown") && (
+                          <div style={{ fontSize: "12px", color: "#475569" }}>{r.sender_name}</div>
+                        )}
                       </td>
 
                       {/* Receiver */}
@@ -535,7 +537,9 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                             {r.receiver_account}
                           </span>
                         </div>
-                        <div style={{ fontSize: "12px", color: "#475569" }}>{r.receiver_name}</div>
+                        {Boolean(r.receiver_name && r.receiver_name.trim() && r.receiver_name !== "Name not available" && r.receiver_name !== "Unknown") && (
+                          <div style={{ fontSize: "12px", color: "#475569" }}>{r.receiver_name}</div>
+                        )}
                       </td>
 
                       {/* Amount */}
@@ -794,9 +798,11 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                   <div style={{ fontSize: "16px", fontWeight: "800", color: "#1E293B", marginTop: "2px" }}>
                     {selectedAuditRecord.sender_account}
                   </div>
-                  <div style={{ fontSize: "12px", color: "#475569" }}>
-                    {selectedAuditRecord.sender_name}
-                  </div>
+                  {Boolean(selectedAuditRecord.sender_name && selectedAuditRecord.sender_name.trim() && selectedAuditRecord.sender_name !== "Name not available" && selectedAuditRecord.sender_name !== "Unknown") && (
+                    <div style={{ fontSize: "12px", color: "#475569" }}>
+                      {selectedAuditRecord.sender_name}
+                    </div>
+                  )}
                   <div style={{ fontSize: "11px", color: "#2563EB", fontWeight: "600", marginTop: "2px" }}>
                     Trust Score: {selectedAuditRecord.sender_trust_score}/100
                   </div>
@@ -840,9 +846,11 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                   <div style={{ fontSize: "16px", fontWeight: "800", color: "#1E293B", marginTop: "2px" }}>
                     {selectedAuditRecord.receiver_account}
                   </div>
-                  <div style={{ fontSize: "12px", color: "#475569" }}>
-                    {selectedAuditRecord.receiver_name}
-                  </div>
+                  {Boolean(selectedAuditRecord.receiver_name && selectedAuditRecord.receiver_name.trim() && selectedAuditRecord.receiver_name !== "Name not available" && selectedAuditRecord.receiver_name !== "Unknown") && (
+                    <div style={{ fontSize: "12px", color: "#475569" }}>
+                      {selectedAuditRecord.receiver_name}
+                    </div>
+                  )}
                   <div style={{ fontSize: "11px", color: "#0D9488", fontWeight: "600", marginTop: "2px" }}>
                     Trust Score: {selectedAuditRecord.receiver_trust_score}/100
                   </div>

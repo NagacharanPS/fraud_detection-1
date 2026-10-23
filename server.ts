@@ -2407,6 +2407,7 @@ async function startServer() {
   });
 
   // Interactive Financial Transaction Network Graph API
+  // Interactive Financial Transaction Network Graph API
   app.get("/api/graph", (req, res) => {
     try {
       const {
@@ -2417,17 +2418,39 @@ async function startServer() {
         suspicious_only,
         min_amount,
         pattern,
+        transaction_id,
+        txn,
       } = req.query;
+
+      const targetTxn = ((transaction_id || txn) as string)?.trim();
+
+      const combinedLive = [...transactionsStore];
+      for (const log of riskLogsStore.values()) {
+        if (!combinedLive.some((t) => t.transaction_id === log.transaction_id)) {
+          combinedLive.push({
+            transaction_id: log.transaction_id,
+            sender_account: log.sender_account,
+            receiver_account: log.receiver_account,
+            amount: log.amount,
+            status: log.prediction === "FRAUD" ? "BLOCKED" : "SIMULATED",
+            timestamp: new Date().toISOString(),
+            risk_score: log.risk_score,
+            risk_level: log.risk_level,
+            ai_analysis: log,
+          });
+        }
+      }
 
       const graphData = fetchNetworkGraphData({
         limit: limit ? parseInt(limit as string, 10) : 120,
         accountId: account_id as string,
         search: search as string,
+        transactionId: targetTxn,
         riskLevel: risk_level as string,
         suspiciousOnly: suspicious_only === "true" || suspicious_only === "1",
         minAmount: min_amount ? parseFloat(min_amount as string) : 0,
         pattern: pattern as string,
-        liveTransactions: transactionsStore,
+        liveTransactions: combinedLive,
       });
 
       res.json(graphData);

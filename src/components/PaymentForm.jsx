@@ -7,6 +7,7 @@ import {
   FaInfoCircle,
   FaCheckCircle,
   FaExclamationTriangle,
+  FaProjectDiagram,
 } from "react-icons/fa";
 import api from "../api";
 import { collectDeviceSignals } from "../utils/deviceTrust";
@@ -38,7 +39,7 @@ function getNowLocalTimeString() {
   }
 }
 
-function PaymentForm({ selectedScenario, onResetScenario }) {
+function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
   const navigate = useNavigate();
 
   /* ----------------------------- STATES ----------------------------- */
@@ -1035,9 +1036,11 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "15px" }}>
-                <p style={{ margin: 0 }}>
-                  <strong>Receiver:</strong> {riskData.receiver_name}
-                </p>
+                {riskData.receiver_name && riskData.receiver_name !== "Name not available" && (
+                  <p style={{ margin: 0 }}>
+                    <strong>Receiver:</strong> {riskData.receiver_name}
+                  </p>
+                )}
                 <p style={{ margin: 0 }}>
                   <strong>Risk Score:</strong> {riskData.risk_score}%
                 </p>
@@ -1202,6 +1205,7 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
 
             {/* TRACE TRANSACTION BUTTON */}
             <button
+              type="button"
               onClick={() => fetchTraceData(riskData.transaction_id)}
               disabled={loadingTrace}
               style={{
@@ -1219,6 +1223,40 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
             >
               {loadingTrace ? "Loading..." : "🔍 Trace Transaction Details"}
             </button>
+
+            {/* VIEW TRANSACTION IN NETWORK GRAPH BUTTON */}
+            {riskData.transaction_id && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onViewInGraph) {
+                    onViewInGraph(riskData.transaction_id);
+                  } else {
+                    navigate(`/?tab=graph&txn=${encodeURIComponent(riskData.transaction_id)}`);
+                  }
+                }}
+                style={{
+                  marginTop: "10px",
+                  width: "100%",
+                  padding: "13px 18px",
+                  background: "linear-gradient(135deg, #0284C7, #0369A1)",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.3)",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <FaProjectDiagram /> View Transaction in Network Graph
+              </button>
+            )}
 
             <div
               style={{

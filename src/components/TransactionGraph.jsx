@@ -25,7 +25,7 @@ import {
   FaCompass,
 } from "react-icons/fa";
 
-function TransactionGraph() {
+function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
   // Graph Data State
   const [graphData, setGraphData] = useState({
     summary: {
@@ -55,6 +55,10 @@ function TransactionGraph() {
   const [showLabels, setShowLabels] = useState(true);
   const [activeLayout, setActiveLayout] = useState("cose"); // cose, concentric, circle, breadthfirst
 
+  // Targeted Transaction Selection (from Risk Assessment navigation)
+  const [targetTxnId, setTargetTxnId] = useState(initialTxnId || "");
+  const [targetNotFoundNote, setTargetNotFoundNote] = useState(null);
+
   // Interaction Panels State
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
@@ -62,6 +66,7 @@ function TransactionGraph() {
   const [investigatingAccount, setInvestigatingAccount] = useState(null);
   const [accountAuditDetail, setAccountAuditDetail] = useState(null);
   const [loadingAudit, setLoadingAudit] = useState(false);
+  const [investigatingFraudTxn, setInvestigatingFraudTxn] = useState(null);
 
   // Cytoscape Reference and Request Sequence Tracker
   const cyRef = useRef(null);
@@ -73,6 +78,7 @@ function TransactionGraph() {
     try {
       setLoading(true);
       setError(null);
+      setTargetNotFoundNote(null);
 
       const params = new URLSearchParams();
       params.append("limit", limit.toString());
@@ -102,9 +108,66 @@ function TransactionGraph() {
     }
   };
 
+  // Targeted transaction retrieval & highlighting
+  const loadTargetTransaction = async (txnId) => {
+    if (!txnId) return;
+    const cleanTxnId = txnId.trim();
+    const seq = ++reqSeqRef.current;
+    try {
+      setLoading(true);
+      setError(null);
+      setTargetNotFoundNote(null);
+      setSelectedNode(null);
+      setSelectedEdge(null);
+
+      const res = await API.get(`/api/graph?transaction_id=${encodeURIComponent(cleanTxnId)}`);
+      if (seq === reqSeqRef.current && res.data) {
+        setGraphData(res.data);
+        const matchingEdge = res.data.edges?.find((e) => e.data?.id === cleanTxnId);
+        if (matchingEdge) {
+          setSelectedEdge(matchingEdge.data);
+          setTimeout(() => {
+            if (cyRef.current) {
+              const cy = cyRef.current;
+              cy.elements().removeClass("highlighted dimmed targeted-highlight");
+              const cyEdge = cy.getElementById(cleanTxnId);
+              if (cyEdge && cyEdge.length > 0) {
+                const connected = cyEdge.connectedNodes().add(cyEdge);
+                cy.elements().difference(connected).addClass("dimmed");
+                connected.addClass("targeted-highlight");
+                cy.animate({
+                  fit: { eles: connected, padding: 80 },
+                  duration: 450,
+                });
+              }
+            }
+          }, 350);
+        } else {
+          setTargetNotFoundNote(`This transaction (${cleanTxnId}) could not be loaded into the graph.`);
+        }
+      }
+    } catch (err) {
+      if (seq === reqSeqRef.current) {
+        console.error("Failed to load targeted transaction:", err);
+        setTargetNotFoundNote(`This transaction (${cleanTxnId}) could not be loaded into the graph.`);
+      }
+    } finally {
+      if (seq === reqSeqRef.current) {
+        setLoading(false);
+      }
+    }
+  };
+
   useEffect(() => {
-    fetchGraph();
-  }, [riskFilter, suspiciousOnly, patternFilter, limit]);
+    const urlParams = new URLSearchParams(window.location.search);
+    const effectiveTxn = initialTxnId || urlParams.get("txn");
+    if (effectiveTxn) {
+      setTargetTxnId(effectiveTxn);
+      loadTargetTransaction(effectiveTxn);
+    } else {
+      fetchGraph();
+    }
+  }, [initialTxnId, riskFilter, suspiciousOnly, patternFilter, limit]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -124,6 +187,10 @@ function TransactionGraph() {
     setHoveredNode(null);
     setInvestigatingAccount(null);
     setAccountAuditDetail(null);
+    setTargetTxnId("");
+    setTargetNotFoundNote(null);
+    setInvestigatingFraudTxn(null);
+    if (onClearTargetTxn) onClearTargetTxn();
 
     try {
       setLoading(true);
@@ -147,7 +214,7 @@ function TransactionGraph() {
       try {
         const cy = cyRef.current;
         cy.elements().unselect();
-        cy.elements().removeClass("highlighted dimmed");
+        cy.elements().removeClass("highlighted dimmed targeted-highlight");
         setTimeout(() => {
           cy.fit(undefined, 40);
           cy.center();
@@ -430,6 +497,30 @@ function TransactionGraph() {
         selector: ".dimmed",
         style: {
           opacity: 0.15,
+        },
+      },
+      // Assessed / Targeted Transaction Edge (Prominent Amber Outline with increased width)
+      {
+        selector: "edge.targeted-highlight",
+        style: {
+          width: 5.5,
+          "line-color": "#F59E0B",
+          "target-arrow-color": "#D97706",
+          "target-arrow-shape": "triangle",
+          "arrow-scale": 1.7,
+          opacity: 1,
+          "z-index": 999,
+        },
+      },
+      // Assessed / Targeted Transaction Endpoints
+      {
+        selector: "node.targeted-highlight",
+        style: {
+          "border-color": "#F59E0B",
+          "border-width": 6,
+          width: 56,
+          height: 56,
+          "z-index": 1000,
         },
       },
     ];
@@ -775,6 +866,56 @@ function TransactionGraph() {
           </div>
         </div>
       </div>
+
+      {/* Targeted Transaction Banner (when navigated from Risk Assessment) */}
+      {targetTxnId && (
+        <div
+          style={{
+            background: targetNotFoundNote ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)",
+            border: `1px solid ${targetNotFoundNote ? "rgba(239, 68, 68, 0.4)" : "rgba(245, 158, 11, 0.4)"}`,
+            borderRadius: "12px",
+            padding: "12px 18px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            color: targetNotFoundNote ? "#FCA5A5" : "#FDE68A",
+            fontSize: "13px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <FaProjectDiagram style={{ color: targetNotFoundNote ? "#EF4444" : "#F59E0B" }} />
+            <span>
+              {targetNotFoundNote ? (
+                targetNotFoundNote
+              ) : (
+                <>
+                  Targeted Risk-Assessed Transaction: <strong>{targetTxnId}</strong> (Highlighted on network canvas with amber outline).
+                </>
+              )}
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              setTargetTxnId("");
+              setTargetNotFoundNote(null);
+              if (onClearTargetTxn) onClearTargetTxn();
+              fetchGraph();
+            }}
+            style={{
+              background: "#1E293B",
+              border: "1px solid #334155",
+              color: "#CBD5E1",
+              padding: "5px 12px",
+              borderRadius: "6px",
+              fontSize: "11px",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Clear Target
+          </button>
+        </div>
+      )}
 
       {/* 2. INTERACTIVE TOOLBAR & CONTROLS */}
       <div
@@ -1291,8 +1432,8 @@ function TransactionGraph() {
             <span style={{ color: "#FCA5A5", fontWeight: 700 }}>Critical Risk (&ge;80 score, Red thick)</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ width: "18px", height: "3px", background: "#F59E0B", display: "inline-block" }} />
-            <span style={{ color: "#FDE68A" }}>Selected / Highlighted Flow (Amber)</span>
+            <span style={{ width: "18px", height: "4px", background: "#F59E0B", border: "1px solid #FDE68A", display: "inline-block" }} />
+            <span style={{ color: "#FDE68A", fontWeight: 700 }}>Targeted Assessed Flow (Amber outline)</span>
           </div>
         </div>
 
@@ -1318,8 +1459,13 @@ function TransactionGraph() {
               {hoveredNode.account_id || hoveredNode.id}
             </div>
             <div style={{ fontSize: "11px", color: "#94A3B8" }}>
-              {hoveredNode.account_name !== "Unknown" ? hoveredNode.account_name : "Dataset Ledger Account"} • Trust:{" "}
-              {hoveredNode.trust_score !== "Unknown" ? `${hoveredNode.trust_score}/100` : "Unknown"}
+              {hoveredNode.is_verified_identity &&
+              hoveredNode.account_name &&
+              hoveredNode.account_name !== "Name not available" &&
+              hoveredNode.account_name !== "Unknown" ? (
+                <span style={{ color: "#E2E8F0", fontWeight: 600 }}>{hoveredNode.account_name} • </span>
+              ) : null}
+              Trust: {hoveredNode.trust_score !== "Unknown" ? `${hoveredNode.trust_score}/100` : "Unknown"}
             </div>
             <div
               style={{
@@ -1377,9 +1523,16 @@ function TransactionGraph() {
                 <div style={{ fontSize: "18px", fontWeight: 800, color: "#38BDF8" }}>
                   {selectedNode.account_id}
                 </div>
-                <div style={{ fontSize: "13px", color: "#E2E8F0", fontWeight: 600 }}>
-                  Account Holder: {selectedNode.is_verified_identity ? selectedNode.account_name : "Name not available"}
-                </div>
+                {Boolean(
+                  selectedNode.is_verified_identity &&
+                  selectedNode.account_name &&
+                  selectedNode.account_name !== "Name not available" &&
+                  selectedNode.account_name !== "Unknown"
+                ) && (
+                  <div style={{ fontSize: "13px", color: "#E2E8F0", fontWeight: 600 }}>
+                    Account Holder: {selectedNode.account_name}
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => setSelectedNode(null)}
@@ -1717,20 +1870,20 @@ function TransactionGraph() {
                     <span style={{ color: "#94A3B8" }}>Account ID: </span>
                     <strong style={{ color: "#38BDF8" }}>{selectedEdge.source || selectedEdge.sender_id}</strong>
                   </div>
-                  <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
-                    <span style={{ color: "#94A3B8" }}>Account Holder: </span>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color:
-                          selectedEdge.sender_name && selectedEdge.sender_name !== "Name not available"
-                            ? "#F8FAFC"
-                            : "#94A3B8",
-                      }}
-                    >
-                      {selectedEdge.sender_name || "Name not available"}
-                    </span>
-                  </div>
+                  {Boolean(
+                    selectedEdge.sender_is_verified &&
+                    selectedEdge.sender_name &&
+                    selectedEdge.sender_name.trim() &&
+                    selectedEdge.sender_name !== "Name not available" &&
+                    selectedEdge.sender_name !== "Unknown"
+                  ) && (
+                    <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                      <span style={{ color: "#94A3B8" }}>Account Holder: </span>
+                      <span style={{ fontWeight: 600, color: "#F8FAFC" }}>
+                        {selectedEdge.sender_name}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1760,20 +1913,20 @@ function TransactionGraph() {
                     <span style={{ color: "#94A3B8" }}>Account ID: </span>
                     <strong style={{ color: "#38BDF8" }}>{selectedEdge.target || selectedEdge.receiver_id}</strong>
                   </div>
-                  <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
-                    <span style={{ color: "#94A3B8" }}>Account Holder: </span>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color:
-                          selectedEdge.receiver_name && selectedEdge.receiver_name !== "Name not available"
-                            ? "#F8FAFC"
-                            : "#94A3B8",
-                      }}
-                    >
-                      {selectedEdge.receiver_name || "Name not available"}
-                    </span>
-                  </div>
+                  {Boolean(
+                    selectedEdge.receiver_is_verified &&
+                    selectedEdge.receiver_name &&
+                    selectedEdge.receiver_name.trim() &&
+                    selectedEdge.receiver_name !== "Name not available" &&
+                    selectedEdge.receiver_name !== "Unknown"
+                  ) && (
+                    <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                      <span style={{ color: "#94A3B8" }}>Account Holder: </span>
+                      <span style={{ fontWeight: 600, color: "#F8FAFC" }}>
+                        {selectedEdge.receiver_name}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1926,9 +2079,19 @@ function TransactionGraph() {
                 <div style={{ fontSize: "22px", fontWeight: 800, color: "#38BDF8" }}>
                   {investigatingAccount}
                 </div>
-                <div style={{ fontSize: "14px", color: "#E2E8F0" }}>
-                  {accountAuditDetail?.account_name} ({accountAuditDetail?.upi_id})
-                </div>
+                {Boolean(
+                  accountAuditDetail?.is_verified_identity &&
+                  accountAuditDetail?.account_name &&
+                  accountAuditDetail?.account_name !== "Name not available" &&
+                  accountAuditDetail?.account_name !== "Unknown"
+                ) && (
+                  <div style={{ fontSize: "14px", color: "#E2E8F0" }}>
+                    Account Holder: {accountAuditDetail.account_name}
+                    {accountAuditDetail.upi_id && accountAuditDetail.upi_id !== "Not available"
+                      ? ` (${accountAuditDetail.upi_id})`
+                      : ""}
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => {
@@ -2027,7 +2190,7 @@ function TransactionGraph() {
                   </div>
                   <div
                     style={{
-                      maxHeight: "180px",
+                      maxHeight: "220px",
                       overflowY: "auto",
                       border: "1px solid #334155",
                       borderRadius: "10px",
@@ -2059,18 +2222,49 @@ function TransactionGraph() {
                               ₹{t.amount?.toLocaleString("en-IN")}
                             </td>
                             <td style={{ padding: "8px 12px" }}>
-                              <span
-                                style={{
-                                  background: t.is_fraud ? "#EF4444" : "#10B981",
-                                  color: "#FFFFFF",
-                                  padding: "2px 6px",
-                                  borderRadius: "4px",
-                                  fontSize: "10px",
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {t.is_fraud ? "FRAUD" : "OK"}
-                              </span>
+                              {t.is_fraud === 1 || t.is_fraud ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setInvestigatingFraudTxn(t);
+                                  }}
+                                  title="Click to view fraud evidence and investigation details"
+                                  style={{
+                                    background: "#EF4444",
+                                    color: "#FFFFFF",
+                                    border: "1px solid #DC2626",
+                                    padding: "3px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "11px",
+                                    fontWeight: 800,
+                                    cursor: "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    boxShadow: "0 2px 6px rgba(239, 68, 68, 0.4)",
+                                    transition: "all 0.15s ease",
+                                  }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.background = "#DC2626")}
+                                  onMouseLeave={(e) => (e.currentTarget.style.background = "#EF4444")}
+                                >
+                                  ⚠️ FRAUD
+                                </button>
+                              ) : (
+                                <span
+                                  style={{
+                                    background: "#10B981",
+                                    color: "#FFFFFF",
+                                    padding: "3px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "10px",
+                                    fontWeight: 700,
+                                    display: "inline-block",
+                                  }}
+                                >
+                                  OK
+                                </span>
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -2080,6 +2274,295 @@ function TransactionGraph() {
                 </div>
               </>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* 7. COMPACT FRAUD INVESTIGATION MODAL */}
+      {investigatingFraudTxn && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.8)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10000,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              background: "#0F172A",
+              border: "1.5px solid #EF4444",
+              borderRadius: "16px",
+              width: "100%",
+              maxWidth: "540px",
+              maxHeight: "85vh",
+              overflowY: "auto",
+              boxShadow: "0 24px 60px rgba(239, 68, 68, 0.25)",
+              padding: "22px 24px",
+              color: "#F8FAFC",
+              display: "flex",
+              flexDirection: "column",
+              gap: "14px",
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "#F87171",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  ⚠️ Fraud Investigation Dossier
+                </div>
+                <div style={{ fontSize: "20px", fontWeight: 800, color: "#F8FAFC", marginTop: "2px" }}>
+                  {investigatingFraudTxn.transaction_id}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInvestigatingFraudTxn(null)}
+                style={{
+                  background: "#1E293B",
+                  border: "none",
+                  color: "#94A3B8",
+                  padding: "6px 10px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Core Transaction Parameters */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "8px",
+                background: "#1E293B",
+                padding: "12px 14px",
+                borderRadius: "10px",
+                border: "1px solid #334155",
+                fontSize: "12px",
+              }}
+            >
+              <div>
+                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>TRANSFER AMOUNT</div>
+                <div style={{ fontSize: "16px", fontWeight: 800, color: "#F8FAFC" }}>
+                  ₹{investigatingFraudTxn.amount?.toLocaleString("en-IN")}
+                </div>
+              </div>
+              <div>
+                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>TIMESTAMP</div>
+                <div style={{ color: "#CBD5E1", fontWeight: 600 }}>{investigatingFraudTxn.timestamp}</div>
+              </div>
+              <div>
+                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>SENDER (ORIGIN)</div>
+                <div style={{ color: "#38BDF8", fontWeight: 700 }}>{investigatingFraudTxn.sender_account}</div>
+                {investigatingFraudTxn.sender_is_verified && investigatingFraudTxn.sender_name && (
+                  <div style={{ color: "#E2E8F0", fontSize: "11px" }}>{investigatingFraudTxn.sender_name}</div>
+                )}
+              </div>
+              <div>
+                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>RECEIVER (BENEFICIARY)</div>
+                <div style={{ color: "#38BDF8", fontWeight: 700 }}>{investigatingFraudTxn.receiver_account}</div>
+                {investigatingFraudTxn.receiver_is_verified && investigatingFraudTxn.receiver_name && (
+                  <div style={{ color: "#E2E8F0", fontSize: "11px" }}>{investigatingFraudTxn.receiver_name}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Ground Truth vs Model Prediction (Separation of Truth & Predictions) */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                background: "rgba(239, 68, 68, 0.1)",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
+                borderRadius: "10px",
+                padding: "12px 14px",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "11px", color: "#FCA5A5", fontWeight: 700, textTransform: "uppercase" }}>
+                  Dataset Ground Truth:
+                </span>
+                <span
+                  style={{
+                    background: "#EF4444",
+                    color: "#FFFFFF",
+                    padding: "3px 8px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                  }}
+                >
+                  CONFIRMED FRAUD (is_fraud = 1)
+                </span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "11px", color: "#94A3B8", fontWeight: 700, textTransform: "uppercase" }}>
+                  Behavioral Model Prediction:
+                </span>
+                <span
+                  style={{
+                    background:
+                      investigatingFraudTxn.risk_level === "CRITICAL"
+                        ? "#EF4444"
+                        : investigatingFraudTxn.risk_level === "HIGH"
+                        ? "#F97316"
+                        : investigatingFraudTxn.risk_level === "MEDIUM"
+                        ? "#EAB308"
+                        : "#0EA5E9",
+                    color: investigatingFraudTxn.risk_level === "MEDIUM" ? "#0F172A" : "#FFFFFF",
+                    padding: "3px 8px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {investigatingFraudTxn.risk_level || "EVALUATED"} ({investigatingFraudTxn.risk_score || 0}/100)
+                </span>
+              </div>
+            </div>
+
+            {/* Actual Evidence / Triggered Rules */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div
+                style={{
+                  fontSize: "11px",
+                  color: "#94A3B8",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Actual Detection Evidence & Rules Triggered:
+              </div>
+
+              {investigatingFraudTxn.risk_factors && investigatingFraudTxn.risk_factors.length > 0 ? (
+                investigatingFraudTxn.risk_factors.map((factor, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      background: "#1E293B",
+                      padding: "8px 10px",
+                      borderRadius: "6px",
+                      border: "1px solid #334155",
+                      fontSize: "11px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
+                      <strong style={{ color: "#F8FAFC" }}>{factor.factor_name}</strong>
+                      {factor.score_contribution > 0 && (
+                        <span style={{ color: "#FB923C", fontWeight: 700 }}>+{factor.score_contribution} pts</span>
+                      )}
+                    </div>
+                    <div style={{ color: "#94A3B8", fontSize: "10px" }}>{factor.condition_triggered}</div>
+                    <div style={{ color: "#CBD5E1", marginTop: "2px" }}>{factor.explanation}</div>
+                  </div>
+                ))
+              ) : (
+                <div
+                  style={{
+                    background: "#1E293B",
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    color: "#94A3B8",
+                    fontSize: "11px",
+                    fontStyle: "italic",
+                    border: "1px solid #334155",
+                  }}
+                >
+                  Fraud-labelled in the dataset; no specific reason is available in the current data.
+                </div>
+              )}
+
+              {/* Supporting Network Patterns if any */}
+              {investigatingFraudTxn.patterns && investigatingFraudTxn.patterns.length > 0 && (
+                <div style={{ marginTop: "4px" }}>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "#94A3B8",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Network Relationship Evidence:
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "11px", color: "#FDE68A" }}>
+                    {investigatingFraudTxn.patterns.map((p, idx) => (
+                      <li key={idx}>{p}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Actions */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const targetId = investigatingFraudTxn.transaction_id;
+                  setInvestigatingFraudTxn(null);
+                  setInvestigatingAccount(null);
+                  setAccountAuditDetail(null);
+                  loadTargetTransaction(targetId);
+                }}
+                style={{
+                  flex: 1,
+                  background: "#0284C7",
+                  color: "#FFFFFF",
+                  border: "none",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                }}
+              >
+                <FaProjectDiagram /> View in Network Graph
+              </button>
+              <button
+                type="button"
+                onClick={() => setInvestigatingFraudTxn(null)}
+                style={{
+                  background: "#1E293B",
+                  color: "#94A3B8",
+                  border: "1px solid #334155",
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
