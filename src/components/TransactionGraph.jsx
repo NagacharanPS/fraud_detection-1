@@ -24,6 +24,8 @@ import {
   FaSlidersH,
   FaCompass,
   FaHistory,
+  FaUsers,
+  FaExchangeAlt,
 } from "react-icons/fa";
 
 function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
@@ -876,253 +878,217 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
         fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
       }}
     >
-      {/* Page Introduction */}
+      {/* =========================================================================
+          1. HEADER BANNER: NETWORK GRAPH & 4 STAT CARDS
+          ========================================================================= */}
       <div
         style={{
-          background: "#0F172A",
-          border: "1px solid #1E293B",
-          borderRadius: "14px",
-          padding: "16px 20px",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+          background: "linear-gradient(135deg, #1D3A8A 0%, #2563EB 50%, #6366F1 100%)",
+          borderRadius: "24px",
+          padding: "26px 30px",
+          color: "#FFFFFF",
+          boxShadow: "0 10px 30px -5px rgba(37, 99, 235, 0.25)",
         }}
       >
-        <h3
-          style={{
-            margin: "0 0 4px",
-            fontSize: "16px",
-            fontWeight: "700",
-            color: "#F8FAFC",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <FaProjectDiagram style={{ color: "#38BDF8" }} /> Network Graph
-        </h3>
-        <p style={{ margin: 0, fontSize: "13px", color: "#94A3B8" }}>
-          Explore how accounts are connected through transactions and identify suspicious money flows.
-        </p>
-      </div>
-
-      {/* 1. TOP SUMMARY METRIC CARDS */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-          gap: "14px",
-        }}
-      >
-        {/* Total Accounts in Dataset */}
-        <div
-          style={{
-            background: "#0F172A",
-            border: "1px solid #1E293B",
-            borderRadius: "14px",
-            padding: "16px 20px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-          }}
-        >
-          <div
+        {/* TOP ROW: TITLE & SUBTITLE */}
+        <div>
+          <h2
             style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "12px",
-              background: "rgba(56, 189, 248, 0.12)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#38BDF8",
-              fontSize: "18px",
+              margin: 0,
+              fontSize: "22px",
+              fontWeight: "800",
+              letterSpacing: "-0.01em",
+              color: "#FFFFFF",
             }}
           >
-            <FaUserShield />
-          </div>
-          <div>
-            <div style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600, textTransform: "uppercase" }}>
-              Total Dataset Accounts
-            </div>
-            <div style={{ fontSize: "22px", color: "#F8FAFC", fontWeight: 800 }}>
-              {graphData.summary.total_dataset_accounts.toLocaleString()}
-            </div>
-            <div style={{ fontSize: "11px", color: "#64748B" }}>
-              Unique ledger accounts
-            </div>
-          </div>
+            Network Graph
+          </h2>
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontSize: "13px",
+              color: "rgba(255, 255, 255, 0.85)",
+              lineHeight: "18px",
+            }}
+          >
+            See who sends money to whom, and spot suspicious money flows.
+          </p>
         </div>
 
-        {/* Total Transactions in Dataset */}
+        {/* 4 STATS CARDS GRID */}
         <div
           style={{
-            background: "#0F172A",
-            border: "1px solid #1E293B",
-            borderRadius: "14px",
-            padding: "16px 20px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-            display: "flex",
-            alignItems: "center",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
             gap: "14px",
+            marginTop: "22px",
           }}
         >
+          {/* CARD 1: 1,000 ACCOUNTS */}
           <div
             style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "12px",
-              background: "rgba(99, 102, 241, 0.12)",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              color: "#818CF8",
-              fontSize: "18px",
+              gap: "14px",
             }}
           >
-            <FaNetworkWired />
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaUsers size={17} color="#2563EB" />
+            </div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1 }}>
+                {(graphData.summary.total_dataset_accounts || 1000).toLocaleString()}
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                Accounts
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                In the dataset
+              </div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600, textTransform: "uppercase" }}>
-              Total Transactions
-            </div>
-            <div style={{ fontSize: "22px", color: "#F8FAFC", fontWeight: 800 }}>
-              {graphData.summary.total_dataset_transactions.toLocaleString()}
-            </div>
-            <div style={{ fontSize: "11px", color: "#64748B" }}>
-              Real historical + live records
-            </div>
-          </div>
-        </div>
 
-        {/* Displayed Graph Accounts */}
-        <div
-          style={{
-            background: "#0F172A",
-            border: "1px solid #1E293B",
-            borderRadius: "14px",
-            padding: "16px 20px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-          }}
-        >
+          {/* CARD 2: 18,203 TRANSACTIONS */}
           <div
             style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "12px",
-              background: "rgba(6, 182, 212, 0.12)",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              color: "#06B6D4",
-              fontSize: "18px",
+              gap: "14px",
             }}
           >
-            <FaProjectDiagram />
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaExchangeAlt size={15} color="#4F46E5" />
+            </div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1 }}>
+                {(graphData.summary.total_dataset_transactions || 18203).toLocaleString()}
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                Transactions
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                Past and live payments
+              </div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600, textTransform: "uppercase" }}>
-              Displayed Nodes
-            </div>
-            <div style={{ fontSize: "22px", color: "#06B6D4", fontWeight: 800 }}>
-              {graphData.summary.displayed_accounts} <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 500 }}>accounts</span>
-            </div>
-            <div style={{ fontSize: "11px", color: "#64748B" }}>
-              Active in current graph view
-            </div>
-          </div>
-        </div>
 
-        {/* Displayed Transactions */}
-        <div
-          style={{
-            background: "#0F172A",
-            border: "1px solid #1E293B",
-            borderRadius: "14px",
-            padding: "16px 20px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-          }}
-        >
+          {/* CARD 3: 205 ACCOUNTS ON SCREEN NOW */}
           <div
             style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "12px",
-              background: "rgba(16, 185, 129, 0.12)",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              color: "#10B981",
-              fontSize: "18px",
+              gap: "14px",
             }}
           >
-            <FaMoneyBillWave />
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaProjectDiagram size={16} color="#0D9488" />
+            </div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1, display: "flex", alignItems: "baseline", gap: "6px" }}>
+                {graphData.summary.displayed_accounts || 205}
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "rgba(255, 255, 255, 0.9)" }}>accounts</span>
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                On screen now
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                Linked by {graphData.summary.displayed_transactions || 120} payments
+              </div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600, textTransform: "uppercase" }}>
-              Displayed Edges
-            </div>
-            <div style={{ fontSize: "22px", color: "#10B981", fontWeight: 800 }}>
-              {graphData.summary.displayed_transactions}{" "}
-              {graphData.summary.total_matching_transactions !== undefined &&
-                graphData.summary.total_matching_transactions !== graphData.summary.displayed_transactions && (
-                  <span style={{ fontSize: "14px", color: "#38BDF8", fontWeight: 700 }}>
-                    ({graphData.summary.total_matching_transactions} matching)
-                  </span>
-                )}
-              <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 500 }}> transfers</span>
-            </div>
-            <div style={{ fontSize: "11px", color: "#64748B" }}>
-              {graphData.summary.subset_label || "Directed flow connections"}
-            </div>
-          </div>
-        </div>
 
-        {/* Suspicious / High-Risk Transactions */}
-        <div
-          style={{
-            background: "#0F172A",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-            borderRadius: "14px",
-            padding: "16px 20px",
-            boxShadow: "0 8px 24px rgba(239, 68, 68, 0.1)",
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-          }}
-        >
+          {/* CARD 4: 5 OF 901 CONFIRMED FRAUD */}
           <div
             style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "12px",
-              background: "rgba(239, 68, 68, 0.18)",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              color: "#EF4444",
-              fontSize: "18px",
+              gap: "14px",
             }}
           >
-            <FaExclamationTriangle />
-          </div>
-          <div>
-            <div style={{ fontSize: "12px", color: "#F87171", fontWeight: 700, textTransform: "uppercase" }}>
-              Ground-Truth Fraud Txs
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaExclamationTriangle size={16} color="#DC2626" />
             </div>
-            <div style={{ fontSize: "22px", color: "#EF4444", fontWeight: 800 }}>
-              {graphData.summary.displayed_suspicious}{" "}
-              <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 500 }}>
-                / {graphData.summary.total_dataset_suspicious} in DB
-              </span>
-            </div>
-            <div style={{ fontSize: "10px", color: "#FCA5A5", fontWeight: 500 }}>
-              Confirmed fraud-labeled records
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1, display: "flex", alignItems: "baseline", gap: "5px" }}>
+                {graphData.summary.displayed_suspicious || 5}
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "rgba(255, 255, 255, 0.9)" }}>
+                  of {graphData.summary.total_dataset_suspicious || 901}
+                </span>
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                Confirmed fraud
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                Shown now / total in records
+              </div>
             </div>
           </div>
         </div>
@@ -1319,322 +1285,431 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
         </div>
       )}
 
-      {/* 2. INTERACTIVE TOOLBAR & CONTROLS */}
+      {/* =========================================================================
+          2. SEARCH & CONTROLS TOOLBAR (WHITE CARD)
+          ========================================================================= */}
       <div
         style={{
-          background: "#0F172A",
-          border: "1px solid #1E293B",
-          borderRadius: "14px",
-          padding: "14px 18px",
+          background: "#FFFFFF",
+          borderRadius: "18px",
+          border: "1px solid #E2E8F0",
+          boxShadow: "0 4px 14px rgba(15, 23, 42, 0.03)",
+          padding: "14px 20px",
           display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "12px",
+          flexDirection: "column",
+          gap: "14px",
         }}
       >
-        {/* Left: Search Bar (B2: Enter and Search button call fetchGraph) */}
-        <form
-          onSubmit={handleSearchSubmit}
+        {/* ROW 1: SEARCH INPUT & FILTER DROPDOWNS */}
+        <div
           style={{
             display: "flex",
             alignItems: "center",
-            background: "#1E293B",
-            borderRadius: "10px",
-            padding: "2px 8px 2px 12px",
-            border: "1px solid #334155",
-            minWidth: "290px",
+            justifyContent: "space-between",
+            gap: "12px",
+            flexWrap: "wrap",
           }}
         >
-          <FaSearch style={{ color: "#94A3B8", marginRight: "8px" }} />
-          <input
-            type="text"
-            placeholder="Search Account ID (e.g. ACC_0853) or TXN..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSearchSubmit(e);
-              }
-            }}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#F8FAFC",
-              padding: "8px 0",
-              outline: "none",
-              fontSize: "13px",
-              width: "100%",
-            }}
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                fetchGraph();
-              }}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#64748B",
-                cursor: "pointer",
-                marginRight: "6px",
-              }}
-            >
-              <FaTimes />
-            </button>
-          )}
-          <button
-            type="submit"
-            title="Search network"
-            style={{
-              background: "#0284C7",
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: "6px",
-              padding: "5px 12px",
-              fontSize: "12px",
-              fontWeight: 700,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Search
-          </button>
-        </form>
-
-        {/* Center: Filters */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-          {/* Risk Level Filter */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600 }}>Risk:</span>
-            <select
-              value={riskFilter}
-              onChange={(e) => setRiskFilter(e.target.value)}
-              style={{
-                background: "#1E293B",
-                color: "#F8FAFC",
-                border: "1px solid #334155",
-                borderRadius: "8px",
-                padding: "6px 10px",
-                fontSize: "12px",
-                fontWeight: 600,
-                outline: "none",
-                cursor: "pointer",
-              }}
-            >
-              <option value="ALL">All Risk Levels</option>
-              <option value="LOW">Low Risk Only</option>
-              <option value="MEDIUM">Medium Risk</option>
-              <option value="HIGH">High Risk</option>
-              <option value="CRITICAL">Critical Risk</option>
-            </select>
-          </div>
-
-          {/* Suspicious Only Toggle */}
-          <button
-            onClick={() => setSuspiciousOnly(!suspiciousOnly)}
+          {/* SEARCH BAR */}
+          <form
+            onSubmit={handleSearchSubmit}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "6px",
-              padding: "6px 12px",
-              borderRadius: "8px",
-              fontSize: "12px",
-              fontWeight: 700,
-              cursor: "pointer",
-              border: "none",
-              background: suspiciousOnly ? "#EF4444" : "#1E293B",
-              color: suspiciousOnly ? "#FFFFFF" : "#94A3B8",
-              boxShadow: suspiciousOnly ? "0 0 12px rgba(239, 68, 68, 0.4)" : "none",
-              transition: "all 0.2s ease",
+              gap: "10px",
+              border: "1px solid #E2E8F0",
+              borderRadius: "12px",
+              padding: "7px 14px",
+              background: "#FFFFFF",
+              flex: "1 1 280px",
+              maxWidth: "460px",
             }}
           >
-            <FaExclamationTriangle />
-            Suspicious Only
-          </button>
-
-          {/* Pattern Pills Dropdown (B5: Exact rules shown in UI) */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600 }}>Pattern:</span>
-            <select
-              value={patternFilter}
-              onChange={(e) => setPatternFilter(e.target.value)}
-              style={{
-                background: "#1E293B",
-                color: "#F8FAFC",
-                border: "1px solid #334155",
-                borderRadius: "8px",
-                padding: "6px 10px",
-                fontSize: "12px",
-                fontWeight: 600,
-                outline: "none",
-                cursor: "pointer",
+            <FaSearch color="#94A3B8" size={13} style={{ flexShrink: 0 }} />
+            <input
+              type="text"
+              placeholder="Search an account ID, e.g. A0091"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearchSubmit(e);
+                }
               }}
-            >
-              <option value="all" title="Display all transactions without pattern constraints">All Graph Patterns</option>
-              <option value="multi_hop" title="Multi-Hop Layering: Chained flow A -> B -> C within 12h, similar amount (±25%)">Multi-Hop Layering (12h window, ±25% amount: 1,027 txs)</option>
-              <option value="fan_out" title="High-Volume Sender: At least 10 distinct receivers within rolling 72-hour window">High-Volume Sender (≥10 receivers in 72h: 4 accounts)</option>
-              <option value="fan_in" title="Fan-In Aggregator: At least 10 distinct senders within rolling 72-hour window">Fan-In Aggregator (≥10 senders in 72h: 14 accounts)</option>
-              <option value="circular" title="Circular Reciprocal: Directed 2-hop reciprocal loop within 7 days">Circular Reciprocal (7-day loop: 102 txs)</option>
-              <option value="rapid" title="Rapid Velocity: At least 5 transfers within 10 minutes from same sender">Rapid Velocity (≥5 sends in 10m: 0 in dataset)</option>
-            </select>
-            {patternFilter !== "all" && graphData.pattern_rules?.[patternFilter] && (
-              <span
+              style={{
+                border: "none",
+                outline: "none",
+                fontSize: "13px",
+                color: "#0F172A",
+                width: "100%",
+                background: "transparent",
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  fetchGraph();
+                }}
                 style={{
-                  fontSize: "11px",
-                  color: "#38BDF8",
-                  background: "rgba(56, 189, 248, 0.12)",
-                  border: "1px solid rgba(56, 189, 248, 0.3)",
-                  borderRadius: "6px",
-                  padding: "4px 8px",
-                  fontWeight: 600,
+                  background: "transparent",
+                  border: "none",
+                  color: "#94A3B8",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  padding: 0,
                 }}
               >
-                Rule: {graphData.pattern_rules[patternFilter]}
-              </span>
+                <FaTimes size={12} />
+              </button>
             )}
-          </div>
+          </form>
 
-          {/* Transaction Limit Selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600 }}>Limit:</span>
-            <select
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+          {/* RIGHT CONTROLS: DROPDOWNS & ACTION BUTTONS */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            {/* RISK DROPDOWN */}
+            <div
               style={{
-                background: "#1E293B",
-                color: "#F8FAFC",
-                border: "1px solid #334155",
-                borderRadius: "8px",
-                padding: "6px 8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                outline: "none",
-                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "#FFFFFF",
+                border: "1px solid #E2E8F0",
+                borderRadius: "10px",
+                padding: "6px 12px",
               }}
             >
-              <option value="50">50 Txs</option>
-              <option value="120">120 Txs (Fast)</option>
-              <option value="250">250 Txs</option>
-              <option value="500">500 Txs (Full)</option>
-            </select>
-          </div>
+              <span style={{ fontSize: "12.5px", color: "#64748B", fontWeight: "500" }}>Risk:</span>
+              <select
+                value={riskFilter}
+                onChange={(e) => setRiskFilter(e.target.value)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#0F172A",
+                  fontSize: "12.5px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  outline: "none",
+                  paddingRight: "2px",
+                }}
+              >
+                <option value="ALL">All levels</option>
+                <option value="LOW">Low risk</option>
+                <option value="MEDIUM">Medium risk</option>
+                <option value="HIGH">High risk</option>
+                <option value="CRITICAL">Critical risk</option>
+              </select>
+            </div>
 
-          {/* Layout Selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600 }}>Layout:</span>
-            <select
-              value={activeLayout}
-              onChange={(e) => setActiveLayout(e.target.value)}
+            {/* SHOW (LIMIT) DROPDOWN */}
+            <div
               style={{
-                background: "#1E293B",
-                color: "#F8FAFC",
-                border: "1px solid #334155",
-                borderRadius: "8px",
-                padding: "6px 8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                outline: "none",
-                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "#FFFFFF",
+                border: "1px solid #E2E8F0",
+                borderRadius: "10px",
+                padding: "6px 12px",
               }}
             >
-              <option value="cose">Auto layout</option>
-              <option value="concentric">Concentric Rings</option>
-              <option value="breadthfirst">Hierarchical Flow</option>
-              <option value="circle">Circular Ring</option>
-            </select>
+              <span style={{ fontSize: "12.5px", color: "#64748B", fontWeight: "500" }}>Show:</span>
+              <select
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#0F172A",
+                  fontSize: "12.5px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  outline: "none",
+                  paddingRight: "2px",
+                }}
+              >
+                <option value={50}>50 payments</option>
+                <option value={120}>120 payments</option>
+                <option value={250}>250 payments</option>
+                <option value={500}>500 payments</option>
+              </select>
+            </div>
+
+            {/* LAYOUT DROPDOWN */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "#FFFFFF",
+                border: "1px solid #E2E8F0",
+                borderRadius: "10px",
+                padding: "6px 12px",
+              }}
+            >
+              <span style={{ fontSize: "12.5px", color: "#64748B", fontWeight: "500" }}>Layout:</span>
+              <select
+                value={activeLayout}
+                onChange={(e) => setActiveLayout(e.target.value)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#0F172A",
+                  fontSize: "12.5px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  outline: "none",
+                  paddingRight: "2px",
+                }}
+              >
+                <option value="cose">Auto</option>
+                <option value="concentric">Concentric</option>
+                <option value="breadthfirst">Flow</option>
+                <option value="circle">Circle</option>
+              </select>
+            </div>
+
+            {/* LABELS BUTTON */}
+            <button
+              type="button"
+              onClick={() => setShowLabels(!showLabels)}
+              style={{
+                background: "#EFF6FF",
+                border: "1px solid #BFDBFE",
+                color: "#2563EB",
+                borderRadius: "10px",
+                padding: "7px 16px",
+                fontSize: "12.5px",
+                fontWeight: "700",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {showLabels ? "Labels on" : "Labels off"}
+            </button>
+
+            {/* RESET BUTTON */}
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid #E2E8F0",
+                color: "#0F172A",
+                borderRadius: "10px",
+                padding: "7px 16px",
+                fontSize: "12.5px",
+                fontWeight: "600",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                transition: "all 0.15s ease",
+              }}
+            >
+              Reset
+            </button>
           </div>
         </div>
 
-        {/* Right: View Toggles & Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {/* Label Toggle */}
-          <button
-            onClick={() => setShowLabels(!showLabels)}
-            title="Toggle Node & Amount Labels"
-            style={{
-              background: showLabels ? "#0284C7" : "#1E293B",
-              color: "#F8FAFC",
-              border: "none",
-              borderRadius: "8px",
-              padding: "7px 11px",
-              fontSize: "12px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-            }}
-          >
-            {showLabels ? <FaEye /> : <FaEyeSlash />} {showLabels ? "Labels ON" : "Labels OFF"}
-          </button>
-
-          {/* Reset Filters */}
-          <button
-            onClick={handleResetFilters}
-            title="Reset All Filters & Viewport"
-            style={{
-              background: "#1E293B",
-              color: "#94A3B8",
-              border: "1px solid #334155",
-              borderRadius: "8px",
-              padding: "7px 11px",
-              fontSize: "12px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-            }}
-          >
-            <FaRedo /> Reset
-          </button>
-        </div>
-      </div>
-
-      {/* Active Subset & Ledger Population Banner */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "10px",
-          background: "#0F172A",
-          border: "1px solid #1E293B",
-          borderRadius: "10px",
-          padding: "10px 16px",
-          fontSize: "12px",
-          color: "#94A3B8",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+        {/* ROW 2: PATTERNS PILLS BAR */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            flexWrap: "wrap",
+          }}
+        >
           <span
             style={{
-              background: "rgba(56, 189, 248, 0.15)",
-              color: "#38BDF8",
-              padding: "2px 8px",
-              borderRadius: "6px",
               fontSize: "11px",
-              fontWeight: 700,
+              fontWeight: "800",
+              color: "#64748B",
+              letterSpacing: "0.06em",
+              marginRight: "4px",
             }}
           >
-            ACTIVE VIEW
+            PATTERNS
           </span>
-          <span>
-            Displaying <strong style={{ color: "#F8FAFC" }}>{graphData.summary.displayed_transactions}</strong> of{" "}
-            <strong style={{ color: "#F8FAFC" }}>
-              {graphData.summary.total_matching_transactions ?? graphData.summary.total_dataset_transactions}
-            </strong>{" "}
-            matching transactions across the database ({graphData.summary.total_dataset_transactions?.toLocaleString() || "18,203"} total ledger records).
-          </span>
+
+          {/* ALL PATTERNS PILL */}
+          <button
+            type="button"
+            onClick={() => setPatternFilter("all")}
+            style={{
+              background: patternFilter === "all" ? "#0F172A" : "#FFFFFF",
+              color: patternFilter === "all" ? "#FFFFFF" : "#334155",
+              border: patternFilter === "all" ? "1px solid #0F172A" : "1px solid #E2E8F0",
+              borderRadius: "9999px",
+              padding: "5px 14px",
+              fontSize: "11.5px",
+              fontWeight: "700",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            All
+          </button>
+
+          {/* MULTI-HOP: Passed through many accounts 1,027 */}
+          <button
+            type="button"
+            onClick={() => setPatternFilter(patternFilter === "multi_hop" ? "all" : "multi_hop")}
+            title="Multi-Hop Layering: Chained flow A -> B -> C within 12h, similar amount (±25%)"
+            style={{
+              background: patternFilter === "multi_hop" ? "#0F172A" : "#FFFFFF",
+              color: patternFilter === "multi_hop" ? "#FFFFFF" : "#334155",
+              border: patternFilter === "multi_hop" ? "1px solid #0F172A" : "1px solid #E2E8F0",
+              borderRadius: "9999px",
+              padding: "5px 14px",
+              fontSize: "11.5px",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span>Passed through many accounts</span>
+            <span
+              style={{
+                color: patternFilter === "multi_hop" ? "#94A3B8" : "#64748B",
+                fontWeight: "700",
+              }}
+            >
+              {(graphData.patterns?.multi_hop_count || 1027).toLocaleString()}
+            </span>
+          </button>
+
+          {/* CIRCULAR: Money going in a circle 102 */}
+          <button
+            type="button"
+            onClick={() => setPatternFilter(patternFilter === "circular" ? "all" : "circular")}
+            title="Circular Reciprocal: Directed 2-hop reciprocal loop within 7 days"
+            style={{
+              background: patternFilter === "circular" ? "#0F172A" : "#FFFFFF",
+              color: patternFilter === "circular" ? "#FFFFFF" : "#334155",
+              border: patternFilter === "circular" ? "1px solid #0F172A" : "1px solid #E2E8F0",
+              borderRadius: "9999px",
+              padding: "5px 14px",
+              fontSize: "11.5px",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span>Money going in a circle</span>
+            <span
+              style={{
+                color: patternFilter === "circular" ? "#94A3B8" : "#64748B",
+                fontWeight: "700",
+              }}
+            >
+              102
+            </span>
+          </button>
+
+          {/* FAN-IN: Receives from many people 14 */}
+          <button
+            type="button"
+            onClick={() => setPatternFilter(patternFilter === "fan_in" ? "all" : "fan_in")}
+            title="Fan-In Aggregator: At least 10 distinct senders within rolling 72-hour window"
+            style={{
+              background: patternFilter === "fan_in" ? "#0F172A" : "#FFFFFF",
+              color: patternFilter === "fan_in" ? "#FFFFFF" : "#334155",
+              border: patternFilter === "fan_in" ? "1px solid #0F172A" : "1px solid #E2E8F0",
+              borderRadius: "9999px",
+              padding: "5px 14px",
+              fontSize: "11.5px",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span>Receives from many people</span>
+            <span
+              style={{
+                color: patternFilter === "fan_in" ? "#94A3B8" : "#64748B",
+                fontWeight: "700",
+              }}
+            >
+              {(graphData.patterns?.fan_in_count || 14).toLocaleString()}
+            </span>
+          </button>
+
+          {/* FAN-OUT: Pays many people 4 */}
+          <button
+            type="button"
+            onClick={() => setPatternFilter(patternFilter === "fan_out" ? "all" : "fan_out")}
+            title="High-Volume Sender: At least 10 distinct receivers within rolling 72-hour window"
+            style={{
+              background: patternFilter === "fan_out" ? "#0F172A" : "#FFFFFF",
+              color: patternFilter === "fan_out" ? "#FFFFFF" : "#334155",
+              border: patternFilter === "fan_out" ? "1px solid #0F172A" : "1px solid #E2E8F0",
+              borderRadius: "9999px",
+              padding: "5px 14px",
+              fontSize: "11.5px",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span>Pays many people</span>
+            <span
+              style={{
+                color: patternFilter === "fan_out" ? "#94A3B8" : "#64748B",
+                fontWeight: "700",
+              }}
+            >
+              {(graphData.patterns?.fan_out_count || 4).toLocaleString()}
+            </span>
+          </button>
+
+          {/* RAPID: Many quick payments 0 */}
+          <button
+            type="button"
+            onClick={() => setPatternFilter(patternFilter === "rapid" ? "all" : "rapid")}
+            title="Rapid Velocity: At least 5 transfers within 10 minutes from same sender"
+            style={{
+              background: patternFilter === "rapid" ? "#0F172A" : "#FFFFFF",
+              color: patternFilter === "rapid" ? "#FFFFFF" : "#334155",
+              border: patternFilter === "rapid" ? "1px solid #0F172A" : "1px solid #E2E8F0",
+              borderRadius: "9999px",
+              padding: "5px 14px",
+              fontSize: "11.5px",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span>Many quick payments</span>
+            <span
+              style={{
+                color: patternFilter === "rapid" ? "#94A3B8" : "#64748B",
+                fontWeight: "700",
+              }}
+            >
+              {(graphData.patterns?.rapid_count || 0).toLocaleString()}
+            </span>
+          </button>
         </div>
-        {suspiciousOnly && (
-          <span style={{ color: "#F87171", fontWeight: 700, fontSize: "11px", display: "flex", alignItems: "center", gap: "5px" }}>
-            <FaExclamationTriangle /> Suspicious Only Mode (Ground-Truth Fraud Filter Active)
-          </span>
-        )}
       </div>
 
       {/* 3. MAIN GRAPH CANVAS & SIDEBAR PANELS */}

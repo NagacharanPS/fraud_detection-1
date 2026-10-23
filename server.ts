@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { execFileSync } from "child_process";
+import { DatabaseSync } from "node:sqlite";
 import { createServer as createViteServer } from "vite";
 import {
   initializeDatabaseTables as dbInitTables,
@@ -916,6 +917,126 @@ async function startServer() {
     },
   ];
 
+  let cachedDbExplorerRecords: DatasetExplorerRecord[] | null = null;
+
+  function getDbExplorerRecords(): DatasetExplorerRecord[] {
+    if (cachedDbExplorerRecords) return cachedDbExplorerRecords;
+
+    const dbPaths = [
+      path.resolve(process.cwd(), "fraud_detection.db"),
+      path.resolve(process.cwd(), "dataset/fraud_detection.db"),
+      path.resolve(process.cwd(), "backend/database/fraud_detection.db"),
+    ];
+
+    let db: any = null;
+    for (const p of dbPaths) {
+      if (fs.existsSync(p)) {
+        try {
+          db = new DatabaseSync(p);
+          break;
+        } catch (err) {
+          console.warn(`[server] Notice opening db for explorer at ${p}:`, err);
+        }
+      }
+    }
+
+    if (!db) {
+      console.warn("[server] fraud_detection.db not found for dataset explorer");
+      return [];
+    }
+
+    try {
+      const rows: any[] = db.prepare(`
+        SELECT 
+          t.transaction_id,
+          t.timestamp,
+          t.sender_account,
+          t.receiver_account,
+          t.amount,
+          t.is_fraud,
+          t.sender_trust_score,
+          t.receiver_trust_score,
+          t.sender_account_type,
+          t.receiver_account_status,
+          f.is_new_receiver,
+          f.sender_receiver_transaction_count,
+          f.behavioral_anomaly_score
+        FROM transactions t
+        LEFT JOIN features_engineered f ON t.transaction_id = f.transaction_id
+        ORDER BY t.timestamp DESC
+      `).all();
+
+      const pairMap = new Map<string, number>();
+      const chronological = [...rows].reverse();
+      for (const r of chronological) {
+        const key = `${r.sender_account}->${r.receiver_account}`;
+        const prior = pairMap.get(key) || 0;
+        r._priorCount = prior;
+        pairMap.set(key, prior + 1);
+      }
+
+      cachedDbExplorerRecords = rows.map((r) => {
+        const priorCount = r.sender_receiver_transaction_count != null ? r.sender_receiver_transaction_count : r._priorCount;
+        const actualType = priorCount > 0 ? "EXISTING_RECEIVER" : "FIRST_TIME_RECEIVER";
+        const modelType = r.is_new_receiver != null 
+          ? (r.is_new_receiver === 1 ? "FIRST_TIME_RECEIVER" : "EXISTING_RECEIVER")
+          : actualType;
+        const isDiscrepancy = actualType !== modelType;
+
+        let riskScore = 12.0;
+        let riskLevel = "LOW";
+        let status = "SUCCESS";
+
+        if (r.is_fraud === 1) {
+          riskScore = Math.min(99.4, 88.0 + (r.behavioral_anomaly_score || 2) * 1.8);
+          riskLevel = "CRITICAL";
+          status = "BLOCKED";
+        } else if ((r.receiver_trust_score != null && r.receiver_trust_score < 40) || (r.behavioral_anomaly_score && r.behavioral_anomaly_score >= 4)) {
+          riskScore = Math.min(84.0, 65.0 + (r.behavioral_anomaly_score || 1) * 3);
+          riskLevel = "HIGH";
+          status = "FLAGGED";
+        } else if (isDiscrepancy || (r.receiver_trust_score != null && r.receiver_trust_score < 65)) {
+          riskScore = 38.5;
+          riskLevel = "MEDIUM";
+          status = "SUCCESS";
+        } else {
+          riskScore = Math.max(5.0, Math.round((100 - (r.receiver_trust_score || 80)) * 0.4 * 10) / 10);
+          riskLevel = "LOW";
+          status = "SUCCESS";
+        }
+
+        const senderAccountObj = accountsStore.get(r.sender_account);
+        const receiverAccountObj = accountsStore.get(r.receiver_account);
+
+        return {
+          transaction_id: r.transaction_id,
+          timestamp: r.timestamp,
+          sender_account: r.sender_account,
+          sender_name: senderAccountObj?.account_name || r.sender_account,
+          receiver_account: r.receiver_account,
+          receiver_name: receiverAccountObj?.account_name || r.receiver_account,
+          amount: r.amount,
+          actual_prior_count: priorCount,
+          actual_receiver_type: actualType,
+          model_predicted_type: modelType,
+          is_discrepancy: isDiscrepancy,
+          discrepancy_details: isDiscrepancy ? `Model predicted ${modelType} while ledger recorded ${priorCount} prior interactions.` : undefined,
+          risk_score: riskScore,
+          risk_level: riskLevel,
+          status: status,
+          sender_trust_score: r.sender_trust_score || 75,
+          receiver_trust_score: r.receiver_trust_score || 70,
+          relationship_type: r.sender_account_type || "DIRECT_TRANSFER",
+        };
+      });
+
+      return cachedDbExplorerRecords;
+    } catch (err) {
+      console.error("[server] Failed to load explorer db records:", err);
+      return [];
+    }
+  }
+
   function getAllExplorerRecords(): DatasetExplorerRecord[] {
     const liveRecords: DatasetExplorerRecord[] = transactionsStore.map((t) => {
       const sender = accountsStore.get(t.sender_account);
@@ -951,7 +1072,8 @@ async function startServer() {
       };
     });
 
-    return [...liveRecords, ...seededExplorerTransactions];
+    const dbRecords = getDbExplorerRecords();
+    return [...liveRecords, ...seededExplorerTransactions, ...dbRecords];
   }
 
   // Dataset Explorer & First-Time Receiver Verification Tool API
@@ -959,6 +1081,9 @@ async function startServer() {
     const q = ((req.query.q || "") as string).toLowerCase().trim();
     const receiverType = ((req.query.receiver_type || "ALL") as string).toUpperCase();
     const discrepancyOnly = req.query.discrepancy_only === "true" || req.query.discrepancy === "true";
+    const sortBy = ((req.query.sort_by || req.query.sort || "newest") as string).toLowerCase();
+    const page = Math.max(1, parseInt((req.query.page as string) || "1", 10));
+    const limit = Math.min(500, Math.max(10, parseInt((req.query.limit as string) || "50", 10)));
 
     const allRecords = getAllExplorerRecords();
     let records = allRecords;
@@ -989,15 +1114,33 @@ async function startServer() {
     const firstTimeCount = allRecords.filter((r) => r.actual_receiver_type === "FIRST_TIME_RECEIVER").length;
     const existingCount = allRecords.filter((r) => r.actual_receiver_type === "EXISTING_RECEIVER").length;
 
+    // Sort records
+    if (sortBy === "oldest") {
+      records = [...records].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    } else if (sortBy === "amount_high") {
+      records = [...records].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+    } else if (sortBy === "amount_low") {
+      records = [...records].sort((a, b) => (a.amount || 0) - (b.amount || 0));
+    } else {
+      // newest
+      records = [...records].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    }
+
+    const offset = (page - 1) * limit;
+    const paginatedRecords = records.slice(offset, offset + limit);
+
     res.json({
       total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit) || 1,
       summary: {
         total_records: allRecords.length,
         discrepancies_count: discrepanciesCount,
         first_time_count: firstTimeCount,
         existing_count: existingCount,
       },
-      records: records.slice(0, 100),
+      records: paginatedRecords,
     });
   });
 
@@ -1006,12 +1149,23 @@ async function startServer() {
     const senderId = req.params.senderId.trim().toUpperCase();
     const receiverId = req.params.receiverId.trim().toUpperCase();
 
-    const sender = accountsStore.get(senderId);
-    const receiver = accountsStore.get(receiverId);
-
-    if (!sender || !receiver) {
-      return res.status(404).json({ error: "Accounts not found." });
-    }
+    const sender = accountsStore.get(senderId) || {
+      account_id: senderId,
+      account_name: `Account ${senderId}`,
+      trust_score: 75,
+      account_type: "SAVINGS",
+      current_balance: 50000,
+      last_login_device: "Secure Mobile Terminal",
+      registered_devices: ["Secure Mobile Terminal"],
+    };
+    const receiver = accountsStore.get(receiverId) || {
+      account_id: receiverId,
+      account_name: `Account ${receiverId}`,
+      trust_score: 70,
+      account_type: "SAVINGS",
+      account_status: "Active",
+      verified_status: "VERIFIED",
+    };
 
     const relKey = getRelationshipKey(senderId, receiverId);
     const relRecord = relationshipsStore.get(relKey);
@@ -1046,16 +1200,23 @@ async function startServer() {
       isVerified = !isFirstTime;
     }
 
-    const pairTransactions = transactionsStore.filter(
-      (t) => t.sender_account === senderId && t.receiver_account === receiverId
+    let pairTransactions = transactionsStore.filter(
+      (t) => t.sender_account.toUpperCase() === senderId && t.receiver_account.toUpperCase() === receiverId
     );
+
+    if (pairTransactions.length === 0) {
+      const dbTxns = getDbExplorerRecords().filter(
+        (t) => t.sender_account.toUpperCase() === senderId && t.receiver_account.toUpperCase() === receiverId
+      );
+      pairTransactions = dbTxns as any;
+    }
 
     res.json({
       sender: {
         account_id: sender.account_id,
         account_name: sender.account_name,
         trust_score: sender.trust_score,
-        account_type: sender.relationship_type || sender.account_type,
+        account_type: (sender as any).relationship_type || sender.account_type,
         current_balance: sender.current_balance,
         last_login_device: sender.last_login_device,
         registered_devices: [sender.last_login_device, "Secure-Biometric-Terminal"],
@@ -1064,7 +1225,7 @@ async function startServer() {
         account_id: receiver.account_id,
         account_name: receiver.account_name,
         trust_score: receiver.trust_score,
-        account_type: receiver.relationship_type || receiver.account_type,
+        account_type: (receiver as any).relationship_type || receiver.account_type,
         account_status: receiver.account_status,
         verified_status: receiver.verified_status,
       },

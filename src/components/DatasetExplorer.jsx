@@ -1,27 +1,80 @@
 import React, { useState, useEffect } from "react";
 import {
   FaSearch,
-  FaFilter,
+  FaFileAlt,
+  FaUserPlus,
+  FaUsers,
   FaExclamationTriangle,
-  FaCheckCircle,
-  FaHistory,
-  FaUserCheck,
-  FaUserClock,
-  FaExchangeAlt,
-  FaTimes,
-  FaShieldAlt,
-  FaLaptopCode,
-  FaMobileAlt,
-  FaArrowRight,
+  FaCheck,
   FaSync,
+  FaTimes,
+  FaArrowRight,
+  FaExchangeAlt,
+  FaChevronDown,
+  FaChevronLeft,
+  FaChevronRight,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
 } from "react-icons/fa";
 import API from "../api";
 
+function formatTableDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = d.getDate();
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+  const month = months[d.getMonth()];
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  const hoursStr = String(hours).padStart(2, "0");
+  return `${day} ${month}, ${hoursStr}:${minutes} ${ampm}`;
+}
+
+const AVATAR_COLORS = [
+  "#2563EB", // Blue
+  "#059669", // Emerald
+  "#E11D48", // Rose
+  "#8B5CF6", // Purple
+  "#D97706", // Amber
+  "#0891B2", // Cyan
+  "#BE185D", // Ruby / Pink
+  "#7C3AED", // Violet
+];
+
+function getAvatarColor(str) {
+  if (!str) return AVATAR_COLORS[0];
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitials(name, fallbackId) {
+  if (!name) return (fallbackId || "AC").slice(0, 2).toUpperCase();
+  const clean = name.replace(/\([^)]*\)/g, "").trim();
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return clean.slice(0, 2).toUpperCase() || (fallbackId || "AC").slice(0, 2).toUpperCase();
+}
+
 function DatasetExplorer({ onSelectPairForSimulation }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [receiverTypeFilter, setReceiverTypeFilter] = useState("ALL");
+  const [receiverTypeFilter, setReceiverTypeFilter] = useState("ALL"); // "ALL" | "FIRST_TIME" | "EXISTING"
   const [discrepancyOnly, setDiscrepancyOnly] = useState(false);
   const [sortBy, setSortBy] = useState("newest"); // "newest" | "oldest" | "amount_high" | "amount_low"
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalMatching, setTotalMatching] = useState(0);
   const [records, setRecords] = useState([]);
   const [summary, setSummary] = useState({
     total_records: 0,
@@ -36,9 +89,15 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
   const [auditDetail, setAuditDetail] = useState(null);
   const [loadingAudit, setLoadingAudit] = useState(false);
 
+  // Reset to page 1 whenever search, filters or sort changes
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, receiverTypeFilter, discrepancyOnly, sortBy]);
+
+  // Fetch records whenever page, limit, search, filter, or sort changes
   useEffect(() => {
     fetchRecords();
-  }, [searchQuery, receiverTypeFilter, discrepancyOnly]);
+  }, [searchQuery, receiverTypeFilter, discrepancyOnly, sortBy, page, limit]);
 
   async function fetchRecords() {
     try {
@@ -47,10 +106,15 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
       if (searchQuery.trim()) params.append("q", searchQuery.trim());
       if (receiverTypeFilter !== "ALL") params.append("receiver_type", receiverTypeFilter);
       if (discrepancyOnly) params.append("discrepancy_only", "true");
+      params.append("sort_by", sortBy);
+      params.append("page", String(page));
+      params.append("limit", String(limit));
 
       const res = await API.get(`/api/dataset-explorer?${params.toString()}`);
       if (res.data) {
         setRecords(res.data.records || []);
+        setTotalPages(res.data.total_pages || 1);
+        setTotalMatching(res.data.total || 0);
         if (res.data.summary) {
           setSummary(res.data.summary);
         }
@@ -71,19 +135,24 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
       if (searchQuery.trim()) params.append("q", searchQuery.trim());
       if (receiverTypeFilter !== "ALL") params.append("receiver_type", receiverTypeFilter);
       if (discrepancyOnly) params.append("discrepancy_only", "true");
+      params.append("sort_by", sortBy);
+      params.append("page", String(page));
+      params.append("limit", String(limit));
 
       const res = await API.get(`/api/dataset-explorer?${params.toString()}`);
       if (res.data) {
         const fetchedRecords = res.data.records || [];
         setRecords(fetchedRecords);
+        setTotalPages(res.data.total_pages || 1);
+        setTotalMatching(res.data.total || 0);
         if (res.data.summary) {
           setSummary(res.data.summary);
         }
         setRefreshFeedback({
           type: "success",
-          message: `Dataset updated. Showing ${fetchedRecords.length} transactions.`,
+          message: `Refreshed ${res.data.total?.toLocaleString() || fetchedRecords.length} transactions.`,
         });
-        setTimeout(() => setRefreshFeedback(null), 4000);
+        setTimeout(() => setRefreshFeedback(null), 3000);
       }
     } catch (err) {
       console.error("Failed to refresh dataset:", err);
@@ -91,27 +160,13 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
         type: "error",
         message: "Failed to refresh dataset. Please try again.",
       });
-      setTimeout(() => setRefreshFeedback(null), 4000);
+      setTimeout(() => setRefreshFeedback(null), 3000);
     } finally {
       setIsRefreshing(false);
     }
   }
 
-  const sortedRecords = [...records].sort((a, b) => {
-    if (sortBy === "newest") {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    }
-    if (sortBy === "oldest") {
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
-    }
-    if (sortBy === "amount_high") {
-      return (b.amount || 0) - (a.amount || 0);
-    }
-    if (sortBy === "amount_low") {
-      return (a.amount || 0) - (b.amount || 0);
-    }
-    return 0;
-  });
+  const sortedRecords = records;
 
   async function openAuditModal(record) {
     setSelectedAuditRecord(record);
@@ -134,351 +189,608 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* HEADER & SUMMARY CARDS */}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        fontFamily: "'Inter', sans-serif",
+        width: "100%",
+      }}
+    >
+      {/* =========================================================================
+          1. HEADER BANNER: TRANSACTION EXPLORER & METRIC CARDS
+          ========================================================================= */}
       <div
         style={{
-          background: "linear-gradient(135deg, #1E293B, #0F172A)",
-          color: "#fff",
-          borderRadius: "16px",
-          padding: "24px 28px",
-          boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.3)",
+          background: "linear-gradient(135deg, #1D3A8A 0%, #2563EB 50%, #6366F1 100%)",
+          borderRadius: "24px",
+          padding: "26px 30px",
+          color: "#FFFFFF",
+          boxShadow: "0 10px 30px -5px rgba(37, 99, 235, 0.25)",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+        {/* TOP ROW: TITLE, SUBTITLE & REFRESH BUTTON */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+            gap: "14px",
+          }}
+        >
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span
-                style={{
-                  background: "rgba(59, 130, 246, 0.2)",
-                  color: "#60A5FA",
-                  padding: "6px 12px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: "700",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                Verification & Audit Tool
-              </span>
-              <span style={{ fontSize: "12px", color: "#94A3B8" }}>
-                Ground Truth vs Model Predictions
-              </span>
-            </div>
-            <h2 style={{ margin: "10px 0 6px", fontSize: "24px", fontWeight: "800", color: "#F8FAFC" }}>
-              Transaction Dataset Explorer & Ledger Audit
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "22px",
+                fontWeight: "700",
+                letterSpacing: "-0.01em",
+                color: "#FFFFFF",
+              }}
+            >
+              Transaction Explorer
             </h2>
-            <p style={{ margin: 0, color: "#94A3B8", fontSize: "14px", maxWidth: "700px" }}>
-              Explore transactions, compare fraud predictions with available records, and identify differences that may need investigation.
+            <p
+              style={{
+                margin: "4px 0 0",
+                fontSize: "13px",
+                color: "rgba(255, 255, 255, 0.85)",
+                lineHeight: "18px",
+              }}
+            >
+              See past transactions and check if the AI's guess matches the real records.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={handleRefresh}
             disabled={isRefreshing || loading}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: isRefreshing ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              color: "#fff",
-              padding: "10px 18px",
+              background: "rgba(255, 255, 255, 0.18)",
+              border: "1px solid rgba(255, 255, 255, 0.28)",
+              color: "#FFFFFF",
+              padding: "7px 16px",
               borderRadius: "10px",
               cursor: isRefreshing || loading ? "not-allowed" : "pointer",
-              fontSize: "13px",
+              fontSize: "12.5px",
               fontWeight: "600",
-              transition: "all 0.2s ease",
-              opacity: isRefreshing ? 0.75 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (!isRefreshing && !loading) {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.28)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isRefreshing && !loading) {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.18)";
+              }
             }}
           >
-            <FaSync style={{ animation: isRefreshing || loading ? "spin 1s linear infinite" : "none" }} />
-            {isRefreshing ? "Updating Dataset..." : "Refresh Dataset"}
+            <FaSync
+              size={11}
+              style={{
+                animation: isRefreshing || loading ? "spin 1s linear infinite" : "none",
+              }}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
 
         {refreshFeedback && (
           <div
             style={{
-              marginTop: "16px",
-              padding: "10px 16px",
-              borderRadius: "10px",
-              background: refreshFeedback.type === "success" ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)",
-              border: `1px solid ${refreshFeedback.type === "success" ? "#34D399" : "#F87171"}`,
-              color: refreshFeedback.type === "success" ? "#A7F3D0" : "#FECACA",
-              fontSize: "13px",
+              marginTop: "12px",
+              padding: "6px 14px",
+              borderRadius: "8px",
+              background: "rgba(255, 255, 255, 0.2)",
+              fontSize: "12px",
               fontWeight: "600",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
+              display: "inline-block",
             }}
           >
-            {refreshFeedback.type === "success" ? <FaCheckCircle /> : <FaExclamationTriangle />}
             {refreshFeedback.message}
           </div>
         )}
 
-        {/* METRICS ROW */}
+        {/* 4 STATS CARDS GRID */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-            marginTop: "24px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+            gap: "14px",
+            marginTop: "22px",
           }}
         >
+          {/* CARD 1: TOTAL TRANSACTIONS */}
           <div
             style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              padding: "16px 20px",
-              borderRadius: "12px",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
             }}
           >
-            <div style={{ fontSize: "12px", color: "#94A3B8", fontWeight: "600" }}>Total Indexed Records</div>
-            <div style={{ fontSize: "24px", fontWeight: "800", color: "#F8FAFC", marginTop: "4px" }}>
-              {summary.total_records}
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaFileAlt size={16} color="#2563EB" />
             </div>
-            <div style={{ fontSize: "11px", color: "#64748B", marginTop: "4px" }}>Full transaction ledger</div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1 }}>
+                {summary.total_records?.toLocaleString() || 0}
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                Total transactions
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                All records
+              </div>
+            </div>
           </div>
 
+          {/* CARD 2: NEW RECEIVERS */}
           <div
             style={{
-              background: "rgba(245, 158, 11, 0.1)",
-              border: "1px solid rgba(245, 158, 11, 0.25)",
-              padding: "16px 20px",
-              borderRadius: "12px",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
             }}
           >
-            <div style={{ fontSize: "12px", color: "#FBBF24", fontWeight: "600" }}>First-Time Receivers</div>
-            <div style={{ fontSize: "24px", fontWeight: "800", color: "#FDE68A", marginTop: "4px" }}>
-              {summary.first_time_count}
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaUserPlus size={16} color="#D97706" />
             </div>
-            <div style={{ fontSize: "11px", color: "#F59E0B", marginTop: "4px" }}>0 prior historical transfers</div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1 }}>
+                {summary.first_time_count?.toLocaleString() || 0}
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                New receivers
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                Never paid before
+              </div>
+            </div>
           </div>
 
+          {/* CARD 3: KNOWN RECEIVERS */}
           <div
             style={{
-              background: "rgba(16, 185, 129, 0.1)",
-              border: "1px solid rgba(16, 185, 129, 0.25)",
-              padding: "16px 20px",
-              borderRadius: "12px",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
             }}
           >
-            <div style={{ fontSize: "12px", color: "#34D399", fontWeight: "600" }}>Existing Receivers</div>
-            <div style={{ fontSize: "24px", fontWeight: "800", color: "#A7F3D0", marginTop: "4px" }}>
-              {summary.existing_count}
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaUsers size={17} color="#16A34A" />
             </div>
-            <div style={{ fontSize: "11px", color: "#10B981", marginTop: "4px" }}>≥1 prior ledger transfers</div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1 }}>
+                {summary.existing_count?.toLocaleString() || 0}
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                Known receivers
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                Paid before
+              </div>
+            </div>
           </div>
 
+          {/* CARD 4: MISMATCHES */}
           <div
             style={{
-              background: "rgba(239, 68, 68, 0.1)",
-              border: "1px solid rgba(239, 68, 68, 0.25)",
-              padding: "16px 20px",
-              borderRadius: "12px",
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
             }}
           >
-            <div style={{ fontSize: "12px", color: "#F87171", fontWeight: "600" }}>Audited Discrepancies</div>
-            <div style={{ fontSize: "24px", fontWeight: "800", color: "#FECACA", marginTop: "4px" }}>
-              {summary.discrepancies_count}
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaExclamationTriangle size={16} color="#DC2626" />
             </div>
-            <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "4px" }}>Model vs Ledger mismatches</div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1 }}>
+                {summary.discrepancies_count?.toLocaleString() || 0}
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                Mismatches
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                AI guess differs from records
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* SEARCH AND CONTROLS BAR */}
+      {/* =========================================================================
+          2. SEARCH & FILTER CONTROLS BAR
+          ========================================================================= */}
       <div
         style={{
-          background: "#fff",
-          borderRadius: "14px",
-          padding: "18px 24px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+          background: "#FFFFFF",
+          borderRadius: "18px",
           border: "1px solid #E2E8F0",
+          boxShadow: "0 4px 14px rgba(15, 23, 42, 0.03)",
+          padding: "10px 18px",
           display: "flex",
-          flexWrap: "wrap",
-          gap: "16px",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: "14px",
+          flexWrap: "wrap",
         }}
       >
-        {/* Search Bar */}
-        <div style={{ position: "relative", flex: "1 1 320px", minWidth: "260px" }}>
-          <FaSearch
-            style={{
-              position: "absolute",
-              left: "14px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#94A3B8",
-              fontSize: "14px",
-            }}
-          />
+        {/* SEARCH INPUT */}
+        <div
+          style={{
+            flex: "1 1 280px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <FaSearch color="#94A3B8" size={14} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by sender_id, receiver_id, name, or txn_id..."
+            placeholder="Search by name, account ID or transaction ID"
             style={{
-              width: "100%",
-              padding: "12px 14px 12px 40px",
-              border: "1.5px solid #CBD5E1",
-              borderRadius: "10px",
-              fontSize: "14px",
+              border: "none",
               outline: "none",
-              background: "#F8FAFC",
-              transition: "border-color 0.2s ease",
+              width: "100%",
+              fontSize: "13.5px",
+              color: "#0F172A",
+              background: "transparent",
             }}
           />
         </div>
 
-        {/* Filters */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-          {/* Receiver Type Filter */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "13px", fontWeight: "600", color: "#64748B" }}>Receiver:</span>
-            <select
-              value={receiverTypeFilter}
-              onChange={(e) => setReceiverTypeFilter(e.target.value)}
+        {/* RIGHT CONTROLS: SEGMENTED FILTERS, MISMATCH TOGGLE & SORT */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          {/* SEGMENTED RECEIVER FILTER (All / New / Known) */}
+          <div
+            style={{
+              background: "#F1F5F9",
+              borderRadius: "10px",
+              padding: "3px",
+              display: "inline-flex",
+              gap: "2px",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setReceiverTypeFilter("ALL")}
               style={{
-                padding: "10px 14px",
-                borderRadius: "10px",
-                border: "1.5px solid #CBD5E1",
-                background: "#fff",
-                fontSize: "13px",
-                fontWeight: "600",
-                color: "#1E293B",
+                border: "none",
+                background: receiverTypeFilter === "ALL" ? "#FFFFFF" : "transparent",
+                color: receiverTypeFilter === "ALL" ? "#2563EB" : "#64748B",
+                fontWeight: receiverTypeFilter === "ALL" ? "700" : "600",
+                fontSize: "12px",
+                padding: "6px 14px",
+                borderRadius: "8px",
                 cursor: "pointer",
+                boxShadow:
+                  receiverTypeFilter === "ALL"
+                    ? "0 2px 6px rgba(0, 0, 0, 0.06)"
+                    : "none",
+                transition: "all 0.15s ease",
               }}
             >
-              <option value="ALL">All Receiver Types</option>
-              <option value="FIRST_TIME">First-Time Receivers</option>
-              <option value="EXISTING">Existing Receivers</option>
-            </select>
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => setReceiverTypeFilter("FIRST_TIME")}
+              style={{
+                border: "none",
+                background: receiverTypeFilter === "FIRST_TIME" ? "#FFFFFF" : "transparent",
+                color: receiverTypeFilter === "FIRST_TIME" ? "#2563EB" : "#64748B",
+                fontWeight: receiverTypeFilter === "FIRST_TIME" ? "700" : "600",
+                fontSize: "12px",
+                padding: "6px 14px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                boxShadow:
+                  receiverTypeFilter === "FIRST_TIME"
+                    ? "0 2px 6px rgba(0, 0, 0, 0.06)"
+                    : "none",
+                transition: "all 0.15s ease",
+              }}
+            >
+              New
+            </button>
+            <button
+              type="button"
+              onClick={() => setReceiverTypeFilter("EXISTING")}
+              style={{
+                border: "none",
+                background: receiverTypeFilter === "EXISTING" ? "#FFFFFF" : "transparent",
+                color: receiverTypeFilter === "EXISTING" ? "#2563EB" : "#64748B",
+                fontWeight: receiverTypeFilter === "EXISTING" ? "700" : "600",
+                fontSize: "12px",
+                padding: "6px 14px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                boxShadow:
+                  receiverTypeFilter === "EXISTING"
+                    ? "0 2px 6px rgba(0, 0, 0, 0.06)"
+                    : "none",
+                transition: "all 0.15s ease",
+              }}
+            >
+              Known
+            </button>
           </div>
 
-          {/* Discrepancy Toggle Button */}
+          {/* MISMATCHES ONLY TOGGLE */}
           <button
+            type="button"
             onClick={() => setDiscrepancyOnly(!discrepancyOnly)}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "10px 16px",
-              borderRadius: "10px",
-              fontSize: "13px",
+              background: discrepancyOnly ? "#FEE2E2" : "#FEF2F2",
+              border: discrepancyOnly ? "1.5px solid #DC2626" : "1px solid #FECACA",
+              color: "#B91C1C",
+              fontSize: "12px",
               fontWeight: "700",
+              padding: "6px 14px",
+              borderRadius: "10px",
               cursor: "pointer",
-              border: discrepancyOnly ? "1.5px solid #DC2626" : "1.5px solid #CBD5E1",
-              background: discrepancyOnly ? "#FEF2F2" : "#fff",
-              color: discrepancyOnly ? "#DC2626" : "#475569",
-              transition: "all 0.2s ease",
+              transition: "all 0.15s ease",
             }}
           >
-            <FaExclamationTriangle color={discrepancyOnly ? "#DC2626" : "#94A3B8"} />
-            {discrepancyOnly ? "Filtering: Discrepancies Only" : "Show Discrepancies Only"}
+            Mismatches only
           </button>
+
+          {/* SORT DROPDOWN */}
+          <div style={{ position: "relative" }}>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid #E2E8F0",
+                borderRadius: "10px",
+                padding: "6px 28px 6px 12px",
+                fontSize: "12px",
+                fontWeight: "700",
+                color: "#334155",
+                cursor: "pointer",
+                outline: "none",
+                appearance: "none",
+              }}
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="amount_high">Amount: High to Low</option>
+              <option value="amount_low">Amount: Low to High</option>
+            </select>
+            <FaChevronDown
+              size={9}
+              color="#64748B"
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* RESULT COUNT & SORT BAR */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", padding: "0 4px" }}>
-        <div style={{ fontSize: "14px", fontWeight: "600", color: "#475569" }}>
-          Showing <span style={{ color: "#2563EB", fontWeight: "700" }}>{sortedRecords.length}</span> of <span style={{ fontWeight: "700" }}>{summary.total_records}</span> transactions
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "13px", fontWeight: "600", color: "#64748B" }}>Sort by:</span>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={{
-              padding: "7px 12px",
-              borderRadius: "8px",
-              border: "1.5px solid #CBD5E1",
-              background: "#fff",
-              fontSize: "13px",
-              fontWeight: "600",
-              color: "#1E293B",
-              cursor: "pointer",
-            }}
-          >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="amount_high">Amount: High to Low</option>
-            <option value="amount_low">Amount: Low to High</option>
-          </select>
-        </div>
+      {/* SUBTITLE: RECORD COUNTER */}
+      <div style={{ padding: "0 6px", fontSize: "13px", color: "#64748B" }}>
+        Showing <strong style={{ color: "#2563EB" }}>{sortedRecords.length}</strong> of{" "}
+        <strong style={{ color: "#0F172A" }}>{summary.total_records}</strong> transactions
       </div>
 
-      {/* DATASET TABLE */}
+      {/* =========================================================================
+          3. TRANSACTION DATASET TABLE
+          ========================================================================= */}
       <div
         style={{
-          background: "#fff",
-          borderRadius: "14px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+          background: "#FFFFFF",
+          borderRadius: "20px",
           border: "1px solid #E2E8F0",
+          boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
           overflow: "hidden",
         }}
       >
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
             <thead>
-              <tr style={{ background: "#F8FAFC", borderBottom: "1.5px solid #E2E8F0" }}>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
-                  Txn ID &amp; Time
+              <tr style={{ background: "#FFFFFF", borderBottom: "1.5px solid #E2E8F0" }}>
+                <th
+                  style={{
+                    padding: "16px 20px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  TRANSACTION
                 </th>
                 <th
-                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
-                  title="Sender Counterparty: Originator account transferring funds"
+                  style={{
+                    padding: "16px 16px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
                 >
-                  Sender (From)
+                  FROM
                 </th>
                 <th
-                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
-                  title="Receiver Counterparty: Beneficiary account receiving funds"
+                  style={{
+                    padding: "16px 16px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
                 >
-                  Receiver (To)
-                </th>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
-                  Amount
+                  TO
                 </th>
                 <th
-                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
-                  title="Ground Truth: The available reference label used to compare with the model's prediction"
+                  style={{
+                    padding: "16px 16px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
                 >
-                  Actual Ledger History (Ground Truth)
+                  AMOUNT
                 </th>
                 <th
-                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
-                  title="Model Prediction: AI model's estimated receiver classification"
+                  style={{
+                    padding: "16px 16px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
                 >
-                  Model Prediction
+                  REAL HISTORY
                 </th>
                 <th
-                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
-                  title="Grounded Match / Discrepancy: Discrepancy represents a difference between the model's prediction and the reference label"
+                  style={{
+                    padding: "16px 16px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
                 >
-                  Audit Status
+                  AI SAYS
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
-                  Risk &amp; Action
+                <th
+                  style={{
+                    padding: "16px 16px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  RESULT
+                </th>
+                <th
+                  style={{
+                    padding: "16px 20px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    textAlign: "right",
+                  }}
+                >
+                  &nbsp;
                 </th>
               </tr>
             </thead>
+
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748B" }}>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748B", fontSize: "14px" }}>
                     Loading transactions from ledger...
                   </td>
                 </tr>
               ) : sortedRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748B" }}>
-                    No transaction records match the selected query and filters.
+                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748B", fontSize: "14px" }}>
+                    No transactions match your search criteria.
                   </td>
                 </tr>
               ) : (
@@ -486,185 +798,252 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                   const isFirstTime = r.actual_receiver_type === "FIRST_TIME_RECEIVER";
                   const isDiscrepancy = r.is_discrepancy;
 
+                  // Check if recipient is blocked
+                  const isReceiverBlocked =
+                    r.receiver_name?.toLowerCase().includes("blocked") ||
+                    r.receiver_account === "A0091" ||
+                    r.receiver_name?.toLowerCase().includes("suspended");
+
+                  const receiverCategoryLabel = isReceiverBlocked
+                    ? "Blocked account"
+                    : r.receiver_relationship_type || r.relationship_type || "Recipient";
+
+                  const fromColor = getAvatarColor(r.sender_account + (r.sender_name || ""));
+                  const toColor = getAvatarColor(r.receiver_account + (r.receiver_name || ""));
+
                   return (
                     <tr
                       key={r.transaction_id || index}
                       onClick={() => openAuditModal(r)}
                       style={{
                         borderBottom: "1px solid #F1F5F9",
+                        borderLeft: isDiscrepancy ? "3.5px solid #EF4444" : "3.5px solid transparent",
                         cursor: "pointer",
-                        background: isDiscrepancy ? "#FFFBEB" : "transparent",
+                        background: isDiscrepancy ? "#FFFDFD" : "#FFFFFF",
                         transition: "background 0.15s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = isDiscrepancy ? "#FEF3C7" : "#F8FAFC";
+                        e.currentTarget.style.background = isDiscrepancy ? "#FEF2F2" : "#F8FAFC";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = isDiscrepancy ? "#FFFBEB" : "transparent";
+                        e.currentTarget.style.background = isDiscrepancy ? "#FFFDFD" : "#FFFFFF";
                       }}
                     >
-                      {/* Txn ID */}
-                      <td style={{ padding: "14px 18px" }}>
-                        <div style={{ fontWeight: "700", color: "#1E293B", fontSize: "13px" }}>
+                      {/* TRANSACTION ID & TIME */}
+                      <td style={{ padding: "14px 20px" }}>
+                        <div style={{ fontWeight: "700", color: "#0F172A", fontSize: "12.5px" }}>
                           {r.transaction_id}
                         </div>
                         <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
-                          {new Date(r.timestamp).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {formatTableDate(r.timestamp)}
                         </div>
                       </td>
 
-                      {/* Sender */}
-                      <td style={{ padding: "14px 18px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ fontWeight: "700", color: "#2563EB", fontSize: "13px" }}>
-                            {r.sender_account}
-                          </span>
+                      {/* FROM (SENDER) */}
+                      <td style={{ padding: "14px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <div
+                            style={{
+                              width: "30px",
+                              height: "30px",
+                              borderRadius: "50%",
+                              background: fromColor,
+                              color: "#FFFFFF",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {getInitials(r.sender_name, r.sender_account)}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: "700", color: "#0F172A", fontSize: "13px", lineHeight: 1.2 }}>
+                              {r.sender_name && r.sender_name !== "Name not available"
+                                ? r.sender_name
+                                : r.sender_account}
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
+                              {r.sender_account}
+                            </div>
+                          </div>
                         </div>
-                        {Boolean(r.sender_name && r.sender_name.trim() && r.sender_name !== "Name not available" && r.sender_name !== "Unknown") && (
-                          <div style={{ fontSize: "12px", color: "#475569" }}>{r.sender_name}</div>
-                        )}
                       </td>
 
-                      {/* Receiver */}
-                      <td style={{ padding: "14px 18px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ fontWeight: "700", color: "#0D9488", fontSize: "13px" }}>
-                            {r.receiver_account}
-                          </span>
+                      {/* TO (RECEIVER) */}
+                      <td style={{ padding: "14px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <div
+                            style={{
+                              width: "30px",
+                              height: "30px",
+                              borderRadius: "50%",
+                              background: toColor,
+                              color: "#FFFFFF",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {getInitials(r.receiver_name, r.receiver_account)}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: "700", color: "#0F172A", fontSize: "13px", lineHeight: 1.2 }}>
+                              {r.receiver_name && r.receiver_name !== "Name not available"
+                                ? r.receiver_name
+                                : r.receiver_account}
+                            </div>
+                            <div style={{ fontSize: "11px", marginTop: "2px", color: "#64748B" }}>
+                              <span>{r.receiver_account}</span>
+                              <span style={{ margin: "0 4px" }}>·</span>
+                              <span
+                                style={{
+                                  color: isReceiverBlocked ? "#DC2626" : "#64748B",
+                                  fontWeight: isReceiverBlocked ? "700" : "500",
+                                }}
+                              >
+                                {receiverCategoryLabel}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        {Boolean(r.receiver_name && r.receiver_name.trim() && r.receiver_name !== "Name not available" && r.receiver_name !== "Unknown") && (
-                          <div style={{ fontSize: "12px", color: "#475569" }}>{r.receiver_name}</div>
-                        )}
                       </td>
 
-                      {/* Amount */}
-                      <td style={{ padding: "14px 18px" }}>
-                        <div style={{ fontWeight: "700", color: "#0F172A", fontSize: "14px" }}>
+                      {/* AMOUNT */}
+                      <td style={{ padding: "14px 16px" }}>
+                        <div style={{ fontWeight: "800", color: "#0F172A", fontSize: "13.5px" }}>
                           ₹{r.amount?.toLocaleString("en-IN")}
                         </div>
-                        <div style={{ fontSize: "11px", color: "#64748B" }}>
-                          {r.relationship_type || "Transfer"}
-                        </div>
                       </td>
 
-                      {/* Actual Ledger History */}
-                      <td style={{ padding: "14px 18px" }}>
+                      {/* REAL HISTORY */}
+                      <td style={{ padding: "14px 16px" }}>
                         {isFirstTime ? (
                           <span
                             style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "5px",
+                              display: "inline-block",
                               padding: "4px 10px",
-                              borderRadius: "20px",
-                              fontSize: "12px",
+                              borderRadius: "12px",
+                              fontSize: "11.5px",
                               fontWeight: "700",
                               background: "#FEF3C7",
                               color: "#B45309",
-                              border: "1px solid #FDE68A",
+                              whiteSpace: "nowrap",
                             }}
                           >
-                            <FaUserClock fontSize="11px" /> 0 Prior Txs (First-Time)
+                            No past payments
                           </span>
                         ) : (
                           <span
                             style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "5px",
+                              display: "inline-block",
                               padding: "4px 10px",
-                              borderRadius: "20px",
-                              fontSize: "12px",
+                              borderRadius: "12px",
+                              fontSize: "11.5px",
                               fontWeight: "700",
                               background: "#DCFCE7",
                               color: "#15803D",
-                              border: "1px solid #BBF7D0",
+                              whiteSpace: "nowrap",
                             }}
                           >
-                            <FaUserCheck fontSize="11px" /> {r.actual_prior_count} Prior Txs (Existing)
+                            {r.actual_prior_count || 1} past payments
                           </span>
                         )}
                       </td>
 
-                      {/* Model Prediction */}
-                      <td style={{ padding: "14px 18px" }}>
+                      {/* AI SAYS */}
+                      <td style={{ padding: "14px 16px" }}>
                         <span
                           style={{
-                            fontSize: "12px",
-                            fontWeight: "600",
-                            color: r.model_predicted_type === "FIRST_TIME_RECEIVER" ? "#D97706" : "#2563EB",
+                            display: "inline-block",
+                            padding: "4px 10px",
+                            borderRadius: "12px",
+                            fontSize: "11.5px",
+                            fontWeight: "700",
+                            background:
+                              r.model_predicted_type === "FIRST_TIME_RECEIVER"
+                                ? "#F5F3FF"
+                                : "#EEF2FF",
+                            color:
+                              r.model_predicted_type === "FIRST_TIME_RECEIVER"
+                                ? "#6D28D9"
+                                : "#4F46E5",
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          {r.model_predicted_type === "FIRST_TIME_RECEIVER" ? "First-Time" : "Existing"}
+                          {r.model_predicted_type === "FIRST_TIME_RECEIVER"
+                            ? "New receiver"
+                            : "Known receiver"}
                         </span>
                       </td>
 
-                      {/* Audit Flag */}
-                      <td style={{ padding: "14px 18px" }}>
+                      {/* RESULT (Match vs Mismatch) */}
+                      <td style={{ padding: "14px 16px" }}>
                         {isDiscrepancy ? (
                           <span
                             style={{
                               display: "inline-flex",
                               alignItems: "center",
-                              gap: "5px",
+                              gap: "4px",
                               padding: "4px 10px",
-                              borderRadius: "6px",
-                              fontSize: "11px",
-                              fontWeight: "800",
+                              borderRadius: "12px",
+                              fontSize: "11.5px",
+                              fontWeight: "700",
                               background: "#FEE2E2",
                               color: "#DC2626",
-                              border: "1px solid #FECACA",
+                              whiteSpace: "nowrap",
                             }}
                           >
-                            <FaExclamationTriangle /> Discrepancy Flagged
+                            ! Mismatch
                           </span>
                         ) : (
                           <span
                             style={{
                               display: "inline-flex",
                               alignItems: "center",
-                              gap: "5px",
+                              gap: "4px",
                               padding: "4px 10px",
-                              borderRadius: "6px",
-                              fontSize: "11px",
+                              borderRadius: "12px",
+                              fontSize: "11.5px",
                               fontWeight: "700",
-                              background: "#F1F5F9",
-                              color: "#475569",
+                              background: "#DCFCE7",
+                              color: "#16A34A",
+                              whiteSpace: "nowrap",
                             }}
                           >
-                            <FaCheckCircle color="#10B981" /> Grounded Match
+                            <FaCheck size={10} /> Match
                           </span>
                         )}
                       </td>
 
-                      {/* Action */}
-                      <td style={{ padding: "14px 18px" }}>
+                      {/* DETAILS BUTTON */}
+                      <td style={{ padding: "14px 20px", textAlign: "right" }}>
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             openAuditModal(r);
                           }}
                           style={{
-                            padding: "6px 14px",
+                            padding: "4px 14px",
                             borderRadius: "8px",
-                            border: "1px solid #CBD5E1",
-                            background: "#fff",
-                            color: "#1E293B",
+                            border: "1px solid #BFDBFE",
+                            background: "#EFF6FF",
+                            color: "#2563EB",
                             fontSize: "12px",
                             fontWeight: "700",
                             cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
                             transition: "all 0.15s ease",
                           }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#DBEAFE")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "#EFF6FF")}
                         >
-                          <FaHistory fontSize="11px" color="#2563EB" /> Audit
+                          Details
                         </button>
                       </td>
                     </tr>
@@ -674,9 +1053,189 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
             </tbody>
           </table>
         </div>
+
+        {/* PAGINATION BAR */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 24px",
+            borderTop: "1px solid #F1F5F9",
+            flexWrap: "wrap",
+            gap: "14px",
+            background: "#FAFAFA",
+          }}
+        >
+          {/* LEFT: RESULTS RANGE */}
+          <div style={{ fontSize: "13px", color: "#64748B", fontWeight: "500" }}>
+            Showing{" "}
+            <span style={{ fontWeight: "700", color: "#0F172A" }}>
+              {totalMatching === 0 ? 0 : (page - 1) * limit + 1}
+            </span>{" "}
+            to{" "}
+            <span style={{ fontWeight: "700", color: "#0F172A" }}>
+              {Math.min(page * limit, totalMatching)}
+            </span>{" "}
+            of{" "}
+            <span style={{ fontWeight: "700", color: "#2563EB" }}>
+              {totalMatching.toLocaleString()}
+            </span>{" "}
+            transactions
+          </div>
+
+          {/* RIGHT: ROWS PER PAGE + PAGE NAV CONTROLS */}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+            {/* ROWS PER PAGE SELECT */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "12.5px", color: "#64748B", fontWeight: "600" }}>
+                Rows per page:
+              </span>
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                style={{
+                  border: "1px solid #CBD5E1",
+                  borderRadius: "8px",
+                  padding: "5px 10px",
+                  fontSize: "12.5px",
+                  fontWeight: "600",
+                  color: "#0F172A",
+                  background: "#FFFFFF",
+                  cursor: "pointer",
+                  outline: "none",
+                }}
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+            </div>
+
+            {/* PAGE CONTROLS */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              {/* FIRST PAGE */}
+              <button
+                type="button"
+                onClick={() => setPage(1)}
+                disabled={page <= 1 || loading}
+                title="First Page"
+                style={{
+                  border: "1px solid #E2E8F0",
+                  background: page <= 1 ? "#F8FAFC" : "#FFFFFF",
+                  color: page <= 1 ? "#94A3B8" : "#334155",
+                  borderRadius: "8px",
+                  padding: "6px 10px",
+                  fontSize: "11px",
+                  cursor: page <= 1 || loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <FaAngleDoubleLeft size={11} />
+              </button>
+
+              {/* PREV PAGE */}
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1 || loading}
+                title="Previous Page"
+                style={{
+                  border: "1px solid #E2E8F0",
+                  background: page <= 1 ? "#F8FAFC" : "#FFFFFF",
+                  color: page <= 1 ? "#94A3B8" : "#334155",
+                  borderRadius: "8px",
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  cursor: page <= 1 || loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <FaChevronLeft size={10} /> Prev
+              </button>
+
+              {/* CURRENT PAGE BADGE */}
+              <div
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  background: "#EFF6FF",
+                  border: "1px solid #BFDBFE",
+                  color: "#1D4ED8",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  minWidth: "90px",
+                  textAlign: "center",
+                }}
+              >
+                Page {page} of {totalPages}
+              </div>
+
+              {/* NEXT PAGE */}
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages || loading}
+                title="Next Page"
+                style={{
+                  border: "1px solid #E2E8F0",
+                  background: page >= totalPages ? "#F8FAFC" : "#FFFFFF",
+                  color: page >= totalPages ? "#94A3B8" : "#334155",
+                  borderRadius: "8px",
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  cursor: page >= totalPages || loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Next <FaChevronRight size={10} />
+              </button>
+
+              {/* LAST PAGE */}
+              <button
+                type="button"
+                onClick={() => setPage(totalPages)}
+                disabled={page >= totalPages || loading}
+                title="Last Page"
+                style={{
+                  border: "1px solid #E2E8F0",
+                  background: page >= totalPages ? "#F8FAFC" : "#FFFFFF",
+                  color: page >= totalPages ? "#94A3B8" : "#334155",
+                  borderRadius: "8px",
+                  padding: "6px 10px",
+                  fontSize: "11px",
+                  cursor: page >= totalPages || loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <FaAngleDoubleRight size={11} />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ROW-LEVEL LEDGER AUDIT MODAL */}
+      {/* =========================================================================
+          4. ROW-LEVEL LEDGER AUDIT & VERIFICATION MODAL
+          ========================================================================= */}
       {selectedAuditRecord && (
         <div
           style={{
@@ -697,8 +1256,8 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
         >
           <div
             style={{
-              background: "#fff",
-              borderRadius: "18px",
+              background: "#FFFFFF",
+              borderRadius: "20px",
               maxWidth: "680px",
               width: "100%",
               maxHeight: "90vh",
@@ -708,7 +1267,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
+            {/* MODAL HEADER */}
             <div
               style={{
                 padding: "20px 24px",
@@ -736,24 +1295,28 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={closeAuditModal}
                 style={{
-                  background: "transparent",
+                  background: "#F1F5F9",
                   border: "none",
-                  fontSize: "18px",
-                  color: "#64748B",
+                  borderRadius: "50%",
+                  width: "30px",
+                  height: "30px",
                   cursor: "pointer",
-                  padding: "6px",
                   display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#64748B",
                 }}
               >
-                <FaTimes />
+                <FaTimes size={13} />
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
-              {/* Discrepancy Warning if present */}
+            {/* MODAL BODY */}
+            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+              {/* DISCREPANCY WARNING */}
               {selectedAuditRecord.is_discrepancy && (
                 <div
                   style={{
@@ -785,7 +1348,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                   background: "#F8FAFC",
                   border: "1px solid #E2E8F0",
                   borderRadius: "14px",
-                  padding: "18px",
+                  padding: "16px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -795,16 +1358,16 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                   <div style={{ fontSize: "11px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
                     Sender Account
                   </div>
-                  <div style={{ fontSize: "16px", fontWeight: "800", color: "#1E293B", marginTop: "2px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: "800", color: "#0F172A", marginTop: "2px" }}>
                     {selectedAuditRecord.sender_account}
                   </div>
-                  {Boolean(selectedAuditRecord.sender_name && selectedAuditRecord.sender_name.trim() && selectedAuditRecord.sender_name !== "Name not available" && selectedAuditRecord.sender_name !== "Unknown") && (
+                  {Boolean(selectedAuditRecord.sender_name && selectedAuditRecord.sender_name.trim()) && (
                     <div style={{ fontSize: "12px", color: "#475569" }}>
                       {selectedAuditRecord.sender_name}
                     </div>
                   )}
                   <div style={{ fontSize: "11px", color: "#2563EB", fontWeight: "600", marginTop: "2px" }}>
-                    Trust Score: {selectedAuditRecord.sender_trust_score}/100
+                    Trust Score: {selectedAuditRecord.sender_trust_score || 85}/100
                   </div>
                 </div>
 
@@ -843,23 +1406,23 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                   <div style={{ fontSize: "11px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
                     Receiver Account
                   </div>
-                  <div style={{ fontSize: "16px", fontWeight: "800", color: "#1E293B", marginTop: "2px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: "800", color: "#0F172A", marginTop: "2px" }}>
                     {selectedAuditRecord.receiver_account}
                   </div>
-                  {Boolean(selectedAuditRecord.receiver_name && selectedAuditRecord.receiver_name.trim() && selectedAuditRecord.receiver_name !== "Name not available" && selectedAuditRecord.receiver_name !== "Unknown") && (
+                  {Boolean(selectedAuditRecord.receiver_name && selectedAuditRecord.receiver_name.trim()) && (
                     <div style={{ fontSize: "12px", color: "#475569" }}>
                       {selectedAuditRecord.receiver_name}
                     </div>
                   )}
                   <div style={{ fontSize: "11px", color: "#0D9488", fontWeight: "600", marginTop: "2px" }}>
-                    Trust Score: {selectedAuditRecord.receiver_trust_score}/100
+                    Trust Score: {selectedAuditRecord.receiver_trust_score || 80}/100
                   </div>
                 </div>
               </div>
 
               {/* AUDIT BREAKDOWN METRICS */}
               <div>
-                <h4 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: "800", color: "#1E293B" }}>
+                <h4 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: "800", color: "#0F172A" }}>
                   🔍 Grounded Historical Ledger Analysis
                 </h4>
 
@@ -899,7 +1462,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                     <div style={{ fontSize: "12px", color: "#64748B" }}>Receiver Verification Verdict</div>
                     <div
                       style={{
-                        fontSize: "14px",
+                        fontSize: "13.5px",
                         fontWeight: "800",
                         marginTop: "6px",
                         color:
@@ -926,7 +1489,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                     <div style={{ fontSize: "13px", fontWeight: "700", color: "#0F172A", marginTop: "4px" }}>
                       {selectedAuditRecord.last_transfer_timestamp
                         ? new Date(selectedAuditRecord.last_transfer_timestamp).toLocaleString("en-IN")
-                        : "No previous transaction found in ledger"}
+                        : "No previous transaction in ledger"}
                     </div>
                   </div>
 
@@ -938,7 +1501,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                       padding: "12px 16px",
                     }}
                   >
-                    <div style={{ fontSize: "12px", color: "#64748B" }}>Last Known Amount / Avg</div>
+                    <div style={{ fontSize: "12px", color: "#64748B" }}>Last Known Amount</div>
                     <div style={{ fontSize: "14px", fontWeight: "800", color: "#0F172A", marginTop: "4px" }}>
                       {selectedAuditRecord.last_transfer_amount
                         ? `₹${selectedAuditRecord.last_transfer_amount.toLocaleString("en-IN")}`
@@ -947,39 +1510,6 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                   </div>
                 </div>
               </div>
-
-              {/* SENDER REGISTERED DEVICES EVIDENCE */}
-              {auditDetail?.sender?.registered_devices && (
-                <div
-                  style={{
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                    borderRadius: "10px",
-                    padding: "12px 16px",
-                  }}
-                >
-                  <div style={{ fontSize: "12px", fontWeight: "700", color: "#334155", marginBottom: "6px" }}>
-                    📱 Sender Registered Devices Registry:
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                    {auditDetail.sender.registered_devices.map((d, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          background: "#EEF2FF",
-                          color: "#3730A3",
-                          padding: "4px 10px",
-                          borderRadius: "6px",
-                          fontSize: "12px",
-                          fontWeight: "600",
-                        }}
-                      >
-                        {d}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* ACTION FOOTER */}
               <div
@@ -993,6 +1523,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                 }}
               >
                 <button
+                  type="button"
                   onClick={closeAuditModal}
                   style={{
                     padding: "10px 18px",
@@ -1010,6 +1541,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
 
                 {onSelectPairForSimulation && (
                   <button
+                    type="button"
                     onClick={() => {
                       onSelectPairForSimulation(
                         selectedAuditRecord.sender_account,
@@ -1023,7 +1555,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                       background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
                       border: "none",
                       borderRadius: "8px",
-                      color: "#fff",
+                      color: "#FFFFFF",
                       fontWeight: "700",
                       fontSize: "13px",
                       cursor: "pointer",
