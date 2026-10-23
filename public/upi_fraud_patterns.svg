@@ -1,0 +1,545 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Fonts -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap');
+      text {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .title-gradient {
+        fill: url(#headerGradient);
+      }
+      .panel-card {
+        fill: #0B132B;
+        stroke: #1E293B;
+        stroke-width: 1.5px;
+        filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.08));
+      }
+      .node-normal {
+        fill: #334155;
+        stroke: #94A3B8;
+        stroke-width: 2px;
+      }
+      .node-suspicious {
+        fill: #D97706;
+        stroke: #FBBF24;
+        stroke-width: 2.5px;
+      }
+      .node-danger {
+        fill: #DC2626;
+        stroke: #F87171;
+        stroke-width: 2.5px;
+      }
+      .node-text {
+        fill: #FFFFFF;
+        font-weight: 700;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+      .arrow-trail {
+        stroke: #EF4444;
+        stroke-width: 2;
+        fill: none;
+      }
+      .arrow-trail-orange {
+        stroke: #F59E0B;
+        stroke-width: 2;
+        fill: none;
+      }
+      .edge-label {
+        font-size: 11px;
+        font-weight: 700;
+        fill: #FCA5A5;
+      }
+      .edge-sub {
+        font-size: 9.5px;
+        font-weight: 500;
+        fill: #94A3B8;
+      }
+      .caption-text {
+        font-size: 13.5px;
+        line-height: 1.4;
+        fill: #475569;
+        font-weight: 500;
+        text-anchor: middle;
+      }
+    </style>
+
+    <!-- Header Gradient -->
+    <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="45%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <!-- Marker Arrow Red -->
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#EF4444"/>
+    </marker>
+
+    <!-- Marker Arrow Orange -->
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#F59E0B"/>
+    </marker>
+
+    <!-- Marker Arrow Curved Red -->
+    <marker id="arrow-curved-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#EF4444"/>
+    </marker>
+
+    <!-- Subtle Card Grid Pattern -->
+    <pattern id="cardGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="1" fill="#1E293B" opacity="0.6"/>
+    </pattern>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1920" height="1080" fill="#FFFFFF"/>
+  <rect x="25" y="25" width="1870" height="1030" rx="20" fill="none" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <!-- ================= HEADER SECTION ================= -->
+  <g transform="translate(960, 50)">
+    <!-- Category Pill -->
+    <rect x="-140" y="0" width="280" height="28" rx="14" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1"/>
+    <text x="0" y="18" text-anchor="middle" font-size="11.5" font-weight="700" fill="#4F46E5" letter-spacing="1.2">GRAPH ANOMALY TAXONOMY</text>
+
+    <!-- Main Title -->
+    <text x="0" y="68" text-anchor="middle" font-size="38" font-weight="800" class="title-gradient" letter-spacing="-0.6px">
+      UPI Fraud Patterns in a Transaction Network
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="104" text-anchor="middle" font-size="17" font-weight="500" fill="#64748B" letter-spacing="0.1px">
+      Each circle is a bank account. Each arrow is a UPI payment.
+    </text>
+  </g>
+
+  <!-- ================= PANEL 1: MULTI-HOP LAYERING ================= -->
+  <!-- X: 70, Width: 336 -->
+  <g transform="translate(70, 160)">
+    <!-- Header Titles -->
+    <text x="168" y="0" text-anchor="middle" font-size="11" font-weight="700" fill="#4F46E5" letter-spacing="0.8">PANEL 01</text>
+    <text x="168" y="24" text-anchor="middle" font-size="16.5" font-weight="800" fill="#0F172A">Passed through many accounts</text>
+    <text x="168" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#64748B">(Multi-Hop Layering)</text>
+
+    <!-- Dark Navy Card -->
+    <rect x="0" y="58" width="336" height="560" rx="18" class="panel-card"/>
+    <rect x="0" y="58" width="336" height="560" rx="18" fill="url(#cardGrid)"/>
+
+    <!-- Graph Elements Inside Card -->
+    <!-- 4 Nodes Vertical Chain: A -> B -> C -> D -->
+    <!-- Center X: 168 -->
+    <!-- Node A: Normal -->
+    <g transform="translate(168, 120)">
+      <circle cx="0" cy="0" r="23" class="node-normal"/>
+      <text x="0" y="0" class="node-text" font-size="11">A0012</text>
+      <text x="-40" y="3" text-anchor="end" font-size="10.5" font-weight="600" fill="#94A3B8">Victim</text>
+    </g>
+
+    <!-- Arrow A -> B -->
+    <line x1="168" y1="147" x2="168" y2="207" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="180" y="162" width="135" height="28" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="186" y="176" class="edge-label">₹50,000</text>
+    <text x="242" y="176" class="edge-sub">at 10:00</text>
+    <text x="186" y="186" font-size="8.5" fill="#64748B">Hop 1 Transfer</text>
+
+    <!-- Node B: Suspicious (Orange) -->
+    <g transform="translate(168, 235)">
+      <circle cx="0" cy="0" r="23" class="node-suspicious"/>
+      <text x="0" y="0" class="node-text" font-size="11">B8491</text>
+      <text x="-40" y="3" text-anchor="end" font-size="10.5" font-weight="600" fill="#F59E0B">Mule 1</text>
+    </g>
+
+    <!-- Arrow B -> C -->
+    <line x1="168" y1="262" x2="168" y2="322" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="180" y="277" width="135" height="28" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="186" y="291" class="edge-label">₹48,500</text>
+    <text x="242" y="291" class="edge-sub">at 13:20</text>
+    <text x="186" y="301" font-size="8.5" fill="#64748B">Hop 2 Transfer</text>
+
+    <!-- Node C: Suspicious (Orange) -->
+    <g transform="translate(168, 350)">
+      <circle cx="0" cy="0" r="23" class="node-suspicious"/>
+      <text x="0" y="0" class="node-text" font-size="11">C3104</text>
+      <text x="-40" y="3" text-anchor="end" font-size="10.5" font-weight="600" fill="#F59E0B">Mule 2</text>
+    </g>
+
+    <!-- Arrow C -> D -->
+    <line x1="168" y1="377" x2="168" y2="437" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="180" y="392" width="135" height="28" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="186" y="406" class="edge-label">₹47,000</text>
+    <text x="242" y="406" class="edge-sub">at 18:45</text>
+    <text x="186" y="416" font-size="8.5" fill="#64748B">Hop 3 Cashout</text>
+
+    <!-- Node D: Normal / Final Destination -->
+    <g transform="translate(168, 465)">
+      <circle cx="0" cy="0" r="23" class="node-normal"/>
+      <text x="0" y="0" class="node-text" font-size="11">D9921</text>
+      <text x="-40" y="3" text-anchor="end" font-size="10.5" font-weight="600" fill="#94A3B8">Exfiltration</text>
+    </g>
+
+    <!-- Left Bracket Annotation for multi-hop velocity & retention -->
+    <path d="M 60 135 L 45 135 L 45 292.5 L 35 292.5 L 45 292.5 L 45 450 L 60 450" fill="none" stroke="#38BDF8" stroke-width="1.8"/>
+
+    <!-- Bottom Bracket Badge -->
+    <rect x="18" y="540" width="300" height="48" rx="10" fill="#0F172A" stroke="#1E3A8A" stroke-width="1.5"/>
+    <text x="168" y="560" text-anchor="middle" font-size="11.5" font-weight="700" fill="#38BDF8">
+      within 12 hours
+    </text>
+    <text x="168" y="576" text-anchor="middle" font-size="10.5" font-weight="500" fill="#94A3B8">
+      amount stays within 25% tolerance
+    </text>
+
+    <!-- Caption Underneath Card -->
+    <text x="168" y="648" class="caption-text">
+      <tspan x="168" dy="0">Money is passed quickly through</tspan>
+      <tspan x="168" dy="19">middle accounts to hide where it</tspan>
+      <tspan x="168" dy="19">came from.</tspan>
+    </text>
+  </g>
+
+  <!-- ================= PANEL 2: CIRCULAR RECIPROCAL ================= -->
+  <!-- X: 431, Width: 336 -->
+  <g transform="translate(431, 160)">
+    <!-- Header Titles -->
+    <text x="168" y="0" text-anchor="middle" font-size="11" font-weight="700" fill="#4F46E5" letter-spacing="0.8">PANEL 02</text>
+    <text x="168" y="24" text-anchor="middle" font-size="16.5" font-weight="800" fill="#0F172A">Money going in a circle</text>
+    <text x="168" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#64748B">(Circular Reciprocal)</text>
+
+    <!-- Dark Navy Card -->
+    <rect x="0" y="58" width="336" height="560" rx="18" class="panel-card"/>
+    <rect x="0" y="58" width="336" height="560" rx="18" fill="url(#cardGrid)"/>
+
+    <!-- Node A & Node B forming loop -->
+    <!-- Node A: Orange Suspicious -->
+    <g transform="translate(85, 290)">
+      <circle cx="0" cy="0" r="28" class="node-suspicious"/>
+      <text x="0" y="-3" class="node-text" font-size="12">A1045</text>
+      <text x="0" y="11" font-size="9" fill="#FEF08A" font-weight="600" text-anchor="middle">Origin</text>
+    </g>
+
+    <!-- Node B: Orange Suspicious -->
+    <g transform="translate(251, 290)">
+      <circle cx="0" cy="0" r="28" class="node-suspicious"/>
+      <text x="0" y="-3" class="node-text" font-size="12">B7219</text>
+      <text x="0" y="11" font-size="9" fill="#FEF08A" font-weight="600" text-anchor="middle">Partner</text>
+    </g>
+
+    <!-- Curved Arrow Top: A -> B -->
+    <path d="M 85 258 C 110 150, 226 150, 248 258" fill="none" stroke="#EF4444" stroke-width="2.5" marker-end="url(#arrow-curved-red)"/>
+    <!-- Top Label -->
+    <rect x="108" y="145" width="120" height="32" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="168" y="160" text-anchor="middle" class="edge-label">₹20,000</text>
+    <text x="168" y="171" text-anchor="middle" class="edge-sub">Outward transfer</text>
+
+    <!-- Curved Arrow Bottom: B -> A -->
+    <path d="M 251 322 C 226 430, 110 430, 88 322" fill="none" stroke="#EF4444" stroke-width="2.5" marker-end="url(#arrow-curved-red)"/>
+    <!-- Bottom Label -->
+    <rect x="108" y="405" width="120" height="32" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="168" y="420" text-anchor="middle" class="edge-label">₹19,500</text>
+    <text x="168" y="431" text-anchor="middle" class="edge-sub">Return loop</text>
+
+    <!-- Center Loop Badge with Circular Arrow Icon -->
+    <g transform="translate(168, 290)">
+      <circle cx="0" cy="0" r="32" fill="#1E293B" stroke="#EF4444" stroke-width="1.8" opacity="0.95"/>
+      <!-- Loop Arrow Icon -->
+      <path d="M -12 -5 A 14 14 0 1 1 12 5" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+      <polygon points="12,1 17,7 9,8" fill="#EF4444"/>
+      <polygon points="-12,-1 -17,-7 -9,-8" fill="#EF4444"/>
+      <text x="0" y="2" text-anchor="middle" font-size="8.5" font-weight="700" fill="#FCA5A5">CYCLE</text>
+    </g>
+
+    <!-- Badge Tag at Bottom -->
+    <rect x="48" y="540" width="240" height="48" rx="10" fill="#451A03" stroke="#B45309" stroke-width="1.5"/>
+    <text x="168" y="560" text-anchor="middle" font-size="12" font-weight="700" fill="#FBBF24">
+      🔄 loop within 7 days
+    </text>
+    <text x="168" y="576" text-anchor="middle" font-size="10.5" font-weight="500" fill="#FDE68A">
+      wash-trading / artificial credit inflation
+    </text>
+
+    <!-- Caption Underneath Card -->
+    <text x="168" y="648" class="caption-text">
+      <tspan x="168" dy="0">Money goes out and comes back</tspan>
+      <tspan x="168" dy="19">to the same account in an</tspan>
+      <tspan x="168" dy="19">artificial cycle.</tspan>
+    </text>
+  </g>
+
+  <!-- ================= PANEL 3: FAN-IN AGGREGATOR ================= -->
+  <!-- X: 792, Width: 336 -->
+  <g transform="translate(792, 160)">
+    <!-- Header Titles -->
+    <text x="168" y="0" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626" letter-spacing="0.8">PANEL 03</text>
+    <text x="168" y="24" text-anchor="middle" font-size="16.5" font-weight="800" fill="#0F172A">Receives from many people</text>
+    <text x="168" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#64748B">(Fan-In Aggregator)</text>
+
+    <!-- Dark Navy Card -->
+    <rect x="0" y="58" width="336" height="560" rx="18" class="panel-card"/>
+    <rect x="0" y="58" width="336" height="560" rx="18" fill="url(#cardGrid)"/>
+
+    <!-- Central Radial Topology: Center at (168, 290) -->
+    <!-- 10 Surrounding Grey Nodes (R = 130) pointing INTO center -->
+    <!-- Center Red Node -->
+    <!-- Surrounding 10 Nodes computed with cos/sin -->
+    <!-- 0 deg: (298, 290) -->
+    <line x1="280" y1="290" x2="204" y2="290" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="295" cy="290" r="13" class="node-normal"/><text x="295" y="290" class="node-text" font-size="8">S1</text>
+
+    <!-- 36 deg: (273, 366) -->
+    <line x1="260" y1="353" x2="198" y2="310" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="273" cy="366" r="13" class="node-normal"/><text x="273" y="366" class="node-text" font-size="8">S2</text>
+
+    <!-- 72 deg: (208, 414) -->
+    <line x1="202" y1="396" x2="180" y2="324" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="208" cy="414" r="13" class="node-normal"/><text x="208" y="414" class="node-text" font-size="8">S3</text>
+
+    <!-- 108 deg: (128, 414) -->
+    <line x1="134" y1="396" x2="156" y2="324" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="128" cy="414" r="13" class="node-normal"/><text x="128" y="414" class="node-text" font-size="8">S4</text>
+
+    <!-- 144 deg: (63, 366) -->
+    <line x1="76" y1="353" x2="138" y2="310" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="63" cy="366" r="13" class="node-normal"/><text x="63" y="366" class="node-text" font-size="8">S5</text>
+
+    <!-- 180 deg: (38, 290) -->
+    <line x1="56" y1="290" x2="132" y2="290" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="38" cy="290" r="13" class="node-normal"/><text x="38" y="290" class="node-text" font-size="8">S6</text>
+
+    <!-- 216 deg: (63, 214) -->
+    <line x1="76" y1="227" x2="138" y2="270" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="63" cy="214" r="13" class="node-normal"/><text x="63" y="214" class="node-text" font-size="8">S7</text>
+
+    <!-- 252 deg: (128, 166) -->
+    <line x1="134" y1="184" x2="156" y2="256" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="128" cy="166" r="13" class="node-normal"/><text x="128" y="166" class="node-text" font-size="8">S8</text>
+
+    <!-- 288 deg: (208, 166) -->
+    <line x1="202" y1="184" x2="180" y2="256" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="208" cy="166" r="13" class="node-normal"/><text x="208" y="166" class="node-text" font-size="8">S9</text>
+
+    <!-- 324 deg: (273, 214) -->
+    <line x1="260" y1="227" x2="198" y2="270" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <circle cx="273" cy="214" r="13" class="node-normal"/><text x="273" y="214" class="node-text" font-size="8">S10</text>
+
+    <!-- Central Node: Large Red -->
+    <g transform="translate(168, 290)">
+      <circle cx="0" cy="0" r="34" class="node-danger"/>
+      <text x="0" y="-4" class="node-text" font-size="12">MULE-01</text>
+      <text x="0" y="11" font-size="9" fill="#FECACA" font-weight="700" text-anchor="middle">AGGREGATOR</text>
+    </g>
+
+    <!-- Flow Annotation Pill -->
+    <rect x="78" y="450" width="180" height="26" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="168" y="467" text-anchor="middle" font-size="10" font-weight="600" fill="#FCA5A5">⚡ All Inbound UPI Inflows</text>
+
+    <!-- Badge Tag at Bottom -->
+    <rect x="48" y="540" width="240" height="48" rx="10" fill="#450A0A" stroke="#DC2626" stroke-width="1.5"/>
+    <text x="168" y="560" text-anchor="middle" font-size="12" font-weight="700" fill="#F87171">
+      🚨 10+ senders in 72 hours
+    </text>
+    <text x="168" y="576" text-anchor="middle" font-size="10.5" font-weight="500" fill="#FECACA">
+      high in-degree central collection hub
+    </text>
+
+    <!-- Caption Underneath Card -->
+    <text x="168" y="648" class="caption-text">
+      <tspan x="168" dy="0">One account collects money from</tspan>
+      <tspan x="168" dy="19">many accounts, a typical mule</tspan>
+      <tspan x="168" dy="19">account pattern.</tspan>
+    </text>
+  </g>
+
+  <!-- ================= PANEL 4: HIGH-VOLUME SENDER ================= -->
+  <!-- X: 1153, Width: 336 -->
+  <g transform="translate(1153, 160)">
+    <!-- Header Titles -->
+    <text x="168" y="0" text-anchor="middle" font-size="11" font-weight="700" fill="#D97706" letter-spacing="0.8">PANEL 04</text>
+    <text x="168" y="24" text-anchor="middle" font-size="16.5" font-weight="800" fill="#0F172A">Pays many people</text>
+    <text x="168" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#64748B">(High-Volume Sender)</text>
+
+    <!-- Dark Navy Card -->
+    <rect x="0" y="58" width="336" height="560" rx="18" class="panel-card"/>
+    <rect x="0" y="58" width="336" height="560" rx="18" fill="url(#cardGrid)"/>
+
+    <!-- Central Radial Topology: Center at (168, 290) -->
+    <!-- 10 Surrounding Grey Nodes (R = 130) pointing OUT from center -->
+    <!-- 0 deg: (298, 290) -->
+    <line x1="204" y1="290" x2="277" y2="290" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="295" cy="290" r="13" class="node-normal"/><text x="295" y="290" class="node-text" font-size="8">R1</text>
+
+    <!-- 36 deg: (273, 366) -->
+    <line x1="198" y1="310" x2="257" y2="351" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="273" cy="366" r="13" class="node-normal"/><text x="273" y="366" class="node-text" font-size="8">R2</text>
+
+    <!-- 72 deg: (208, 414) -->
+    <line x1="180" y1="324" x2="199" y2="393" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="208" cy="414" r="13" class="node-normal"/><text x="208" y="414" class="node-text" font-size="8">R3</text>
+
+    <!-- 108 deg: (128, 414) -->
+    <line x1="156" y1="324" x2="137" y2="393" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="128" cy="414" r="13" class="node-normal"/><text x="128" y="414" class="node-text" font-size="8">R4</text>
+
+    <!-- 144 deg: (63, 366) -->
+    <line x1="138" y1="310" x2="79" y2="351" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="63" cy="366" r="13" class="node-normal"/><text x="63" y="366" class="node-text" font-size="8">R5</text>
+
+    <!-- 180 deg: (38, 290) -->
+    <line x1="132" y1="290" x2="59" y2="290" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="38" cy="290" r="13" class="node-normal"/><text x="38" y="290" class="node-text" font-size="8">R6</text>
+
+    <!-- 216 deg: (63, 214) -->
+    <line x1="138" y1="270" x2="79" y2="229" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="63" cy="214" r="13" class="node-normal"/><text x="63" y="214" class="node-text" font-size="8">R7</text>
+
+    <!-- 252 deg: (128, 166) -->
+    <line x1="156" y1="256" x2="137" y2="187" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="128" cy="166" r="13" class="node-normal"/><text x="128" y="166" class="node-text" font-size="8">R8</text>
+
+    <!-- 288 deg: (208, 166) -->
+    <line x1="180" y1="256" x2="199" y2="187" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="208" cy="166" r="13" class="node-normal"/><text x="208" y="166" class="node-text" font-size="8">R9</text>
+
+    <!-- 324 deg: (273, 214) -->
+    <line x1="198" y1="270" x2="257" y2="229" class="arrow-trail-orange" marker-end="url(#arrow-orange)"/>
+    <circle cx="273" cy="214" r="13" class="node-normal"/><text x="273" y="214" class="node-text" font-size="8">R10</text>
+
+    <!-- Central Node: Large Orange -->
+    <g transform="translate(168, 290)">
+      <circle cx="0" cy="0" r="34" class="node-suspicious"/>
+      <text x="0" y="-4" class="node-text" font-size="12">DISP-88</text>
+      <text x="0" y="11" font-size="9" fill="#FEF08A" font-weight="700" text-anchor="middle">DISPERSER</text>
+    </g>
+
+    <!-- Flow Annotation Pill -->
+    <rect x="78" y="450" width="180" height="26" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="168" y="467" text-anchor="middle" font-size="10" font-weight="600" fill="#FBBF24">⚡ Rapid Outbound Fan-Out</text>
+
+    <!-- Badge Tag at Bottom -->
+    <rect x="48" y="540" width="240" height="48" rx="10" fill="#451A03" stroke="#D97706" stroke-width="1.5"/>
+    <text x="168" y="560" text-anchor="middle" font-size="12" font-weight="700" fill="#FBBF24">
+      ⚠️ 10+ receivers in 72 hours
+    </text>
+    <text x="168" y="576" text-anchor="middle" font-size="10.5" font-weight="500" fill="#FDE68A">
+      high out-degree fund fragmentation
+    </text>
+
+    <!-- Caption Underneath Card -->
+    <text x="168" y="648" class="caption-text">
+      <tspan x="168" dy="0">One account spreads money out</tspan>
+      <tspan x="168" dy="19">to many accounts to avoid</tspan>
+      <tspan x="168" dy="19">threshold flags.</tspan>
+    </text>
+  </g>
+
+  <!-- ================= PANEL 5: RAPID VELOCITY ================= -->
+  <!-- X: 1514, Width: 336 -->
+  <g transform="translate(1514, 160)">
+    <!-- Header Titles -->
+    <text x="168" y="0" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626" letter-spacing="0.8">PANEL 05</text>
+    <text x="168" y="24" text-anchor="middle" font-size="16.5" font-weight="800" fill="#0F172A">Many quick payments</text>
+    <text x="168" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#64748B">(Rapid Velocity)</text>
+
+    <!-- Dark Navy Card -->
+    <rect x="0" y="58" width="336" height="560" rx="18" class="panel-card"/>
+    <rect x="0" y="58" width="336" height="560" rx="18" fill="url(#cardGrid)"/>
+
+    <!-- Left Sender (Red) fanning out to 5 stacked accounts on the right -->
+    <!-- Sender Node: Red -->
+    <g transform="translate(68, 290)">
+      <circle cx="0" cy="0" r="28" class="node-danger"/>
+      <text x="0" y="-3" class="node-text" font-size="11">R1020</text>
+      <text x="0" y="10" font-size="8.5" fill="#FECACA" font-weight="700" text-anchor="middle">BOT/HACK</text>
+    </g>
+
+    <!-- 5 Right Stacked Accounts (Y: 140, 215, 290, 365, 440) -->
+    <!-- Right Node 1 (140) -->
+    <line x1="94" y1="275" x2="245" y2="152" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="140" y="185" width="48" height="18" rx="4" fill="#1E293B" stroke="#334155"/>
+    <text x="164" y="198" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FCA5A5">10:00</text>
+    <circle cx="264" cy="140" r="16" class="node-normal"/><text x="264" y="140" class="node-text" font-size="9.5">R1</text>
+
+    <!-- Right Node 2 (215) -->
+    <line x1="96" y1="280" x2="245" y2="223" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="150" y="235" width="48" height="18" rx="4" fill="#1E293B" stroke="#334155"/>
+    <text x="174" y="248" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FCA5A5">10:02</text>
+    <circle cx="264" cy="215" r="16" class="node-normal"/><text x="264" y="215" class="node-text" font-size="9.5">R2</text>
+
+    <!-- Right Node 3 (290) -->
+    <line x1="97" y1="290" x2="245" y2="290" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="155" y="281" width="48" height="18" rx="4" fill="#1E293B" stroke="#334155"/>
+    <text x="179" y="294" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FCA5A5">10:04</text>
+    <circle cx="264" cy="290" r="16" class="node-normal"/><text x="264" y="290" class="node-text" font-size="9.5">R3</text>
+
+    <!-- Right Node 4 (365) -->
+    <line x1="96" y1="300" x2="245" y2="357" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="150" y="328" width="48" height="18" rx="4" fill="#1E293B" stroke="#334155"/>
+    <text x="174" y="341" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FCA5A5">10:06</text>
+    <circle cx="264" cy="365" r="16" class="node-normal"/><text x="264" y="365" class="node-text" font-size="9.5">R4</text>
+
+    <!-- Right Node 5 (440) -->
+    <line x1="94" y1="305" x2="245" y2="428" class="arrow-trail" marker-end="url(#arrow-red)"/>
+    <rect x="140" y="378" width="48" height="18" rx="4" fill="#1E293B" stroke="#334155"/>
+    <text x="164" y="391" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FCA5A5">10:08</text>
+    <circle cx="264" cy="440" r="16" class="node-normal"/><text x="264" y="440" class="node-text" font-size="9.5">R5</text>
+
+    <!-- Stopwatch Badge at Bottom -->
+    <rect x="44" y="540" width="248" height="48" rx="10" fill="#450A0A" stroke="#DC2626" stroke-width="1.5"/>
+    <g transform="translate(68, 564)">
+      <!-- Stopwatch SVG Icon -->
+      <circle cx="0" cy="0" r="9" fill="none" stroke="#F87171" stroke-width="1.8"/>
+      <line x1="0" y1="0" x2="4" y2="-4" stroke="#F87171" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="0" y1="-9" x2="0" y2="-12" stroke="#F87171" stroke-width="1.8"/>
+    </g>
+    <text x="175" y="560" text-anchor="middle" font-size="12" font-weight="700" fill="#F87171">
+      5 payments in 10 minutes
+    </text>
+    <text x="175" y="576" text-anchor="middle" font-size="10.5" font-weight="500" fill="#FECACA">
+      abnormal time-delta burst frequency
+    </text>
+
+    <!-- Caption Underneath Card -->
+    <text x="168" y="648" class="caption-text">
+      <tspan x="168" dy="0">Lots of payments sent in a very short</tspan>
+      <tspan x="168" dy="19">time, often indicating a bot or a</tspan>
+      <tspan x="168" dy="19">compromised account.</tspan>
+    </text>
+  </g>
+
+  <!-- ================= BOTTOM LEGEND SECTION ================= -->
+  <g transform="translate(960, 960)">
+    <!-- Legend Container Card -->
+    <rect x="-560" y="0" width="1120" height="60" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+
+    <!-- Legend Items Centered in Single Line -->
+    <!-- Item 1: Normal Account -->
+    <g transform="translate(-460, 30)">
+      <circle cx="0" cy="0" r="13" class="node-normal"/>
+      <text x="24" y="5" font-size="13" font-weight="600" fill="#334155">Normal Account (Soft Grey-Blue)</text>
+    </g>
+
+    <!-- Item 2: Suspicious Account -->
+    <g transform="translate(-150, 30)">
+      <circle cx="0" cy="0" r="13" class="node-suspicious"/>
+      <text x="24" y="5" font-size="13" font-weight="600" fill="#334155">Suspicious Account (Orange)</text>
+    </g>
+
+    <!-- Item 3: Very High Risk Account -->
+    <g transform="translate(140, 30)">
+      <circle cx="0" cy="0" r="13" class="node-danger"/>
+      <text x="24" y="5" font-size="13" font-weight="600" fill="#334155">Very High Risk / Mule (Red)</text>
+    </g>
+
+    <!-- Item 4: Directed Arrow -->
+    <g transform="translate(420, 30)">
+      <line x1="-20" y1="0" x2="16" y2="0" stroke="#EF4444" stroke-width="2.5" marker-end="url(#arrow-red)"/>
+      <text x="30" y="5" font-size="13" font-weight="600" fill="#334155">UPI Payment (Amount &amp; Time)</text>
+    </g>
+  </g>
+
+  <!-- Footer Academic Watermark -->
+  <text x="960" y="1045" text-anchor="middle" font-size="11.5" font-weight="500" fill="#94A3B8">
+    Figure 1: Topological patterns of anomalous UPI transaction networks for graph neural network &amp; rule-based fraud detection systems.
+  </text>
+</svg>

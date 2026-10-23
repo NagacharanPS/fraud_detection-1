@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Fraud Patterns in a Transaction Network — Infographic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+    .header-bar {
+      width: 100%;
+      max-width: 1400px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 12px 20px;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid #334155;
+      border-radius: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #1E293B;
+      color: #38BDF8;
+      border: 1px solid #0284C7;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      border: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563EB, #4F46E5);
+      color: #FFFFFF;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1D4ED8, #4338CA);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #1E293B;
+      color: #E2E8F0;
+      border: 1px solid #475569;
+    }
+    .btn-secondary:hover {
+      background: #334155;
+      color: #FFFFFF;
+    }
+    .infographic-container {
+      width: 100%;
+      max-width: 1400px;
+      aspect-ratio: 16 / 9;
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .infographic-container img,
+    .infographic-container object {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .footer-note {
+      margin-top: 18px;
+      font-size: 12.5px;
+      color: #94A3B8;
+      text-align: center;
+    }
+    @media print {
+      body {
+        background: #FFFFFF;
+        padding: 0;
+      }
+      .header-bar, .footer-note {
+        display: none;
+      }
+      .infographic-container {
+        box-shadow: none;
+        border-radius: 0;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <div class="brand">
+      <span class="badge">IEEE / Presentation Asset</span>
+      <h1>UPI Fraud Patterns in a Transaction Network</h1>
+    </div>
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / PDF</button>
+      <a class="btn btn-secondary" href="/upi_fraud_patterns.svg" download="upi_fraud_patterns.svg">⬇️ Download SVG (Vector)</a>
+      <button class="btn btn-primary" id="btnPng">🖼️ Export High-Res PNG (4K)</button>
+    </div>
+  </div>
+
+  <div class="infographic-container" id="container">
+    <object id="svgObject" data="/upi_fraud_patterns.svg" type="image/svg+xml" width="100%" height="100%"></object>
+  </div>
+
+  <div class="footer-note">
+    Vector graphic rendered at native 16:9 landscape aspect ratio (1920 × 1080). Ideal for thesis documents, research papers, slide decks, and conference posters.
+  </div>
+
+  <script>
+    document.getElementById('btnPng').addEventListener('click', async () => {
+      try {
+        const svgRes = await fetch('/upi_fraud_patterns.svg');
+        const svgText = await svgRes.text();
+        const img = new Image();
+        const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 3840;
+          canvas.height = 2160;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(url);
+          const a = document.createElement('a');
+          a.download = 'upi_fraud_patterns_4k.png';
+          a.href = canvas.toDataURL('image/png');
+          a.click();
+        };
+        img.src = url;
+      } catch (err) {
+        alert('Could not export canvas to PNG: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
