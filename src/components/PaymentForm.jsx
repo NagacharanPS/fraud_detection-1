@@ -101,6 +101,7 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
   const [transactionsLast10Min, setTransactionsLast10Min] = useState(0);
   const [relationshipInfo, setRelationshipInfo] = useState(null);
   const [loadingRelationship, setLoadingRelationship] = useState(false);
+  const [replayedLedgerTxn, setReplayedLedgerTxn] = useState(null);
 
   // Transaction time – default to current local Indian time (Asia/Kolkata)
   const [transactionTime, setTransactionTime] = useState(getNowLocalTimeString);
@@ -180,49 +181,126 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
 
   // Handle Scenario pre-fill
   useEffect(() => {
-    if (!selectedScenario || accounts.length === 0) return;
+    if (!selectedScenario) {
+      setReplayedLedgerTxn(null);
+      return;
+    }
 
-    const senderAcc = accounts.find((a) => a.account_id === selectedScenario.sender);
-    const receiverAcc = accounts.find((a) => a.account_id === selectedScenario.receiver);
+    let isCancelled = false;
 
-    if (senderAcc) {
-      setSelectedSender(senderAcc);
-      setSenderSearch(senderAcc.account_id);
-      setSenderError("");
-    }
-    if (receiverAcc) {
-      setSelectedReceiver(receiverAcc);
-      setReceiverSearch(receiverAcc.account_id);
-      setReceiverError("");
-    }
-    if (selectedScenario.amount !== undefined) {
-      setAmount(String(selectedScenario.amount));
-    }
-    if (selectedScenario.isNewReceiver !== undefined) {
-      setIsNewReceiver(Boolean(selectedScenario.isNewReceiver));
-    }
-    if (selectedScenario.transactionsLast10Min !== undefined) {
-      setTransactionsLast10Min(Number(selectedScenario.transactionsLast10Min));
-    }
-    if (selectedScenario.time) {
-      setTransactionTime(selectedScenario.time);
-      if (selectedScenario.id?.includes("high") || selectedScenario.id?.includes("crit")) {
-        setScenarioTimeNote("This scenario uses a late-night transaction time to demonstrate unusual activity.");
+    async function applyScenario() {
+      const sId = selectedScenario.sender;
+      const rId = selectedScenario.receiver;
+      const sourceTxnId = selectedScenario.source_transaction_id;
+
+      let ledgerTxnData = null;
+      if (sourceTxnId) {
+        try {
+          const lRes = await api.get(`/api/ledger-transaction/${sourceTxnId}`);
+          if (lRes.data && !isCancelled) {
+            ledgerTxnData = lRes.data;
+            setReplayedLedgerTxn(lRes.data);
+          }
+        } catch (lErr) {
+          console.warn("Could not fetch ledger transaction:", lErr);
+        }
       } else {
+        setReplayedLedgerTxn(null);
+      }
+
+      let senderAcc = accounts.find((a) => a.account_id === sId);
+      let receiverAcc = accounts.find((a) => a.account_id === rId);
+
+      // If sender or receiver not found in loaded accounts (e.g. ACC_0225)
+      if (sId && !senderAcc) {
+        try {
+          const sRes = await api.get(`/api/ledger-account/${sId}`);
+          if (sRes.data && !isCancelled) {
+            senderAcc = sRes.data;
+          }
+        } catch (err) {
+          if (!isCancelled) {
+            setSenderError("This account isn't available in the simulator.");
+          }
+        }
+      }
+
+      if (rId && !receiverAcc) {
+        try {
+          const rRes = await api.get(`/api/ledger-account/${rId}`);
+          if (rRes.data && !isCancelled) {
+            receiverAcc = rRes.data;
+          }
+        } catch (err) {
+          if (!isCancelled) {
+            setReceiverError("This account isn't available in the simulator.");
+          }
+        }
+      }
+
+      if (isCancelled) return;
+
+      if (senderAcc) {
+        setSelectedSender(senderAcc);
+        setSenderSearch(senderAcc.account_id);
+        setSenderError("");
+      } else if (sId) {
+        setSenderError("This account isn't available in the simulator.");
+      }
+
+      if (receiverAcc) {
+        setSelectedReceiver(receiverAcc);
+        setReceiverSearch(receiverAcc.account_id);
+        setReceiverError("");
+      } else if (rId) {
+        setReceiverError("This account isn't available in the simulator.");
+      }
+
+      const effectiveAmt = selectedScenario.amount !== undefined ? selectedScenario.amount : ledgerTxnData?.amount;
+      if (effectiveAmt !== undefined) {
+        setAmount(String(effectiveAmt));
+      }
+
+      if (ledgerTxnData?.is_new_receiver !== undefined) {
+        setIsNewReceiver(Boolean(ledgerTxnData.is_new_receiver));
+      } else if (selectedScenario.isNewReceiver !== undefined) {
+        setIsNewReceiver(Boolean(selectedScenario.isNewReceiver));
+      }
+
+      if (selectedScenario.transactionsLast10Min !== undefined) {
+        setTransactionsLast10Min(Number(selectedScenario.transactionsLast10Min));
+      } else {
+        setTransactionsLast10Min(0);
+      }
+
+      const txTimeVal = ledgerTxnData?.timestamp || selectedScenario.timestamp || selectedScenario.time;
+      if (txTimeVal) {
+        setTransactionTime(txTimeVal);
+        if (sourceTxnId) {
+          setScenarioTimeNote(`Ledger timestamp: ${txTimeVal}`);
+        } else if (selectedScenario.id?.includes("high") || selectedScenario.id?.includes("crit")) {
+          setScenarioTimeNote("This scenario uses a late-night transaction time to demonstrate unusual activity.");
+        } else {
+          setScenarioTimeNote("");
+        }
+      } else {
+        setTransactionTime(getNowLocalTimeString());
         setScenarioTimeNote("");
       }
-    } else {
-      setTransactionTime(getNowLocalTimeString());
-      setScenarioTimeNote("");
+
+      setError("");
+      setRiskData(null);
+      setAuthType("");
+      setActionTitle("");
+      setActionColor("");
+      setButtonText("");
     }
-    setError("");
-    setReceiverError("");
-    setSenderError("");
-    setRiskData(null);
-    setAuthType("");
-    setActionTitle("");
-    setActionColor("");
-    setButtonText("");
+
+    applyScenario();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [selectedScenario, accounts]);
 
   // Automated Ledger / Dataset Lookup for Receiver Relationship
@@ -245,17 +323,15 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
           params: {
             sender_id: selectedSender.account_id,
             receiver_id: selectedReceiver.account_id,
+            timestamp: transactionTime || undefined,
           },
         });
         if (!isMounted) return;
         const data = res.data;
         setRelationshipInfo(data);
-        // Only update receiver flag automatically if not actively loaded from a demo scenario
-        if (!selectedScenario) {
-          setIsNewReceiver(Boolean(data.is_new_receiver));
-          if (data.is_new_receiver) {
-            setTransactionsLast10Min(0);
-          }
+        setIsNewReceiver(Boolean(data.is_new_receiver));
+        if (data.is_new_receiver) {
+          setTransactionsLast10Min(0);
         }
         setLoadingRelationship(false);
       } catch (err) {
@@ -270,7 +346,7 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
     return () => {
       isMounted = false;
     };
-  }, [selectedSender?.account_id, selectedReceiver?.account_id, selectedScenario]);
+  }, [selectedSender?.account_id, selectedReceiver?.account_id, transactionTime]);
 
   /* ----------------------------- FILTERED LISTS ----------------------------- */
 
@@ -404,15 +480,20 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
         currentDeviceTrust = await runDeviceAssessment();
       }
 
+      const isNewDevParam = replayedLedgerTxn
+        ? Boolean(replayedLedgerTxn.is_new_device)
+        : (selectedScenario?.is_new_device !== undefined ? selectedScenario.is_new_device : (currentDeviceTrust ? !currentDeviceTrust.is_known_device : false));
+
       const payload = {
         sender_account: selectedSender.account_id,
         receiver_account: selectedReceiver.account_id,
         amount: Number(amount),
-        is_new_device: false,
+        is_new_device: isNewDevParam,
         is_new_receiver: isNewReceiver,
         transactions_last_10min: Number(transactionsLast10Min) || 0,
         transaction_time: transactionTime,
         device_trust: currentDeviceTrust,
+        source_transaction_id: selectedScenario?.source_transaction_id || undefined,
       };
       const response = await api.post("/api/check-risk", payload);
       const data = response.data;
@@ -486,15 +567,20 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
     try {
       setProcessingPayment(true);
       setError("");
+      const isNewDevParam = replayedLedgerTxn
+        ? Boolean(replayedLedgerTxn.is_new_device)
+        : (selectedScenario?.is_new_device !== undefined ? selectedScenario.is_new_device : (deviceTrust ? !deviceTrust.is_known_device : false));
+
       const payload = {
         sender_account: selectedSender.account_id,
         receiver_account: selectedReceiver.account_id,
         amount: Number(amount),
-        is_new_device: false,
+        is_new_device: isNewDevParam,
         is_new_receiver: isNewReceiver,
         transactions_last_10min: Number(transactionsLast10Min) || 0,
         transaction_time: transactionTime,
         device_trust: deviceTrust,
+        source_transaction_id: selectedScenario?.source_transaction_id || undefined,
       };
       const res = await api.post("/api/payment", payload);
 
@@ -569,6 +655,64 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
         fontFamily: "'Inter', sans-serif",
       }}
     >
+      {/* LEDGER REPLAY INFO STRIP */}
+      {selectedScenario?.source_transaction_id && (
+        <div
+          style={{
+            background: (selectedScenario.is_fraud || replayedLedgerTxn?.is_fraud) ? "#FEF2F2" : "#F0FDF4",
+            borderBottom: `1px solid ${(selectedScenario.is_fraud || replayedLedgerTxn?.is_fraud) ? "#FECACA" : "#BBF7D0"}`,
+            padding: "12px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: "13px",
+            color: (selectedScenario.is_fraud || replayedLedgerTxn?.is_fraud) ? "#991B1B" : "#166534",
+            fontWeight: "600",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <FaShieldAlt color={(selectedScenario.is_fraud || replayedLedgerTxn?.is_fraud) ? "#DC2626" : "#16A34A"} size={16} />
+            <span>
+              Replaying ledger transaction{" "}
+              <strong>{selectedScenario.source_transaction_id}</strong>. Records
+              say:{" "}
+              <span
+                style={{
+                  background: (selectedScenario.is_fraud || replayedLedgerTxn?.is_fraud) ? "#DC2626" : "#16A34A",
+                  color: "#FFFFFF",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  marginLeft: "4px",
+                }}
+              >
+                {(selectedScenario.is_fraud || replayedLedgerTxn?.is_fraud) ? "Fraud" : "Normal"}
+              </span>
+            </span>
+          </div>
+          {onResetScenario && (
+            <button
+              type="button"
+              onClick={onResetScenario}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#64748B",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: "600",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              Exit Replay
+            </button>
+          )}
+        </div>
+      )}
+
       {/* =========================================================================
           1. HEADER BANNER: SEND MONEY WITH SHIELD ICON
           ========================================================================= */}
@@ -1503,6 +1647,36 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
                   {riskData.risk_level} RISK
                 </span>
               </div>
+
+              {/* SEPARATE GROUND TRUTH LABEL VS AI SCORE BANNER */}
+              {riskData.records_label && (
+                <div
+                  style={{
+                    marginTop: "14px",
+                    background: riskData.records_label === "Fraud" ? "#FEF2F2" : "#F0FDF4",
+                    border: `1px solid ${riskData.records_label === "Fraud" ? "#FECACA" : "#BBF7D0"}`,
+                    borderRadius: "10px",
+                    padding: "9px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ fontWeight: "700", color: riskData.records_label === "Fraud" ? "#DC2626" : "#16A34A" }}>
+                    Records say: {riskData.records_label}
+                  </span>
+                  <span style={{ fontWeight: "700", color: "#1E293B" }}>
+                    AI says: {riskData.risk_score}% risk
+                  </span>
+                </div>
+              )}
+
+              {riskData.model_used && (
+                <div style={{ fontSize: "11.5px", color: "#64748B", marginTop: "8px" }}>
+                  Fraud Engine: <strong>{riskData.model_used}</strong>
+                </div>
+              )}
 
               {/* CORE METRICS GRID */}
               <div

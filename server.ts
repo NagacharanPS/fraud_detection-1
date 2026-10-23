@@ -623,26 +623,209 @@ async function startServer() {
     res.json(results.slice(0, 50));
   });
 
+  let sharedFraudDb: any = null;
+  function getFraudDb(): any {
+    if (sharedFraudDb) return sharedFraudDb;
+    const dbPaths = [
+      path.resolve(process.cwd(), "fraud_detection.db"),
+      path.resolve(process.cwd(), "dataset/fraud_detection.db"),
+      path.resolve(process.cwd(), "backend/database/fraud_detection.db"),
+    ];
+    for (const p of dbPaths) {
+      if (fs.existsSync(p)) {
+        try {
+          sharedFraudDb = new DatabaseSync(p);
+          return sharedFraudDb;
+        } catch (err) {
+          console.warn(`[server] Notice opening db at ${p}:`, err);
+        }
+      }
+    }
+    return null;
+  }
+
+  function synthesizeAccountFromDb(accountId: string, roleHint: "sender" | "receiver" = "sender"): Account | null {
+    if (accountsStore.has(accountId)) {
+      return accountsStore.get(accountId)!;
+    }
+    const db = getFraudDb();
+    if (!db) return null;
+
+    try {
+      const stmt = db.prepare(`
+        SELECT 
+          sender_account, receiver_account, sender_account_type, 
+          sender_trust_score, sender_primary_device, receiver_trust_score,
+          receiver_kyc_status, receiver_account_status
+        FROM transactions
+        WHERE sender_account = ? OR receiver_account = ?
+        ORDER BY timestamp DESC
+        LIMIT 1
+      `);
+      const row = stmt.get(accountId, accountId);
+      if (!row) return null;
+
+      const isSender = row.sender_account === accountId;
+      const acc: Account = {
+        account_id: accountId,
+        account_name: isSender ? `Ledger Account (${accountId})` : `Ledger Beneficiary (${accountId})`,
+        upi_id: `${accountId.toLowerCase()}@okhdfcbank`,
+        account_type: isSender ? (row.sender_account_type || "PERSONAL") : "PERSONAL",
+        bank_name: isSender ? "HDFC Bank" : "Axis Bank",
+        mobile_number: "+91 98765 43210",
+        current_balance: 1000000,
+        trust_score: isSender ? (row.sender_trust_score ?? 75) : (row.receiver_trust_score ?? 70),
+        account_status: isSender ? "Active" : (row.receiver_account_status || "Active"),
+        created_at: "2024-01-01T00:00:00.000Z",
+        relationship_type: isSender ? (row.sender_account_type || "PERSONAL") : "PERSONAL",
+        occupation: isSender ? (row.sender_account_type || "Account Holder") : "Beneficiary",
+        annual_income: 600000,
+        age_group: "26-35",
+        account_purpose: "Personal",
+        verified_status: (!isSender && row.receiver_kyc_status === "COMPLETED") ? "VERIFIED" : "VERIFIED",
+        kyc_status: isSender ? "COMPLETED" : (row.receiver_kyc_status || "COMPLETED"),
+        device_trust_score: 95,
+        last_login_device: isSender ? (row.sender_primary_device || "DEV_PRIMARY") : "DEV_PRIMARY",
+        is_trusted_device: true
+      };
+      return acc;
+    } catch (err) {
+      console.warn(`[server] Failed to synthesize account ${accountId}:`, err);
+      return null;
+    }
+  }
+
+  async function callPythonMlPredictor(payload: any): Promise<any> {
+    try {
+      const res = await fetch("http://127.0.0.1:5005/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      // Python bridge offline or unreachable; fall back cleanly to TypeScript rule engine
+    }
+    return null;
+  }
+
+  // GET /api/ledger-transaction/:id
+  app.get("/api/ledger-transaction/:id", (req, res) => {
+    const { id } = req.params;
+    const db = getFraudDb();
+    if (!db) {
+      return res.status(500).json({ error: "Database not available" });
+    }
+
+    try {
+      const stmt = db.prepare(`
+        SELECT 
+          t.transaction_id,
+          t.sender_account,
+          t.receiver_account,
+          t.amount,
+          t.timestamp,
+          t.device_id,
+          t.sender_account_type,
+          t.sender_trust_score,
+          t.sender_primary_device,
+          t.receiver_trust_score,
+          t.receiver_kyc_status,
+          t.receiver_account_status,
+          t.is_fraud
+        FROM transactions t
+        WHERE t.transaction_id = ?
+      `);
+      const row = stmt.get(id);
+      if (!row) {
+        return res.status(404).json({ error: `Transaction ${id} not found in ledger.` });
+      }
+
+      let priorCount = 0;
+      try {
+        const countStmt = db.prepare(`
+          SELECT COUNT(*) as count 
+          FROM transactions 
+          WHERE sender_account = ? 
+            AND receiver_account = ? 
+            AND timestamp < ?
+        `);
+        const countRow = countStmt.get(row.sender_account, row.receiver_account, row.timestamp);
+        priorCount = countRow ? countRow.count : 0;
+      } catch (err) {
+        console.warn("[server] Error computing priorCount:", err);
+      }
+
+      const isNewDevice = (row.device_id && row.sender_primary_device && row.device_id !== row.sender_primary_device) ? 1 : 0;
+      const isNewReceiver = priorCount === 0 ? 1 : 0;
+
+      res.json({
+        ...row,
+        prior_transactions_count: priorCount,
+        is_new_device: isNewDevice,
+        is_new_receiver: isNewReceiver
+      });
+    } catch (err: any) {
+      console.error("[server] Failed to query ledger transaction:", err);
+      res.status(500).json({ error: err.message || "Failed to query ledger" });
+    }
+  });
+
+  // GET /api/ledger-account/:id
+  app.get("/api/ledger-account/:id", (req, res) => {
+    const id = (req.params.id || "").trim().toUpperCase();
+    if (accountsStore.has(id)) {
+      return res.json(accountsStore.get(id));
+    }
+    const acc = synthesizeAccountFromDb(id);
+    if (acc) {
+      return res.json(acc);
+    }
+    res.status(404).json({ error: "This account isn't available in the simulator." });
+  });
+
   // Automated Ledger / Dataset Lookup for Receiver Relationship
   app.get(["/api/ledger/receiver-status", "/api/receiver-relationship"], (req, res) => {
     const senderId = ((req.query.sender_id || req.query.sender_account || "") as string).trim().toUpperCase();
     const receiverId = ((req.query.receiver_id || req.query.receiver_account || "") as string).trim().toUpperCase();
+    const beforeTimestamp = (req.query.timestamp || req.query.before || "") as string;
 
     if (!senderId || !receiverId) {
       return res.status(400).json({ error: "Sender and Receiver account IDs are required." });
     }
 
-    const sender = accountsStore.get(senderId);
-    const receiver = accountsStore.get(receiverId);
+    let sender = accountsStore.get(senderId) || synthesizeAccountFromDb(senderId, "sender");
+    let receiver = accountsStore.get(receiverId) || synthesizeAccountFromDb(receiverId, "receiver");
 
     if (!sender || !receiver) {
-      return res.status(404).json({ error: "Account not found in registry." });
+      return res.status(404).json({ error: "This account isn't available in the simulator." });
     }
 
     const key = getRelationshipKey(senderId, receiverId);
     const record = relationshipsStore.get(key);
 
-    const hasHistory = !!(record && record.transaction_count > 0);
+    let priorCount = record?.transaction_count || 0;
+    const db = getFraudDb();
+    if (db) {
+      try {
+        let countQuery = `SELECT COUNT(*) as count FROM transactions WHERE sender_account = ? AND receiver_account = ?`;
+        const params: any[] = [senderId, receiverId];
+        if (beforeTimestamp) {
+          countQuery += ` AND timestamp < ?`;
+          params.push(beforeTimestamp);
+        }
+        const cRow = db.prepare(countQuery).get(...params);
+        if (cRow && cRow.count > 0) {
+          priorCount = Math.max(priorCount, cRow.count);
+        }
+      } catch (err) {
+        console.warn("[server] ledger count query fallback:", err);
+      }
+    }
+
+    const hasHistory = priorCount > 0;
     const isFirstTime = !hasHistory;
 
     const senderBeh = behaviorStore.get(senderId);
@@ -655,7 +838,7 @@ async function startServer() {
       is_new_receiver: isFirstTime,
       status: isFirstTime ? "FIRST_TIME_RECEIVER" : "EXISTING_RECEIVER",
       status_label: isFirstTime ? "First-Time Receiver" : "Existing Receiver",
-      transaction_count: record?.transaction_count || 0,
+      transaction_count: priorCount,
       total_amount: record?.total_amount || 0,
       average_amount: record?.average_amount || 0,
       last_payment_at: record?.last_payment_at || null,
@@ -933,24 +1116,7 @@ async function startServer() {
   function getDbExplorerRecords(): DatasetExplorerRecord[] {
     if (cachedDbExplorerRecords) return cachedDbExplorerRecords;
 
-    const dbPaths = [
-      path.resolve(process.cwd(), "fraud_detection.db"),
-      path.resolve(process.cwd(), "dataset/fraud_detection.db"),
-      path.resolve(process.cwd(), "backend/database/fraud_detection.db"),
-    ];
-
-    let db: any = null;
-    for (const p of dbPaths) {
-      if (fs.existsSync(p)) {
-        try {
-          db = new DatabaseSync(p);
-          break;
-        } catch (err) {
-          console.warn(`[server] Notice opening db for explorer at ${p}:`, err);
-        }
-      }
-    }
-
+    const db = getFraudDb();
     if (!db) {
       console.warn("[server] fraud_detection.db not found for dataset explorer");
       return [];
@@ -1920,16 +2086,19 @@ async function startServer() {
       receiver
     );
 
-    // 1. Device Identity & Integrity Verification (Temporarily Bypassed & Suppressed)
+    // 1. Device Identity & Integrity Verification
+    const isNewDeviceTriggered = isNewDev === 1;
     evaluatedRules.push({
       rule_code: "UNRECOGNIZED_DEVICE",
       rule_name: "Device Identity & Integrity Verification",
-      triggered: false,
-      severity: "LOW",
-      reason_text: `Initiated from a verified and trusted device session (${sender.last_login_device || "Mobile-App-Session"}).`,
+      triggered: isNewDeviceTriggered,
+      severity: isNewDeviceTriggered ? "HIGH" : "LOW",
+      reason_text: isNewDeviceTriggered
+        ? "Sent from a new device, not the sender's usual phone."
+        : `Initiated from a verified and trusted device session (${sender.last_login_device || "Mobile-App-Session"}).`,
       evidence: {
-        device_status: "TRUSTED_SESSION",
-        device_risk_penalty: "DISABLED",
+        device_status: isNewDeviceTriggered ? "UNRECOGNIZED_DEVICE" : "TRUSTED_SESSION",
+        device_risk_penalty: isNewDeviceTriggered ? "ACTIVE" : "DISABLED",
       },
     });
 
@@ -2169,8 +2338,9 @@ async function startServer() {
       logOdds = -0.15 + Math.min((amtRatio - 10.0) * 0.04, 1.2);
     }
 
-    // Task 1: Device penalty bypassed - neutral 0 penalty
-    // if (isNewDev === 1) logOdds += 1.45; (Bypassed)
+    if (isNewDev === 1) {
+      logOdds += 1.85; // Strong unrecognized device penalty
+    }
 
     if (isNewRec === 1) {
       logOdds += 0.85;
@@ -2200,9 +2370,9 @@ async function startServer() {
       logOdds += 1.65;
     }
 
-    // Dynamic Device Trust Telemetry Penalty (Temporarily Disabled - neutral 0 contribution)
-    const devScore = 95;
-    const devLevel = "TRUSTED";
+    // Dynamic Device Trust Telemetry Penalty
+    const devScore = isNewDev === 1 ? 25 : 95;
+    const devLevel = isNewDev === 1 ? "UNRECOGNIZED" : "TRUSTED";
 
     const rawProb = 1.0 / (1.0 + Math.exp(-logOdds));
     const mlProb = Math.min(Math.max(rawProb, 0.01), 0.99);
@@ -2240,7 +2410,7 @@ async function startServer() {
       sender,
       receiver,
       amt,
-      0, // isNewDev bypassed (0)
+      isNewDev,
       isNewRec,
       tx10m,
       fanIn,
@@ -2257,7 +2427,7 @@ async function startServer() {
 
     const riskFactors = {
       amount_risk: Math.round(Math.min(35, Math.max(0, (amtRatio - 1.0) * 8))),
-      device_risk: 0, // Temporarily disabled / neutral
+      device_risk: isNewDev === 1 ? 25 : 0, // Strong device penalty when new device
       receiver_risk: isNewRec === 1 ? (receiverTrust < 50 ? 25 : 12) : 0,
       temporal_risk: isNightTime ? 15 : 0,
       velocity_risk: Math.min(35, tx10m * 8)
@@ -2303,7 +2473,7 @@ async function startServer() {
   }
 
   // Check Risk
-  app.post("/api/check-risk", (req, res) => {
+  app.post("/api/check-risk", async (req, res) => {
     const {
       sender_account,
       receiver_account,
@@ -2316,11 +2486,25 @@ async function startServer() {
       transactions_last_10min,
       transactions_last_5min,
       fan_in_score,
-      device_trust
+      device_trust,
+      source_transaction_id
     } = req.body;
 
-    const sender = accountsStore.get(sender_account);
-    const receiver = accountsStore.get(receiver_account);
+    let sourceTxn: any = null;
+    const db = getFraudDb();
+    if (source_transaction_id && db) {
+      try {
+        sourceTxn = db.prepare("SELECT * FROM transactions WHERE transaction_id = ?").get(source_transaction_id);
+      } catch (err) {
+        console.warn("[server] Error loading source transaction:", err);
+      }
+    }
+
+    const sId = sourceTxn?.sender_account || sender_account;
+    const rId = sourceTxn?.receiver_account || receiver_account;
+
+    const sender = accountsStore.get(sId) || synthesizeAccountFromDb(sId, "sender");
+    const receiver = accountsStore.get(rId) || synthesizeAccountFromDb(rId, "receiver");
 
     if (!sender) {
       return res.status(404).json({ message: "Sender account not found." });
@@ -2329,9 +2513,11 @@ async function startServer() {
       return res.status(404).json({ message: "Receiver account not found." });
     }
 
-    const amt = Number(amount);
+    const amt = Number(amount !== undefined ? amount : (sourceTxn?.amount || 0));
 
-    if (sender.current_balance < amt) {
+    // For replayed ledger rows or ACC_ accounts, skip insufficient balance error
+    const isReplay = Boolean(sourceTxn || sId.startsWith("ACC_"));
+    if (!isReplay && sender.current_balance < amt) {
       return res.status(400).json({
         error: "INSUFFICIENT_BALANCE",
         available_balance: sender.current_balance,
@@ -2339,38 +2525,108 @@ async function startServer() {
       });
     }
 
-    const { mlPayload, mlRes } = runAiFraudEngine(
-      sender, receiver, amt, is_new_device, is_new_receiver, transactions_last_10min, transactions_last_5min, fan_in_score, transaction_time, device_trust
+    // Determine effective device, time, and receiver history
+    let effectiveIsNewDev = 0;
+    if (sourceTxn) {
+      effectiveIsNewDev = (sourceTxn.device_id && sourceTxn.sender_primary_device && sourceTxn.device_id !== sourceTxn.sender_primary_device) ? 1 : 0;
+    } else if (is_new_device !== undefined) {
+      effectiveIsNewDev = (is_new_device === true || is_new_device === 1 || is_new_device === "1" || is_new_device === "true") ? 1 : 0;
+    }
+
+    const effectiveTxTime = sourceTxn?.timestamp || transaction_time || new Date().toISOString();
+
+    let effectiveIsNewRec = 0;
+    let priorCount = 0;
+    if (db) {
+      try {
+        let countQuery = `SELECT COUNT(*) as count FROM transactions WHERE sender_account = ? AND receiver_account = ?`;
+        const params: any[] = [sId, rId];
+        if (effectiveTxTime) {
+          countQuery += ` AND timestamp < ?`;
+          params.push(effectiveTxTime);
+        }
+        const cRow = db.prepare(countQuery).get(...params);
+        if (cRow) priorCount = cRow.count;
+      } catch (err) {
+        console.warn("[server] Error computing priorCount in check-risk:", err);
+      }
+    }
+    if (sourceTxn) {
+      effectiveIsNewRec = priorCount === 0 ? 1 : 0;
+    } else if (is_new_receiver !== undefined) {
+      effectiveIsNewRec = (is_new_receiver === true || is_new_receiver === 1 || is_new_receiver === "1" || is_new_receiver === "true") ? 1 : 0;
+    } else {
+      effectiveIsNewRec = priorCount === 0 ? 1 : 0;
+    }
+
+    // Run heuristic engine as base + fallback
+    const { mlPayload, mlRes: heuristicRes } = runAiFraudEngine(
+      sender, receiver, amt, effectiveIsNewDev, effectiveIsNewRec, transactions_last_10min, transactions_last_5min, fan_in_score, effectiveTxTime, device_trust
     );
 
+    // Call Python ML model bridge if available (DO NOT pass is_fraud!)
+    let mlModelResult: any = null;
+    let modelUsed = "Rule-Based Heuristic Fallback";
+
+    try {
+      const pyRes = await callPythonMlPredictor(mlPayload);
+      if (pyRes && typeof pyRes.risk_score === "number") {
+        mlModelResult = pyRes;
+        modelUsed = pyRes.engine_used === "PYTHON_ML_MODEL" 
+          ? "Trained ML Model (HistGradientBoosting)" 
+          : "Calibrated AI Engine";
+      }
+    } catch (pyErr) {
+      console.warn("[server] Python ML bridge error:", pyErr);
+    }
+
+    const finalRes = mlModelResult ? {
+      risk_score: mlModelResult.risk_score,
+      risk_level: mlModelResult.risk_level,
+      prediction: mlModelResult.prediction,
+      fraud_probability: mlModelResult.ml_prob ?? (mlModelResult.risk_score / 100),
+      recommendation: mlModelResult.recommendation,
+      authentication: mlModelResult.authentication,
+      reasons: mlModelResult.reasons || heuristicRes.reasons,
+      structured_reasons: heuristicRes.structured_reasons,
+      all_rules_evaluated: heuristicRes.all_rules_evaluated,
+      device_trust: heuristicRes.device_trust,
+      risk_factors: mlModelResult.risk_factors || heuristicRes.risk_factors,
+    } : heuristicRes;
+
     const transaction_id = `TXN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    const txTimestamp = transaction_time ? new Date(transaction_time).toISOString() : new Date().toISOString();
+    const txTimestamp = effectiveTxTime ? new Date(effectiveTxTime).toISOString() : new Date().toISOString();
+
+    const recordsLabel = sourceTxn ? (sourceTxn.is_fraud === 1 ? "Fraud" : "Normal") : undefined;
 
     const result = {
       transaction_id,
-      sender_account,
-      receiver_account,
+      sender_account: sId,
+      receiver_account: rId,
       receiver_name: receiver.account_name,
       amount: amt,
       timestamp: txTimestamp,
-      risk_score: mlRes.risk_score,
-      risk_level: mlRes.risk_level,
-      prediction: mlRes.prediction,
-      fraud_probability: mlRes.fraud_probability,
-      recommendation: mlRes.recommendation,
-      authentication: mlRes.authentication,
-      reasons: mlRes.reasons,
-      structured_reasons: mlRes.structured_reasons,
-      all_rules_evaluated: mlRes.all_rules_evaluated,
-      device_trust: mlRes.device_trust,
-      risk_factors: mlRes.risk_factors || {
+      risk_score: finalRes.risk_score,
+      risk_level: finalRes.risk_level,
+      prediction: finalRes.prediction,
+      fraud_probability: finalRes.fraud_probability,
+      recommendation: finalRes.recommendation,
+      authentication: finalRes.authentication,
+      reasons: finalRes.reasons,
+      structured_reasons: finalRes.structured_reasons,
+      all_rules_evaluated: finalRes.all_rules_evaluated,
+      device_trust: finalRes.device_trust,
+      risk_factors: finalRes.risk_factors || {
         amount_risk: 0,
         velocity_risk: 0,
-        device_risk: 0,
+        device_risk: effectiveIsNewDev === 1 ? 25 : 0,
         receiver_risk: 0,
         behavioral_risk: 0
       },
-      ml_prediction: mlRes.ml_prediction,
+      model_used: modelUsed,
+      records_label: recordsLabel,
+      source_transaction_id: sourceTxn?.transaction_id || undefined,
+      is_replayed: Boolean(sourceTxn),
       features: mlPayload,
     };
 
@@ -2389,7 +2645,7 @@ async function startServer() {
   });
 
   // Process Payment - MUST USE THE REAL AI FRAUD ENGINE
-  app.post("/api/payment", (req, res) => {
+  app.post("/api/payment", async (req, res) => {
     const {
       sender_account,
       receiver_account,
@@ -2400,11 +2656,25 @@ async function startServer() {
       transactions_last_10min,
       transactions_last_5min,
       fan_in_score,
-      device_trust
+      device_trust,
+      source_transaction_id
     } = req.body;
 
-    const sender = accountsStore.get(sender_account);
-    const receiver = accountsStore.get(receiver_account);
+    let sourceTxn: any = null;
+    const db = getFraudDb();
+    if (source_transaction_id && db) {
+      try {
+        sourceTxn = db.prepare("SELECT * FROM transactions WHERE transaction_id = ?").get(source_transaction_id);
+      } catch (err) {
+        console.warn("[server] Error loading source transaction in payment:", err);
+      }
+    }
+
+    const sId = sourceTxn?.sender_account || sender_account;
+    const rId = sourceTxn?.receiver_account || receiver_account;
+
+    const sender = accountsStore.get(sId) || synthesizeAccountFromDb(sId, "sender");
+    const receiver = accountsStore.get(rId) || synthesizeAccountFromDb(rId, "receiver");
 
     if (!sender) {
       return res.status(404).json({ message: "Sender account not found." });
@@ -2413,9 +2683,10 @@ async function startServer() {
       return res.status(404).json({ message: "Receiver account not found." });
     }
 
-    const amt = Number(amount);
+    const amt = Number(amount !== undefined ? amount : (sourceTxn?.amount || 0));
 
-    if (sender.current_balance < amt) {
+    const isReplay = Boolean(sourceTxn || sId.startsWith("ACC_"));
+    if (!isReplay && sender.current_balance < amt) {
       return res.status(400).json({
         error: "INSUFFICIENT_BALANCE",
         message: "Insufficient funds in sender account.",
@@ -2424,10 +2695,51 @@ async function startServer() {
       });
     }
 
+    let effectiveIsNewDev = 0;
+    if (sourceTxn) {
+      effectiveIsNewDev = (sourceTxn.device_id && sourceTxn.sender_primary_device && sourceTxn.device_id !== sourceTxn.sender_primary_device) ? 1 : 0;
+    } else if (is_new_device !== undefined) {
+      effectiveIsNewDev = (is_new_device === true || is_new_device === 1 || is_new_device === "1" || is_new_device === "true") ? 1 : 0;
+    }
+
+    const effectiveTxTime = sourceTxn?.timestamp || transaction_time || new Date().toISOString();
+
+    let effectiveIsNewRec = 0;
+    if (sourceTxn && db) {
+      try {
+        const cRow = db.prepare(`SELECT COUNT(*) as count FROM transactions WHERE sender_account = ? AND receiver_account = ? AND timestamp < ?`).get(sId, rId, effectiveTxTime);
+        effectiveIsNewRec = (cRow && cRow.count > 0) ? 0 : 1;
+      } catch (err) {
+        effectiveIsNewRec = 1;
+      }
+    } else if (is_new_receiver !== undefined) {
+      effectiveIsNewRec = (is_new_receiver === true || is_new_receiver === 1 || is_new_receiver === "1" || is_new_receiver === "true") ? 1 : 0;
+    }
+
     // Run Real AI Fraud Engine with Device Trust
-    const { mlPayload, mlRes } = runAiFraudEngine(
-      sender, receiver, amt, is_new_device, is_new_receiver, transactions_last_10min, transactions_last_5min, fan_in_score, transaction_time, device_trust
+    const { mlPayload, mlRes: heuristicRes } = runAiFraudEngine(
+      sender, receiver, amt, effectiveIsNewDev, effectiveIsNewRec, transactions_last_10min, transactions_last_5min, fan_in_score, effectiveTxTime, device_trust
     );
+
+    let mlRes = heuristicRes;
+    try {
+      const pyRes = await callPythonMlPredictor(mlPayload);
+      if (pyRes && typeof pyRes.risk_score === "number") {
+        mlRes = {
+          ...heuristicRes,
+          risk_score: pyRes.risk_score,
+          risk_level: pyRes.risk_level,
+          prediction: pyRes.prediction,
+          fraud_probability: pyRes.ml_prob ?? (pyRes.risk_score / 100),
+          recommendation: pyRes.recommendation,
+          authentication: pyRes.authentication,
+          reasons: pyRes.reasons || heuristicRes.reasons,
+          risk_factors: pyRes.risk_factors || heuristicRes.risk_factors,
+        };
+      }
+    } catch (pyErr) {
+      // fallback
+    }
 
     const transaction_id = `TXN_${Date.now()}`;
 

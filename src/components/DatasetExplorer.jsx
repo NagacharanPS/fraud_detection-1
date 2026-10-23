@@ -1754,7 +1754,8 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                       onSelectPairForSimulation(
                         selectedAuditRecord.sender_account,
                         selectedAuditRecord.receiver_account,
-                        selectedAuditRecord.amount
+                        selectedAuditRecord.amount,
+                        selectedAuditRecord
                       );
                       closeAuditModal();
                     }}

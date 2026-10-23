@@ -288,7 +288,7 @@ class FraudPredictor:
 
         # 1. Device explanation
         if is_new_dev == 1:
-            reasons.append("This transaction was initiated from a new or unrecognized device that is not in your saved devices.")
+            reasons.append("Sent from a new device, not the sender's usual phone.")
         elif is_new_dev == 0 and risk_score < 60:
             reasons.append("This transaction is being made from your verified, trusted primary device.")
 

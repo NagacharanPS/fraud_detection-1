@@ -44,12 +44,25 @@ function Home() {
     }, 100);
   };
 
-  const handleSelectPairForSimulation = (senderId, receiverId, amount) => {
+  const handleSelectPairForSimulation = (senderId, receiverId, amount, record = null) => {
+    const rec = (typeof senderId === "object" && senderId !== null) ? senderId : (record || {});
+    const sId = rec.sender_account || senderId;
+    const rId = rec.receiver_account || receiverId;
+    const amt = rec.amount !== undefined ? rec.amount : (amount || 5000);
+    const txnId = rec.transaction_id;
+    const txTime = rec.timestamp;
+    const isFraud = rec.is_fraud;
+
     setSelectedScenario({
-      id: `CUSTOM_${Date.now()}`,
-      sender: senderId,
-      receiver: receiverId,
-      amount: amount || 5000,
+      id: txnId || `CUSTOM_${Date.now()}`,
+      source_transaction_id: txnId,
+      sender: sId,
+      receiver: rId,
+      amount: amt,
+      timestamp: txTime,
+      time: txTime,
+      is_fraud: isFraud,
+      record: rec,
     });
     setActiveTab("simulator");
     setTimeout(() => {
