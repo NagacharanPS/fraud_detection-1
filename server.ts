@@ -503,7 +503,7 @@ async function startServer() {
   try {
     await dbInitTables();
     await dbSeedDefaultUsers(Array.from(usersStore.values()));
-    
+
     // Sync all persisted users from SQLite database into memory
     const dbUsers = await dbGetAllUsers();
     for (const u of dbUsers) {
@@ -1309,10 +1309,10 @@ async function startServer() {
         has_face_enrolled: !!biometric,
         biometric_info: biometric
           ? {
-              template_hash: biometric.template_hash.slice(0, 16) + "...",
-              algorithm_version: biometric.algorithm_version,
-              enrolled_at: biometric.enrolled_at,
-            }
+            template_hash: biometric.template_hash.slice(0, 16) + "...",
+            algorithm_version: biometric.algorithm_version,
+            enrolled_at: biometric.enrolled_at,
+          }
           : null,
         account,
       },
@@ -1328,7 +1328,7 @@ async function startServer() {
       try {
         const decoded = Buffer.from(authHeader.replace("Bearer TOKEN_", ""), "base64").toString("utf-8");
         userId = decoded.split(":")[0];
-      } catch {}
+      } catch { }
     } else if (req.query.user_id) {
       userId = req.query.user_id as string;
     } else if (req.query.account_id) {
@@ -1358,10 +1358,10 @@ async function startServer() {
       has_face_enrolled: !!biometric,
       biometric_info: biometric
         ? {
-            template_hash: biometric.template_hash.slice(0, 16) + "...",
-            algorithm_version: biometric.algorithm_version,
-            enrolled_at: biometric.enrolled_at,
-          }
+          template_hash: biometric.template_hash.slice(0, 16) + "...",
+          algorithm_version: biometric.algorithm_version,
+          enrolled_at: biometric.enrolled_at,
+        }
         : null,
       account,
     });
@@ -1821,9 +1821,9 @@ async function startServer() {
     const reasons = triggeredRules.length > 0
       ? triggeredRules.map((r) => r.reason_text)
       : [
-          "Transaction parameters match your regular spending patterns and trusted payees.",
-          "Payment made during standard hours through a secure session.",
-        ];
+        "Transaction parameters match your regular spending patterns and trusted payees.",
+        "Payment made during standard hours through a secure session.",
+      ];
 
     return {
       structured_reasons: triggeredRules,
@@ -1919,8 +1919,8 @@ async function startServer() {
     ).length;
 
     // Use provided velocity if specified, else count from actual transaction history
-    let tx10m = (transactions_last_10min !== undefined && transactions_last_10min !== null && transactions_last_10min !== "") 
-      ? Number(transactions_last_10min) 
+    let tx10m = (transactions_last_10min !== undefined && transactions_last_10min !== null && transactions_last_10min !== "")
+      ? Number(transactions_last_10min)
       : recentTxCount;
     if (isNaN(tx10m) || tx10m < 0) tx10m = recentTxCount;
     const fanIn = Number(fan_in_score) || 0;

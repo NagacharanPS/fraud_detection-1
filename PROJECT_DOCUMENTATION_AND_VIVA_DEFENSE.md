@@ -254,14 +254,20 @@ Regulatory guidelines (RBI, GDPR, and ISO 27001) require that automated decision
 
 | Library / Tool | Non-Technical Layman Explanation | Technical Deep Dive & Role in Project |
 | :--- | :--- | :--- |
+| **Python** | "The core backend and data science language." | Serves as the primary language for ML pipeline training, feature engineering, mathematical preprocessing, and facial biometric detection. |
+| **Flask** | "The lightweight Python web API framework." | Micro-framework providing Python REST endpoints for ML model predictions, database migrations, and health diagnostics (`backend/app.py`). |
+| **React.js + Vite** | "The interactive user interface framework." | Declarative component-based frontend framework providing dynamic state synchronization, reactive payment forms, and fast build compilation. |
+| **VS Code** | "The integrated development environment (IDE)." | Comprehensive code editor used for full-stack TypeScript, React JSX, and Python script debugging and development. |
 | **NumPy** | "The ultra-fast math calculator for computers." | High-performance $N$-dimensional array manipulation in C. Computes vector dot products and L2 norms for **128-dimensional facial embedding cosine similarity** calculations: `np.dot(u, v) / (norm(u) * norm(v))`. |
 | **Pandas** | "Excel spreadsheets on steroids inside code." | Tabular data analysis and time-series aggregations. Used in feature engineering to calculate rolling 10-minute velocities, historical spending means, and ledger relationships. |
 | **Scikit-Learn** | "The machine learning workbench." | Provides standard data science primitives: `StandardScaler` for numeric normalization, `LabelEncoder` for discrete categories, `train_test_split` with stratification, and metric evaluators (`roc_auc_score`, `f1_score`). |
 | **XGBoost** | "The champion decision-making algorithm." | Optimized distributed gradient boosting library implementing tree boosting with second-order Taylor expansion approximations and custom regularized objective functions. |
-| **OpenCV (cv2)** | "The computer's eyes and visual brain." | Computer vision framework used with **YuNet ONNX** detector for real-time facial landmark detection and **SFace** deep model for 128-d unit vector biometric feature extraction. |
-| **SQLite (`node:sqlite` / `sqlite3`)** | "The reliable, built-in database." | Serverless, zero-configuration, transactional SQL database engine storing the `transactions` ledger and `users` biometric credentials tables. |
-| **React + Vite** | "The interactive user interface framework." | Declarative component-based frontend with fast Hot Module Replacement (HMR) and reactive state management for real-time risk simulation. |
-| **Express.js (Node.js)** | "The high-speed web traffic coordinator." | Asynchronous non-blocking I/O web server handling REST API endpoints (`/api/check-risk`, `/api/auth/*`, `/api/dataset-explorer`). |
+| **Matplotlib** | "The charting and graphing engine." | Visualization library used during offline model evaluation to render ROC-AUC curves, confusion matrices, and feature importance distribution plots. |
+| **OpenCV (`cv2`)** | "The computer's eyes and visual brain." | Computer vision framework used with **YuNet ONNX** detector for real-time facial landmark detection and **SFace** deep model for 128-d unit vector biometric feature extraction. |
+| **MySQL / SQLite** | "The structured transactional relational database." | **SQLite** (`fraud_detection.db`) serves as the zero-latency local embedded database, with **MySQL** (`schema_mysql.sql`) providing enterprise relational schema support for multi-user production scale. |
+| **Cytoscape.js** | "The network graph visualizer." | Graph theory library used to render interactive sender-receiver node relationship graphs, mule account circular loops, and high fan-in clusters. |
+| **Axios** | "The reliable HTTP messenger." | Promise-based asynchronous HTTP client used in `src/api.js` to dispatch pre-transaction risk payloads and handle backend security challenge responses. |
+| **Express.js (Node.js)** | "The high-speed web traffic coordinator." | Asynchronous non-blocking I/O web server handling real-time API endpoints (`/api/check-risk`, `/api/auth/*`, `/api/dataset-explorer`). |
 
 ---
 
