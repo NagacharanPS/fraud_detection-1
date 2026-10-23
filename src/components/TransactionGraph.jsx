@@ -63,11 +63,13 @@ function TransactionGraph() {
   const [accountAuditDetail, setAccountAuditDetail] = useState(null);
   const [loadingAudit, setLoadingAudit] = useState(false);
 
-  // Cytoscape Reference
+  // Cytoscape Reference and Request Sequence Tracker
   const cyRef = useRef(null);
+  const reqSeqRef = useRef(0);
 
   // Load Graph Data from API
   const fetchGraph = async (overrideAccountId = null) => {
+    const seq = ++reqSeqRef.current;
     try {
       setLoading(true);
       setError(null);
@@ -85,14 +87,18 @@ function TransactionGraph() {
       if (minAmount && Number(minAmount) > 0) params.append("min_amount", minAmount);
 
       const res = await API.get(`/api/graph?${params.toString()}`);
-      if (res.data) {
+      if (seq === reqSeqRef.current && res.data) {
         setGraphData(res.data);
       }
     } catch (err) {
-      console.error("Failed to load network graph data:", err);
-      setError("Unable to load transaction graph data from database.");
+      if (seq === reqSeqRef.current) {
+        console.error("Failed to load network graph data:", err);
+        setError("Unable to load transaction graph data from database.");
+      }
     } finally {
-      setLoading(false);
+      if (seq === reqSeqRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -106,6 +112,7 @@ function TransactionGraph() {
   };
 
   const resetAllFilters = async () => {
+    const seq = ++reqSeqRef.current;
     setSearchQuery("");
     setRiskFilter("ALL");
     setSuspiciousOnly(false);
@@ -122,14 +129,18 @@ function TransactionGraph() {
       setLoading(true);
       setError(null);
       const res = await API.get("/api/graph?limit=120");
-      if (res.data) {
+      if (seq === reqSeqRef.current && res.data) {
         setGraphData(res.data);
       }
     } catch (err) {
-      console.error("Failed to reset network graph:", err);
-      setError("Unable to reload complete graph.");
+      if (seq === reqSeqRef.current) {
+        console.error("Failed to reset network graph:", err);
+        setError("Unable to reload complete graph.");
+      }
     } finally {
-      setLoading(false);
+      if (seq === reqSeqRef.current) {
+        setLoading(false);
+      }
     }
 
     if (cyRef.current) {
@@ -285,15 +296,15 @@ function TransactionGraph() {
           height: 52,
         },
       },
-      // Base Directed Edge (Normal transactions: Cyan/Blue)
+      // 1. Low Risk Edge (Cyan Solid)
       {
-        selector: "edge",
+        selector: "edge[risk_level = 'LOW']",
         style: {
           width: 1.8,
-          "line-color": "#0284C7",
+          "line-color": "#0EA5E9",
           "target-arrow-color": "#38BDF8",
           "target-arrow-shape": "triangle",
-          "arrow-scale": 1.2,
+          "arrow-scale": 1.1,
           "curve-style": "bezier",
           opacity: 0.75,
           label: showLabels ? "data(label)" : "",
@@ -305,29 +316,100 @@ function TransactionGraph() {
           "text-background-padding": "2px",
           "text-background-shape": "roundrectangle",
           "text-rotation": "autorotate",
-          "transition-property": "line-color, target-arrow-color, width, opacity",
-          "transition-duration": "0.2s",
         },
       },
-      // Suspicious / Fraud Directed Edge (Red / Orange)
+      // 2. Medium Risk Edge (Yellow Solid)
       {
-        selector: "edge[?is_suspicious]",
+        selector: "edge[risk_level = 'MEDIUM']",
         style: {
-          width: 3.2,
-          "line-color": "#EF4444",
-          "target-arrow-color": "#F87171",
+          width: 2.6,
+          "line-color": "#EAB308",
+          "target-arrow-color": "#FACC15",
           "target-arrow-shape": "triangle",
-          "arrow-scale": 1.4,
+          "arrow-scale": 1.25,
+          "curve-style": "bezier",
+          opacity: 0.85,
+          label: showLabels ? "data(label)" : "",
+          color: "#FEF08A",
+          "font-size": "9px",
+          "font-weight": 600,
+          "text-background-color": "#0F172A",
+          "text-background-opacity": 0.85,
+          "text-background-padding": "2px",
+          "text-background-shape": "roundrectangle",
+          "text-rotation": "autorotate",
+        },
+      },
+      // 3. High Risk Edge (Orange Dashed)
+      {
+        selector: "edge[risk_level = 'HIGH']",
+        style: {
+          width: 3.4,
+          "line-color": "#F97316",
+          "line-style": "dashed",
+          "line-dash-pattern": [6, 3],
+          "target-arrow-color": "#FB923C",
+          "target-arrow-shape": "triangle",
+          "arrow-scale": 1.35,
+          "curve-style": "bezier",
           opacity: 0.95,
-          color: "#FCA5A5",
+          label: showLabels ? "data(label)" : "",
+          color: "#FED7AA",
+          "font-size": "9px",
           "font-weight": 700,
+          "text-background-color": "#0F172A",
+          "text-background-opacity": 0.85,
+          "text-background-padding": "2px",
+          "text-background-shape": "roundrectangle",
+          "text-rotation": "autorotate",
+        },
+      },
+      // 4. Critical Risk Edge (Crimson Red Solid)
+      {
+        selector: "edge[risk_level = 'CRITICAL']",
+        style: {
+          width: 4.4,
+          "line-color": "#EF4444",
+          "target-arrow-color": "#DC2626",
+          "target-arrow-shape": "triangle",
+          "arrow-scale": 1.5,
+          "curve-style": "bezier",
+          opacity: 1.0,
+          label: showLabels ? "data(label)" : "",
+          color: "#FCA5A5",
+          "font-size": "9px",
+          "font-weight": 800,
+          "text-background-color": "#0F172A",
+          "text-background-opacity": 0.85,
+          "text-background-padding": "2px",
+          "text-background-shape": "roundrectangle",
+          "text-rotation": "autorotate",
+        },
+      },
+      // Fallback base edge style
+      {
+        selector: "edge",
+        style: {
+          width: 2.0,
+          "line-color": "#0EA5E9",
+          "target-arrow-color": "#38BDF8",
+          "target-arrow-shape": "triangle",
+          "arrow-scale": 1.2,
+          "curve-style": "bezier",
+          opacity: 0.8,
+          label: showLabels ? "data(label)" : "",
+          color: "#94A3B8",
+          "font-size": "9px",
+          "text-background-color": "#0F172A",
+          "text-background-opacity": 0.85,
+          "text-rotation": "autorotate",
         },
       },
       // Selected Edge
       {
         selector: "edge:selected",
         style: {
-          width: 4,
+          width: 4.5,
           "line-color": "#A855F7",
           "target-arrow-color": "#C084FC",
           opacity: 1,
@@ -337,7 +419,7 @@ function TransactionGraph() {
       {
         selector: "edge.highlighted",
         style: {
-          width: 3.5,
+          width: 3.8,
           "line-color": "#F59E0B",
           "target-arrow-color": "#FBBF24",
           opacity: 1,
@@ -679,16 +761,16 @@ function TransactionGraph() {
           </div>
           <div>
             <div style={{ fontSize: "12px", color: "#F87171", fontWeight: 700, textTransform: "uppercase" }}>
-              Suspicious Transactions
+              Ground-Truth Fraud Txs
             </div>
             <div style={{ fontSize: "22px", color: "#EF4444", fontWeight: 800 }}>
-              {graphData.summary.suspicious_transactions}{" "}
+              {graphData.summary.displayed_suspicious}{" "}
               <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 500 }}>
                 / {graphData.summary.total_dataset_suspicious} in DB
               </span>
             </div>
             <div style={{ fontSize: "10px", color: "#FCA5A5", fontWeight: 500 }}>
-              Red / Orange highlighted paths
+              Confirmed fraud-labeled records
             </div>
           </div>
         </div>
@@ -929,6 +1011,50 @@ function TransactionGraph() {
         </div>
       </div>
 
+      {/* Active Subset & Ledger Population Banner */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "10px",
+          background: "#0F172A",
+          border: "1px solid #1E293B",
+          borderRadius: "10px",
+          padding: "10px 16px",
+          fontSize: "12px",
+          color: "#94A3B8",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <span
+            style={{
+              background: "rgba(56, 189, 248, 0.15)",
+              color: "#38BDF8",
+              padding: "2px 8px",
+              borderRadius: "6px",
+              fontSize: "11px",
+              fontWeight: 700,
+            }}
+          >
+            ACTIVE VIEW
+          </span>
+          <span>
+            Displaying <strong style={{ color: "#F8FAFC" }}>{graphData.summary.displayed_transactions}</strong> of{" "}
+            <strong style={{ color: "#F8FAFC" }}>
+              {graphData.summary.total_matching_transactions ?? graphData.summary.total_dataset_transactions}
+            </strong>{" "}
+            matching transactions across the database ({graphData.summary.total_dataset_transactions?.toLocaleString() || "18,203"} total ledger records).
+          </span>
+        </div>
+        {suspiciousOnly && (
+          <span style={{ color: "#F87171", fontWeight: 700, fontSize: "11px", display: "flex", alignItems: "center", gap: "5px" }}>
+            <FaExclamationTriangle /> Suspicious Only Mode (Ground-Truth Fraud Filter Active)
+          </span>
+        )}
+      </div>
+
       {/* 3. MAIN GRAPH CANVAS & SIDEBAR PANELS */}
       <div
         style={{
@@ -1098,7 +1224,7 @@ function TransactionGraph() {
             position: "absolute",
             bottom: "16px",
             left: "16px",
-            background: "rgba(15, 23, 42, 0.92)",
+            background: "rgba(15, 23, 42, 0.94)",
             border: "1px solid #1E293B",
             backdropFilter: "blur(8px)",
             borderRadius: "10px",
@@ -1108,13 +1234,15 @@ function TransactionGraph() {
             zIndex: 10,
             display: "flex",
             flexDirection: "column",
-            gap: "6px",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
+            gap: "5px",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.5)",
+            maxWidth: "320px",
           }}
         >
           <div style={{ fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", fontSize: "10px" }}>
-            Network Legend
+            Network Risk Legend
           </div>
+          {/* Node Types */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
               style={{
@@ -1140,39 +1268,30 @@ function TransactionGraph() {
                 display: "inline-block",
               }}
             />
-            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Suspicious Account (Hexagon)</span>
+            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Suspicious / Flagged Node (Hexagon)</span>
+          </div>
+
+          <div style={{ height: "1px", background: "#334155", margin: "2px 0" }} />
+
+          {/* 4 Risk Levels */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ width: "18px", height: "2px", background: "#0EA5E9", display: "inline-block" }} />
+            <span>Low Risk Transfer (&lt;30 score, Cyan solid)</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
-              style={{
-                width: "16px",
-                height: "3px",
-                background: "#0284C7",
-                display: "inline-block",
-              }}
-            />
-            <span>Normal Transfer (Cyan)</span>
+            <span style={{ width: "18px", height: "3px", background: "#EAB308", display: "inline-block" }} />
+            <span style={{ color: "#FEF08A" }}>Medium Risk (30-59 score, Yellow solid)</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
-              style={{
-                width: "16px",
-                height: "3px",
-                background: "#EF4444",
-                display: "inline-block",
-              }}
-            />
-            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Fraud / High-Risk Transfer (Red)</span>
+            <span style={{ width: "18px", height: "3px", borderTop: "2px dashed #F97316", display: "inline-block" }} />
+            <span style={{ color: "#FED7AA" }}>High Risk (60-79 score, Orange dashed)</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
-              style={{
-                width: "16px",
-                height: "3px",
-                background: "#F59E0B",
-                display: "inline-block",
-              }}
-            />
+            <span style={{ width: "18px", height: "4px", background: "#EF4444", display: "inline-block" }} />
+            <span style={{ color: "#FCA5A5", fontWeight: 700 }}>Critical Risk (&ge;80 score, Red thick)</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ width: "18px", height: "3px", background: "#F59E0B", display: "inline-block" }} />
             <span style={{ color: "#FDE68A" }}>Selected / Highlighted Flow (Amber)</span>
           </div>
         </div>
@@ -1196,12 +1315,20 @@ function TransactionGraph() {
             }}
           >
             <div style={{ fontWeight: 700, color: hoveredNode.is_suspicious ? "#F87171" : "#38BDF8" }}>
-              {hoveredNode.label || hoveredNode.id}
+              {hoveredNode.account_id || hoveredNode.id}
             </div>
             <div style={{ fontSize: "11px", color: "#94A3B8" }}>
-              {hoveredNode.account_name || "Account"} • Trust: {hoveredNode.trust_score || "N/A"}/100
+              {hoveredNode.account_name !== "Unknown" ? hoveredNode.account_name : "Dataset Ledger Account"} • Trust:{" "}
+              {hoveredNode.trust_score !== "Unknown" ? `${hoveredNode.trust_score}/100` : "Unknown"}
             </div>
-            <div style={{ fontSize: "11px", marginTop: "3px", fontWeight: 600, color: hoveredNode.is_suspicious ? "#EF4444" : "#10B981" }}>
+            <div
+              style={{
+                fontSize: "11px",
+                marginTop: "3px",
+                fontWeight: 600,
+                color: hoveredNode.is_suspicious ? "#EF4444" : "#10B981",
+              }}
+            >
               {hoveredNode.is_suspicious ? "⚠️ Suspicious / Flagged Activity" : "✓ Normal Legitimate Account"}
             </div>
           </div>
@@ -1251,7 +1378,9 @@ function TransactionGraph() {
                   {selectedNode.account_id}
                 </div>
                 <div style={{ fontSize: "13px", color: "#E2E8F0", fontWeight: 600 }}>
-                  {selectedNode.account_name}
+                  {selectedNode.account_name !== selectedNode.account_id && selectedNode.account_name !== "Unknown"
+                    ? selectedNode.account_name
+                    : "Ledger Account"}
                 </div>
               </div>
               <button
@@ -1280,7 +1409,19 @@ function TransactionGraph() {
                   fontWeight: 700,
                 }}
               >
-                {selectedNode.is_suspicious ? "SUSPICIOUS ACTIVITY DETECTED" : "NORMAL ACCOUNT"}
+                {selectedNode.is_suspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL ACCOUNT"}
+              </span>
+              <span
+                style={{
+                  background: selectedNode.is_verified_identity ? "rgba(16, 185, 129, 0.15)" : "rgba(148, 163, 184, 0.15)",
+                  color: selectedNode.is_verified_identity ? "#34D399" : "#94A3B8",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                }}
+              >
+                {selectedNode.is_verified_identity ? "Verified Directory Account" : "Dataset Account (ACC_xxxx)"}
               </span>
               <span
                 style={{
@@ -1292,19 +1433,7 @@ function TransactionGraph() {
                   fontWeight: 600,
                 }}
               >
-                Trust Score: {selectedNode.trust_score}/100
-              </span>
-              <span
-                style={{
-                  background: "rgba(148, 163, 184, 0.15)",
-                  color: "#94A3B8",
-                  padding: "3px 8px",
-                  borderRadius: "6px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                }}
-              >
-                {selectedNode.account_type}
+                Trust: {selectedNode.trust_score !== "Unknown" ? `${selectedNode.trust_score}/100` : "Unknown"}
               </span>
             </div>
 
@@ -1316,7 +1445,8 @@ function TransactionGraph() {
                     key={idx}
                     style={{
                       background: "rgba(245, 158, 11, 0.2)",
-                      color: "#FCD34D",
+                      color: "#FDE68A",
+                      border: "1px solid rgba(245, 158, 11, 0.3)",
                       padding: "2px 8px",
                       borderRadius: "6px",
                       fontSize: "10px",
@@ -1459,37 +1589,113 @@ function TransactionGraph() {
               </button>
             </div>
 
-            {/* Transfer Amount Callout */}
+            {/* Transfer Amount and Risk Badge */}
             <div
               style={{
-                background: selectedEdge.is_suspicious ? "rgba(239, 68, 68, 0.15)" : "rgba(2, 132, 199, 0.15)",
-                border: `1px solid ${selectedEdge.is_suspicious ? "rgba(239, 68, 68, 0.3)" : "rgba(2, 132, 199, 0.3)"}`,
+                background:
+                  selectedEdge.risk_level === "CRITICAL"
+                    ? "rgba(239, 68, 68, 0.2)"
+                    : selectedEdge.risk_level === "HIGH"
+                    ? "rgba(249, 115, 22, 0.2)"
+                    : selectedEdge.risk_level === "MEDIUM"
+                    ? "rgba(234, 179, 8, 0.2)"
+                    : "rgba(14, 165, 233, 0.2)",
+                border: `1px solid ${
+                  selectedEdge.risk_level === "CRITICAL"
+                    ? "rgba(239, 68, 68, 0.4)"
+                    : selectedEdge.risk_level === "HIGH"
+                    ? "rgba(249, 115, 22, 0.4)"
+                    : selectedEdge.risk_level === "MEDIUM"
+                    ? "rgba(234, 179, 8, 0.4)"
+                    : "rgba(14, 165, 233, 0.4)"
+                }`,
                 borderRadius: "10px",
                 padding: "12px 14px",
                 display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                flexDirection: "column",
+                gap: "8px",
               }}
             >
-              <div>
-                <div style={{ fontSize: "11px", color: "#94A3B8" }}>Transfer Value</div>
-                <div style={{ fontSize: "20px", fontWeight: 800, color: selectedEdge.is_suspicious ? "#F87171" : "#38BDF8" }}>
-                  {selectedEdge.formatted_amount}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "11px", color: "#94A3B8" }}>Transfer Value</div>
+                  <div style={{ fontSize: "20px", fontWeight: 800, color: "#F8FAFC" }}>
+                    {selectedEdge.formatted_amount}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: "10px", color: "#94A3B8", textTransform: "uppercase" }}>Predicted Risk</div>
+                  <span
+                    style={{
+                      background:
+                        selectedEdge.risk_level === "CRITICAL"
+                          ? "#EF4444"
+                          : selectedEdge.risk_level === "HIGH"
+                          ? "#F97316"
+                          : selectedEdge.risk_level === "MEDIUM"
+                          ? "#EAB308"
+                          : "#0EA5E9",
+                      color: selectedEdge.risk_level === "MEDIUM" ? "#0F172A" : "#FFFFFF",
+                      padding: "3px 8px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      display: "inline-block",
+                    }}
+                  >
+                    {selectedEdge.risk_level} ({selectedEdge.risk_score}/100)
+                  </span>
                 </div>
               </div>
-              <span
+
+              {/* Ground-Truth Fraud Label Tag */}
+              <div
                 style={{
-                  background: selectedEdge.is_suspicious ? "#EF4444" : "#10B981",
-                  color: "#FFFFFF",
-                  padding: "4px 10px",
+                  background: "#0F172A",
+                  padding: "6px 10px",
                   borderRadius: "6px",
                   fontSize: "11px",
-                  fontWeight: 800,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
                 }}
               >
-                {selectedEdge.is_suspicious ? "FRAUD / HIGH-RISK" : "LEGITIMATE"}
-              </span>
+                <span style={{ color: "#94A3B8" }}>Dataset Ground Truth:</span>
+                <span
+                  style={{
+                    fontWeight: 700,
+                    color:
+                      selectedEdge.is_fraud === 1
+                        ? "#EF4444"
+                        : selectedEdge.is_fraud === 0
+                        ? "#10B981"
+                        : "#94A3B8",
+                  }}
+                >
+                  {selectedEdge.is_fraud === 1
+                    ? "⚠️ Confirmed Fraud (is_fraud=1)"
+                    : selectedEdge.is_fraud === 0
+                    ? "✓ Legitimate (is_fraud=0)"
+                    : "⚪ Unlabeled (NULL)"}
+                </span>
+              </div>
             </div>
+
+            {/* Data Quality Warning if present */}
+            {selectedEdge.has_data_quality_issue && (
+              <div
+                style={{
+                  background: "rgba(245, 158, 11, 0.15)",
+                  border: "1px solid rgba(245, 158, 11, 0.4)",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  fontSize: "11px",
+                  color: "#FDE68A",
+                }}
+              >
+                ⚠️ {selectedEdge.data_quality_note}
+              </div>
+            )}
 
             {/* Sender -> Receiver Flow Box */}
             <div
@@ -1506,42 +1712,44 @@ function TransactionGraph() {
               <div>
                 <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>SENDER (ORIGIN)</div>
                 <div style={{ fontWeight: 700, color: "#38BDF8" }}>{selectedEdge.source}</div>
-                <div style={{ color: "#CBD5E1" }}>{selectedEdge.sender_name}</div>
+                <div style={{ color: "#CBD5E1" }}>
+                  {selectedEdge.sender_name !== "Unknown" ? selectedEdge.sender_name : "Unmapped Dataset Account"}
+                </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#64748B" }}>
                 <div style={{ height: "1px", background: "#334155", flex: 1 }} />
-                <FaArrowRight style={{ color: selectedEdge.is_suspicious ? "#EF4444" : "#38BDF8" }} />
+                <FaArrowRight style={{ color: selectedEdge.risk_level === "CRITICAL" ? "#EF4444" : "#38BDF8" }} />
                 <div style={{ height: "1px", background: "#334155", flex: 1 }} />
               </div>
               <div>
                 <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>RECEIVER (BENEFICIARY)</div>
                 <div style={{ fontWeight: 700, color: "#38BDF8" }}>{selectedEdge.target}</div>
-                <div style={{ color: "#CBD5E1" }}>{selectedEdge.receiver_name}</div>
+                <div style={{ color: "#CBD5E1" }}>
+                  {selectedEdge.receiver_name !== "Unknown" ? selectedEdge.receiver_name : "Unmapped Dataset Account"}
+                </div>
               </div>
             </div>
 
-            {/* Risk Assessment Breakdown */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "8px",
-                fontSize: "12px",
-              }}
-            >
-              <div style={{ background: "#1E293B", padding: "10px", borderRadius: "8px" }}>
-                <div style={{ color: "#94A3B8", fontSize: "11px" }}>Risk Score</div>
-                <div style={{ fontWeight: 800, color: selectedEdge.risk_score >= 60 ? "#EF4444" : "#10B981" }}>
-                  {selectedEdge.risk_score} / 100
+            {/* Risk Reasons */}
+            {selectedEdge.risk_reasons && selectedEdge.risk_reasons.length > 0 && (
+              <div
+                style={{
+                  background: "#1E293B",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  fontSize: "11px",
+                }}
+              >
+                <div style={{ color: "#94A3B8", fontWeight: 700, marginBottom: "4px" }}>
+                  RISK SCORING FACTORS (Independent Behavioral Engine):
                 </div>
+                <ul style={{ margin: "4px 0 0", paddingLeft: "18px", color: "#CBD5E1" }}>
+                  {selectedEdge.risk_reasons.map((r, idx) => (
+                    <li key={idx}>{r}</li>
+                  ))}
+                </ul>
               </div>
-              <div style={{ background: "#1E293B", padding: "10px", borderRadius: "8px" }}>
-                <div style={{ color: "#94A3B8", fontSize: "11px" }}>Risk Level</div>
-                <div style={{ fontWeight: 800, color: selectedEdge.is_suspicious ? "#F87171" : "#34D399" }}>
-                  {selectedEdge.risk_level}
-                </div>
-              </div>
-            </div>
+            )}
 
             <div style={{ fontSize: "11px", color: "#64748B" }}>
               Timestamp: {selectedEdge.timestamp}
