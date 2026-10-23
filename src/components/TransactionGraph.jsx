@@ -1378,9 +1378,7 @@ function TransactionGraph() {
                   {selectedNode.account_id}
                 </div>
                 <div style={{ fontSize: "13px", color: "#E2E8F0", fontWeight: 600 }}>
-                  {selectedNode.account_name !== selectedNode.account_id && selectedNode.account_name !== "Unknown"
-                    ? selectedNode.account_name
-                    : "Ledger Account"}
+                  Account Holder: {selectedNode.is_verified_identity ? selectedNode.account_name : "Name not available"}
                 </div>
               </div>
               <button
@@ -1702,57 +1700,184 @@ function TransactionGraph() {
               style={{
                 background: "#1E293B",
                 borderRadius: "10px",
-                padding: "12px",
+                padding: "14px",
                 display: "flex",
                 flexDirection: "column",
-                gap: "8px",
+                gap: "10px",
                 fontSize: "12px",
+                border: "1px solid #334155",
               }}
             >
               <div>
-                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>SENDER (ORIGIN)</div>
-                <div style={{ fontWeight: 700, color: "#38BDF8" }}>{selectedEdge.source}</div>
-                <div style={{ color: "#CBD5E1" }}>
-                  {selectedEdge.sender_name !== "Unknown" ? selectedEdge.sender_name : "Unmapped Dataset Account"}
+                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700, letterSpacing: "0.5px" }}>
+                  SENDER (ORIGIN)
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
+                  <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                    <span style={{ color: "#94A3B8" }}>Account ID: </span>
+                    <strong style={{ color: "#38BDF8" }}>{selectedEdge.source || selectedEdge.sender_id}</strong>
+                  </div>
+                  <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                    <span style={{ color: "#94A3B8" }}>Account Holder: </span>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color:
+                          selectedEdge.sender_name && selectedEdge.sender_name !== "Name not available"
+                            ? "#F8FAFC"
+                            : "#94A3B8",
+                      }}
+                    >
+                      {selectedEdge.sender_name || "Name not available"}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#64748B" }}>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#64748B", margin: "2px 0" }}>
                 <div style={{ height: "1px", background: "#334155", flex: 1 }} />
-                <FaArrowRight style={{ color: selectedEdge.risk_level === "CRITICAL" ? "#EF4444" : "#38BDF8" }} />
+                <FaArrowRight
+                  style={{
+                    color:
+                      selectedEdge.risk_level === "CRITICAL"
+                        ? "#EF4444"
+                        : selectedEdge.risk_level === "HIGH"
+                        ? "#F97316"
+                        : selectedEdge.risk_level === "MEDIUM"
+                        ? "#EAB308"
+                        : "#38BDF8",
+                  }}
+                />
                 <div style={{ height: "1px", background: "#334155", flex: 1 }} />
               </div>
+
               <div>
-                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700 }}>RECEIVER (BENEFICIARY)</div>
-                <div style={{ fontWeight: 700, color: "#38BDF8" }}>{selectedEdge.target}</div>
-                <div style={{ color: "#CBD5E1" }}>
-                  {selectedEdge.receiver_name !== "Unknown" ? selectedEdge.receiver_name : "Unmapped Dataset Account"}
+                <div style={{ color: "#94A3B8", fontSize: "10px", fontWeight: 700, letterSpacing: "0.5px" }}>
+                  RECEIVER (BENEFICIARY)
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
+                  <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                    <span style={{ color: "#94A3B8" }}>Account ID: </span>
+                    <strong style={{ color: "#38BDF8" }}>{selectedEdge.target || selectedEdge.receiver_id}</strong>
+                  </div>
+                  <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                    <span style={{ color: "#94A3B8" }}>Account Holder: </span>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color:
+                          selectedEdge.receiver_name && selectedEdge.receiver_name !== "Name not available"
+                            ? "#F8FAFC"
+                            : "#94A3B8",
+                      }}
+                    >
+                      {selectedEdge.receiver_name || "Name not available"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Risk Reasons */}
-            {selectedEdge.risk_reasons && selectedEdge.risk_reasons.length > 0 && (
-              <div
-                style={{
-                  background: "#1E293B",
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  fontSize: "11px",
-                }}
-              >
-                <div style={{ color: "#94A3B8", fontWeight: 700, marginBottom: "4px" }}>
-                  RISK SCORING FACTORS (Independent Behavioral Engine):
-                </div>
-                <ul style={{ margin: "4px 0 0", paddingLeft: "18px", color: "#CBD5E1" }}>
-                  {selectedEdge.risk_reasons.map((r, idx) => (
-                    <li key={idx}>{r}</li>
-                  ))}
-                </ul>
+            {/* Risk Assessment & Factors */}
+            <div
+              style={{
+                background: "#1E293B",
+                padding: "12px 14px",
+                borderRadius: "10px",
+                fontSize: "11px",
+                border: "1px solid #334155",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}
+            >
+              <div style={{ color: "#94A3B8", fontWeight: 700, letterSpacing: "0.5px", fontSize: "10px" }}>
+                RISK SCORING FACTORS (Independent Behavioral Engine):
               </div>
-            )}
 
-            <div style={{ fontSize: "11px", color: "#64748B" }}>
-              Timestamp: {selectedEdge.timestamp}
+              {selectedEdge.risk_factors && selectedEdge.risk_factors.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {selectedEdge.risk_factors.map((factor, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        background: "#0F172A",
+                        padding: "8px 10px",
+                        borderRadius: "6px",
+                        border: "1px solid #334155",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "2px",
+                        }}
+                      >
+                        <span style={{ fontWeight: 700, color: "#F8FAFC" }}>{factor.factor_name}</span>
+                        {factor.score_contribution > 0 && (
+                          <span
+                            style={{
+                              background: "rgba(249, 115, 22, 0.2)",
+                              color: "#FB923C",
+                              padding: "1px 6px",
+                              borderRadius: "4px",
+                              fontWeight: 700,
+                              fontSize: "10px",
+                            }}
+                          >
+                            +{factor.score_contribution} pts
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ color: "#94A3B8", fontSize: "10px", marginBottom: "2px" }}>
+                        <span style={{ color: "#64748B" }}>Triggered condition: </span>
+                        {factor.condition_triggered}
+                      </div>
+                      <div style={{ color: "#CBD5E1", fontSize: "11px", lineHeight: "1.3" }}>
+                        {factor.explanation}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: "#94A3B8", fontStyle: "italic" }}>
+                  No significant risk rules triggered. Score is based on baseline activity.
+                </div>
+              )}
+
+              {/* Assessment Context Note */}
+              {selectedEdge.conclusion_note && (
+                <div
+                  style={{
+                    marginTop: "4px",
+                    padding: "8px 10px",
+                    background: "rgba(15, 23, 42, 0.8)",
+                    borderLeft: `3px solid ${
+                      selectedEdge.risk_level === "CRITICAL"
+                        ? "#EF4444"
+                        : selectedEdge.risk_level === "HIGH"
+                        ? "#F97316"
+                        : selectedEdge.risk_level === "MEDIUM"
+                        ? "#EAB308"
+                        : "#0EA5E9"
+                    }`,
+                    borderRadius: "0 6px 6px 0",
+                    color: "#CBD5E1",
+                    fontSize: "11px",
+                    lineHeight: "1.4",
+                  }}
+                >
+                  <strong style={{ color: "#F8FAFC" }}>Risk Assessment: </strong>
+                  {selectedEdge.conclusion_note}
+                </div>
+              )}
+            </div>
+
+            <div style={{ fontSize: "11px", color: "#64748B", display: "flex", justifyContent: "space-between" }}>
+              <span>Tx ID: {selectedEdge.id}</span>
+              <span>Time: {selectedEdge.timestamp}</span>
             </div>
           </div>
         )}
