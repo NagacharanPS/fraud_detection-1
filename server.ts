@@ -15,6 +15,7 @@ import {
 import {
   fetchNetworkGraphData,
   fetchAccountDeepAudit,
+  fetchAccountHistoryGraph,
 } from "./src/services/graphService";
 
 interface Account {
@@ -2420,9 +2421,12 @@ async function startServer() {
         pattern,
         transaction_id,
         txn,
+        isolated,
+        isolate,
       } = req.query;
 
       const targetTxn = ((transaction_id || txn) as string)?.trim();
+      const isIsolated = isolated === "true" || isolate === "true";
 
       const combinedLive = [...transactionsStore];
       for (const log of riskLogsStore.values()) {
@@ -2446,6 +2450,7 @@ async function startServer() {
         accountId: account_id as string,
         search: search as string,
         transactionId: targetTxn,
+        isolatedTxn: isIsolated,
         riskLevel: risk_level as string,
         suspiciousOnly: suspicious_only === "true" || suspicious_only === "1",
         minAmount: min_amount ? parseFloat(min_amount as string) : 0,
@@ -2468,6 +2473,18 @@ async function startServer() {
     } catch (err: any) {
       console.error("[Graph API] Error fetching account graph details:", err);
       res.status(500).json({ error: "Failed to fetch account graph details", details: err?.message });
+    }
+  });
+
+  // Account History for Dynamic Graph Expansion (Incoming & Outgoing Real Transactions)
+  app.get("/api/graph/account/:accountId/history", (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 60;
+      const history = fetchAccountHistoryGraph(req.params.accountId, limit);
+      res.json(history);
+    } catch (err: any) {
+      console.error("[Graph API] Error fetching account history graph:", err);
+      res.status(500).json({ error: "Failed to fetch account history graph", details: err?.message });
     }
   });
 
