@@ -1070,7 +1070,7 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
     },
     pattern_rules: {
       fan_in: "Fan-In Hub: At least 10 distinct senders within a rolling 72-hour window (14 accounts)",
-      fan_out: "High-Volume Fan-Out: At least 10 distinct receivers within a rolling 72-hour window (4 accounts)",
+      fan_out: "High-Volume Sender: At least 10 distinct receivers within a rolling 72-hour window (4 accounts)",
       circular: "Circular Reciprocal Cycle: Directed 2-hop reciprocal loop within 7 days (102 transactions, 0 fraud)",
       rapid: "Rapid Velocity: At least 5 transfers within 10 minutes from same sender (0 detected in dataset)",
       multi_hop: "Multi-Hop Layering: Chained flow A -> B -> C within 12 hours with similar pass-through amount (±25%) (1,027 transactions)",

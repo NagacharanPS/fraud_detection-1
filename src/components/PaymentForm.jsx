@@ -1203,6 +1203,54 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
               )}
             </div>
 
+            {/* FIX 4: Transaction ID display with copy button */}
+            {riskData.transaction_id && (
+              <div
+                style={{
+                  marginTop: "16px",
+                  padding: "10px 14px",
+                  background: "#F0F9FF",
+                  border: "1px solid #BAE6FD",
+                  borderRadius: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ fontSize: "13px", color: "#0C4A6E", fontWeight: 600 }}>
+                  <span style={{ color: "#64748B", fontWeight: 500 }}>Transaction ID: </span>
+                  <span style={{ fontFamily: "monospace", fontSize: "12px", wordBreak: "break-all" }}>
+                    {riskData.transaction_id}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(riskData.transaction_id).then(() => {
+                      const btn = document.getElementById("copy-txn-id-btn");
+                      if (btn) { btn.textContent = "Copied ✓"; setTimeout(() => { btn.textContent = "Copy"; }, 1500); }
+                    });
+                  }}
+                  id="copy-txn-id-btn"
+                  style={{
+                    background: "#0284C7",
+                    color: "#FFFFFF",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "5px 12px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "background 0.2s",
+                  }}
+                >
+                  Copy
+                </button>
+              </div>
+            )}
+
             {/* TRACE TRANSACTION BUTTON */}
             <button
               type="button"

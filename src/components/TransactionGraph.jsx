@@ -55,6 +55,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
   const [minAmount, setMinAmount] = useState("");
   const [showLabels, setShowLabels] = useState(true);
   const [activeLayout, setActiveLayout] = useState("cose"); // cose, concentric, circle, breadthfirst
+  const [legendCollapsed, setLegendCollapsed] = useState(false); // Minor: collapsible legend
 
   // Targeted Transaction Selection (from Risk Assessment navigation)
   const [targetTxnId, setTargetTxnId] = useState(initialTxnId || "");
@@ -289,6 +290,28 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
     }
   };
 
+  // FIX 1: Helper to (re)apply target-highlight class to the target edge and its endpoint nodes.
+  // Called after every layout stop, element update, expansion, filter change, and Fit.
+  const applyTargetHighlight = (animateToTarget = false) => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    // Strip previous target highlight (but leave highlighted/dimmed for neighbourhood focus)
+    cy.elements().removeClass("targeted-highlight");
+    if (!targetTxnId) return;
+    const edge = cy.getElementById(targetTxnId);
+    if (edge && edge.length > 0) {
+      edge.addClass("targeted-highlight");
+      edge.connectedNodes().addClass("targeted-highlight");
+      if (animateToTarget) {
+        const neighbourhood = edge.connectedNodes().closedNeighborhood().add(edge);
+        cy.animate({
+          fit: { eles: neighbourhood.length > 2 ? neighbourhood : edge.connectedNodes().add(edge), padding: 80 },
+          duration: 500,
+        });
+      }
+    }
+  };
+
   // A6 & B3: Layout mounting, re-running upon elements update, and layoutstop target highlight + fit
   useEffect(() => {
     if (!cyRef.current || graphData.nodes.length === 0) return;
@@ -328,24 +351,22 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
     const layout = cy.makeLayout(currentConfig);
 
     layout.one("layoutstop", () => {
-      if (targetTxnId) {
-        cy.elements().removeClass("targeted-highlight highlighted dimmed");
-        const cyEdge = cy.getElementById(targetTxnId);
-        if (cyEdge && cyEdge.length > 0) {
-          const connected = cyEdge.connectedNodes().add(cyEdge);
-          connected.addClass("targeted-highlight");
-          const neighborhood = connected.neighborhood().add(connected);
-          cy.fit(neighborhood.length > 2 ? neighborhood : connected, 80);
-        } else {
-          cy.fit(undefined, 40);
-        }
-      } else {
+      // Re-apply target highlight after layout finishes
+      applyTargetHighlight(!!targetTxnId);
+      if (!targetTxnId) {
         cy.fit(undefined, 40);
       }
     });
 
     layout.run();
   }, [graphData.nodes.length, graphData.edges.length, activeLayout, targetTxnId]);
+
+  // FIX 1: Re-apply target highlight whenever edges or targetTxnId change (covers filter, expansion, data reload)
+  useEffect(() => {
+    // Small delay to let Cytoscape finish rendering new elements
+    const timer = setTimeout(() => applyTargetHighlight(false), 150);
+    return () => clearTimeout(timer);
+  }, [graphData.edges, targetTxnId]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -575,6 +596,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "text-background-color": "#0F172A",
           "text-background-opacity": 0.85,
           "text-rotation": "autorotate",
+          "overlay-padding": 8, // FIX 2: Larger clickable area for edges
         },
       },
       // 1. Low Risk Edge (Cyan Solid)
@@ -671,14 +693,16 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "text-rotation": "autorotate",
         },
       },
-      // Selected Edge
+      // FIX 2: Selected Edge (amber outline, distinct from target highlight)
       {
         selector: "edge:selected",
         style: {
           width: 4.5,
-          "line-color": "#A855F7",
-          "target-arrow-color": "#C084FC",
+          "line-color": "#F59E0B",
+          "target-arrow-color": "#D97706",
           opacity: 1,
+          "overlay-color": "#F59E0B",
+          "overlay-opacity": 0.15,
         },
       },
       // Highlighted Edge
@@ -767,42 +791,73 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       neighborhood.addClass("highlighted");
     });
 
+    // FIX 2: Edge tap opens Transaction Flow Details (not Account Details)
     cy.on("tap", "edge", (evt) => {
+      evt.stopPropagation(); // Prevent node tap from firing on edge click
       const edge = evt.target;
       const data = edge.data();
-      setSelectedEdge(data);
-      setSelectedNode(null);
+      setSelectedEdge(data);  // Opens Transaction Flow Details panel
+      setSelectedNode(null);  // Closes Account Details panel
       setHoveredNode(null);
 
-      // Highlight edge and connected endpoints
+      // Highlight edge and connected endpoints, keep target highlight
       cy.elements().removeClass("highlighted dimmed");
       const connected = edge.connectedNodes().add(edge);
       cy.elements().difference(connected).addClass("dimmed");
       connected.addClass("highlighted");
+
+      // FIX 1: Preserve target highlight on the target edge even when another edge is selected
+      if (targetTxnId) {
+        const targetEdge = cy.getElementById(targetTxnId);
+        if (targetEdge && targetEdge.length > 0) {
+          targetEdge.addClass("targeted-highlight");
+          targetEdge.connectedNodes().addClass("targeted-highlight");
+        }
+      }
     });
 
     cy.on("tap", (evt) => {
       if (evt.target === cy) {
-        // Clicked background
+        // Clicked background - clear selection but keep target highlight
         cy.elements().removeClass("highlighted dimmed");
         setSelectedNode(null);
         setSelectedEdge(null);
         setHoveredNode(null);
+        // FIX 1: Re-apply target highlight when clicking background
+        if (targetTxnId) {
+          const targetEdge = cy.getElementById(targetTxnId);
+          if (targetEdge && targetEdge.length > 0) {
+            targetEdge.addClass("targeted-highlight");
+            targetEdge.connectedNodes().addClass("targeted-highlight");
+          }
+        }
       }
     });
   };
 
-  // Zoom controls
+  // Zoom controls - Minor: Zoom around canvas centre (or target)
   const handleZoomIn = () => {
-    if (cyRef.current) cyRef.current.zoom(cyRef.current.zoom() * 1.25);
+    if (cyRef.current) {
+      const cy = cyRef.current;
+      const centre = { x: cy.width() / 2, y: cy.height() / 2 };
+      cy.zoom({ level: cy.zoom() * 1.25, renderedPosition: centre });
+    }
   };
 
   const handleZoomOut = () => {
-    if (cyRef.current) cyRef.current.zoom(cyRef.current.zoom() * 0.8);
+    if (cyRef.current) {
+      const cy = cyRef.current;
+      const centre = { x: cy.width() / 2, y: cy.height() / 2 };
+      cy.zoom({ level: cy.zoom() * 0.8, renderedPosition: centre });
+    }
   };
 
   const handleFit = () => {
-    if (cyRef.current) cyRef.current.fit(undefined, 30);
+    if (cyRef.current) {
+      cyRef.current.fit(undefined, 30);
+      // Re-apply target highlight after fit
+      applyTargetHighlight(false);
+    }
   };
 
   const elements = useMemo(() => {
@@ -1630,7 +1685,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty State - FIX 3: Context-aware not-found messages */}
         {!loading && elements.length === 0 && (
           <div
             style={{
@@ -1650,10 +1705,28 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           >
             <FaExclamationTriangle style={{ fontSize: "36px", color: "#F59E0B" }} />
             <div style={{ fontSize: "16px", fontWeight: 700, color: "#F8FAFC" }}>
-              No transactions match the selected filters
+              {(() => {
+                const q = searchQuery.trim();
+                if (q && /^(ACC_\d+|A\d+)$/i.test(q)) {
+                  return `Account not found: ${q.toUpperCase()}`;
+                }
+                if (q && /^TXN_/i.test(q)) {
+                  return `Transaction not found: ${q}`;
+                }
+                return "No transactions match the selected filters";
+              })()}
             </div>
             <div style={{ fontSize: "13px" }}>
-              Try resetting your risk level, pattern filter, or search query.
+              {(() => {
+                const q = searchQuery.trim();
+                if (q && /^(ACC_\d+|A\d+)$/i.test(q)) {
+                  return `No account with ID "${q.toUpperCase()}" exists in the database.`;
+                }
+                if (q && /^TXN_/i.test(q)) {
+                  return `No transaction with ID "${q}" was found in the ledger.`;
+                }
+                return "Try resetting your risk level, pattern filter, or search query.";
+              })()}
             </div>
             <button
               onClick={handleResetFilters}
@@ -1745,7 +1818,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           </button>
         </div>
 
-        {/* Floating Legend */}
+        {/* Floating Legend (Minor: collapsible) */}
         <div
           style={{
             position: "absolute",
@@ -1755,20 +1828,26 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
             border: "1px solid #1E293B",
             backdropFilter: "blur(8px)",
             borderRadius: "10px",
-            padding: "10px 14px",
+            padding: legendCollapsed ? "8px 14px" : "10px 14px",
             fontSize: "11px",
             color: "#E2E8F0",
             zIndex: 10,
             display: "flex",
             flexDirection: "column",
-            gap: "5px",
+            gap: legendCollapsed ? "0px" : "5px",
             boxShadow: "0 6px 18px rgba(0,0,0,0.5)",
             maxWidth: "320px",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
           }}
+          onClick={() => setLegendCollapsed(!legendCollapsed)}
         >
-          <div style={{ fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", fontSize: "10px" }}>
-            Network Risk Legend
+          <div style={{ fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", fontSize: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+            <span>Network Risk Legend</span>
+            <span style={{ fontSize: "9px", color: "#64748B" }}>{legendCollapsed ? "▶" : "▼"}</span>
           </div>
+          {!legendCollapsed && (
+            <>
           {/* Node Types */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
@@ -1821,6 +1900,8 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
             <span style={{ width: "18px", height: "4px", background: "#F59E0B", border: "1px solid #FDE68A", display: "inline-block" }} />
             <span style={{ color: "#FDE68A", fontWeight: 700 }}>Targeted Assessed Flow (Amber outline)</span>
           </div>
+            </>
+          )}
         </div>
 
         {/* Hover Tooltip */}
