@@ -15,6 +15,7 @@ import {
   FaChevronRight,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
+  FaShieldAlt,
 } from "react-icons/fa";
 import API from "../api";
 
@@ -69,6 +70,7 @@ function getInitials(name, fallbackId) {
 function DatasetExplorer({ onSelectPairForSimulation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [receiverTypeFilter, setReceiverTypeFilter] = useState("ALL"); // "ALL" | "FIRST_TIME" | "EXISTING"
+  const [statusFilter, setStatusFilter] = useState("ALL"); // "ALL" | "FRAUD" | "FLAGGED" | "SAFE"
   const [discrepancyOnly, setDiscrepancyOnly] = useState(false);
   const [sortBy, setSortBy] = useState("newest"); // "newest" | "oldest" | "amount_high" | "amount_low"
   const [page, setPage] = useState(1);
@@ -81,6 +83,9 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
     discrepancies_count: 0,
     first_time_count: 0,
     existing_count: 0,
+    fraud_count: 0,
+    flagged_count: 0,
+    safe_count: 0,
   });
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -92,12 +97,12 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
   // Reset to page 1 whenever search, filters or sort changes
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, receiverTypeFilter, discrepancyOnly, sortBy]);
+  }, [searchQuery, receiverTypeFilter, statusFilter, discrepancyOnly, sortBy]);
 
   // Fetch records whenever page, limit, search, filter, or sort changes
   useEffect(() => {
     fetchRecords();
-  }, [searchQuery, receiverTypeFilter, discrepancyOnly, sortBy, page, limit]);
+  }, [searchQuery, receiverTypeFilter, statusFilter, discrepancyOnly, sortBy, page, limit]);
 
   async function fetchRecords() {
     try {
@@ -105,6 +110,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
       const params = new URLSearchParams();
       if (searchQuery.trim()) params.append("q", searchQuery.trim());
       if (receiverTypeFilter !== "ALL") params.append("receiver_type", receiverTypeFilter);
+      if (statusFilter !== "ALL") params.append("status_filter", statusFilter);
       if (discrepancyOnly) params.append("discrepancy_only", "true");
       params.append("sort_by", sortBy);
       params.append("page", String(page));
@@ -134,6 +140,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
       const params = new URLSearchParams();
       if (searchQuery.trim()) params.append("q", searchQuery.trim());
       if (receiverTypeFilter !== "ALL") params.append("receiver_type", receiverTypeFilter);
+      if (statusFilter !== "ALL") params.append("status_filter", statusFilter);
       if (discrepancyOnly) params.append("discrepancy_only", "true");
       params.append("sort_by", sortBy);
       params.append("page", String(page));
@@ -299,11 +306,11 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
           </div>
         )}
 
-        {/* 4 STATS CARDS GRID */}
+        {/* 5 STATS CARDS GRID */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
             gap: "14px",
             marginTop: "22px",
           }}
@@ -471,6 +478,47 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
               </div>
             </div>
           </div>
+
+          {/* CARD 5: CONFIRMED FRAUD */}
+          <div
+            style={{
+              background: "rgba(255, 255, 255, 0.14)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
+              padding: "14px 18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+            }}
+          >
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <FaShieldAlt size={17} color="#DC2626" />
+            </div>
+            <div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#FFFFFF", lineHeight: 1 }}>
+                {summary.fraud_count?.toLocaleString() || 0}
+              </div>
+              <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#FFFFFF", marginTop: "4px" }}>
+                Confirmed fraud
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
+                Blocked by the system
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -601,6 +649,47 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
             </button>
           </div>
 
+          {/* SEGMENTED STATUS FILTER (All status / Fraud / Suspicious / Safe) */}
+          <div
+            style={{
+              background: "#F1F5F9",
+              borderRadius: "10px",
+              padding: "3px",
+              display: "inline-flex",
+              gap: "2px",
+            }}
+          >
+            {[
+              { key: "ALL", label: "All status" },
+              { key: "FRAUD", label: "Fraud", color: "#DC2626" },
+              { key: "FLAGGED", label: "Suspicious", color: "#D97706" },
+              { key: "SAFE", label: "Safe", color: "#16A34A" },
+            ].map((btn) => {
+              const isActive = statusFilter === btn.key;
+              return (
+                <button
+                  key={btn.key}
+                  type="button"
+                  onClick={() => setStatusFilter(btn.key)}
+                  style={{
+                    border: "none",
+                    background: isActive ? "#FFFFFF" : "transparent",
+                    color: isActive ? (btn.color || "#2563EB") : "#64748B",
+                    fontWeight: isActive ? "700" : "600",
+                    fontSize: "12px",
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    boxShadow: isActive ? "0 2px 6px rgba(0, 0, 0, 0.06)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {btn.label}
+                </button>
+              );
+            })}
+          </div>
+
           {/* MISMATCHES ONLY TOGGLE */}
           <button
             type="button"
@@ -661,7 +750,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
       {/* SUBTITLE: RECORD COUNTER */}
       <div style={{ padding: "0 6px", fontSize: "13px", color: "#64748B" }}>
         Showing <strong style={{ color: "#2563EB" }}>{sortedRecords.length}</strong> of{" "}
-        <strong style={{ color: "#0F172A" }}>{summary.total_records}</strong> transactions
+        <strong style={{ color: "#0F172A" }}>{totalMatching.toLocaleString()}</strong> transactions
       </div>
 
       {/* =========================================================================
@@ -766,6 +855,18 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                 </th>
                 <th
                   style={{
+                    padding: "16px 16px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#64748B",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  STATUS
+                </th>
+                <th
+                  style={{
                     padding: "16px 20px",
                     fontSize: "11px",
                     fontWeight: "700",
@@ -783,13 +884,13 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748B", fontSize: "14px" }}>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "40px", color: "#64748B", fontSize: "14px" }}>
                     Loading transactions from ledger...
                   </td>
                 </tr>
               ) : sortedRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748B", fontSize: "14px" }}>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "40px", color: "#64748B", fontSize: "14px" }}>
                     No transactions match your search criteria.
                   </td>
                 </tr>
@@ -797,6 +898,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                 sortedRecords.map((r, index) => {
                   const isFirstTime = r.actual_receiver_type === "FIRST_TIME_RECEIVER";
                   const isDiscrepancy = r.is_discrepancy;
+                  const isFraud = Boolean(r.is_fraud);
 
                   // Check if recipient is blocked
                   const isReceiverBlocked =
@@ -817,16 +919,28 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                       onClick={() => openAuditModal(r)}
                       style={{
                         borderBottom: "1px solid #F1F5F9",
-                        borderLeft: isDiscrepancy ? "3.5px solid #EF4444" : "3.5px solid transparent",
+                        borderLeft: isFraud
+                          ? "3px solid #EF4444"
+                          : isDiscrepancy
+                          ? "3.5px solid #F59E0B"
+                          : "3px solid transparent",
                         cursor: "pointer",
-                        background: isDiscrepancy ? "#FFFDFD" : "#FFFFFF",
+                        background: isFraud ? "#FEF2F2" : isDiscrepancy ? "#FFFDFD" : "#FFFFFF",
                         transition: "background 0.15s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = isDiscrepancy ? "#FEF2F2" : "#F8FAFC";
+                        e.currentTarget.style.background = isFraud
+                          ? "#FEE2E2"
+                          : isDiscrepancy
+                          ? "#FEF2F2"
+                          : "#F8FAFC";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = isDiscrepancy ? "#FFFDFD" : "#FFFFFF";
+                        e.currentTarget.style.background = isFraud
+                          ? "#FEF2F2"
+                          : isDiscrepancy
+                          ? "#FFFDFD"
+                          : "#FFFFFF";
                       }}
                     >
                       {/* TRANSACTION ID & TIME */}
@@ -1019,6 +1133,59 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                             <FaCheck size={10} /> Match
                           </span>
                         )}
+                      </td>
+
+                      {/* STATUS */}
+                      <td style={{ padding: "14px 16px" }}>
+                        {isFraud ? (
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "4px 10px",
+                              borderRadius: "12px",
+                              fontSize: "11.5px",
+                              fontWeight: "700",
+                              background: "#FEE2E2",
+                              color: "#DC2626",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Fraud
+                          </span>
+                        ) : r.status === "FLAGGED" ? (
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "4px 10px",
+                              borderRadius: "12px",
+                              fontSize: "11.5px",
+                              fontWeight: "700",
+                              background: "#FEF3C7",
+                              color: "#D97706",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Suspicious
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "4px 10px",
+                              borderRadius: "12px",
+                              fontSize: "11.5px",
+                              fontWeight: "700",
+                              background: "#DCFCE7",
+                              color: "#16A34A",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Safe
+                          </span>
+                        )}
+                        <div style={{ fontSize: "10.5px", color: "#64748B", marginTop: "3px", fontWeight: "500" }}>
+                          Risk {Math.round(r.risk_score ?? 0)}
+                        </div>
                       </td>
 
                       {/* DETAILS BUTTON */}
@@ -1316,6 +1483,47 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
 
             {/* MODAL BODY */}
             <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+              {/* CONFIRMED FRAUD BANNER */}
+              {selectedAuditRecord.is_fraud && (
+                <div
+                  style={{
+                    background: "#FEF2F2",
+                    border: "1.5px solid #EF4444",
+                    borderRadius: "12px",
+                    padding: "14px 18px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <FaShieldAlt color="#DC2626" size={20} style={{ flexShrink: 0 }} />
+                    <div>
+                      <strong style={{ color: "#991B1B", fontSize: "14px" }}>
+                        This payment was marked as fraud and blocked.
+                      </strong>
+                      <p style={{ margin: "2px 0 0", color: "#B91C1C", fontSize: "12px" }}>
+                        Blocked by the automated fraud detection system.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      background: "#DC2626",
+                      color: "#FFFFFF",
+                      padding: "5px 12px",
+                      borderRadius: "14px",
+                      fontSize: "12px",
+                      fontWeight: "800",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Risk {Math.round(selectedAuditRecord.risk_score ?? 96)}
+                  </div>
+                </div>
+              )}
+
               {/* DISCREPANCY WARNING */}
               {selectedAuditRecord.is_discrepancy && (
                 <div

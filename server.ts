@@ -705,6 +705,7 @@ async function startServer() {
     risk_score: number;
     risk_level: string;
     status: string;
+    is_fraud: boolean;
     sender_trust_score: number;
     receiver_trust_score: number;
     relationship_type: string;
@@ -728,6 +729,7 @@ async function startServer() {
       risk_score: 12.4,
       risk_level: "LOW",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 95,
       receiver_trust_score: 90,
       relationship_type: "UTILITY",
@@ -749,6 +751,7 @@ async function startServer() {
       risk_score: 18.2,
       risk_level: "LOW",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 90,
       receiver_trust_score: 95,
       relationship_type: "PERSONAL",
@@ -768,6 +771,7 @@ async function startServer() {
       risk_score: 48.6,
       risk_level: "MEDIUM",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 95,
       receiver_trust_score: 95,
       relationship_type: "FIRST_TIME",
@@ -787,6 +791,7 @@ async function startServer() {
       risk_score: 54.2,
       risk_level: "MEDIUM",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 90,
       receiver_trust_score: 80,
       relationship_type: "FIRST_TIME",
@@ -808,6 +813,7 @@ async function startServer() {
       risk_score: 14.5,
       risk_level: "LOW",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 92,
       receiver_trust_score: 88,
       relationship_type: "MERCHANT",
@@ -829,6 +835,7 @@ async function startServer() {
       risk_score: 8.5,
       risk_level: "LOW",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 96,
       receiver_trust_score: 95,
       relationship_type: "FAMILY",
@@ -848,6 +855,7 @@ async function startServer() {
       risk_score: 96.8,
       risk_level: "CRITICAL",
       status: "BLOCKED",
+      is_fraud: true,
       sender_trust_score: 85,
       receiver_trust_score: 20,
       relationship_type: "GAMBLING",
@@ -870,6 +878,7 @@ async function startServer() {
       risk_score: 38.5,
       risk_level: "MEDIUM",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 95,
       receiver_trust_score: 90,
       relationship_type: "GOVERNMENT",
@@ -890,6 +899,7 @@ async function startServer() {
       risk_score: 26.2,
       risk_level: "LOW",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 90,
       receiver_trust_score: 88,
       relationship_type: "MERCHANT",
@@ -911,6 +921,7 @@ async function startServer() {
       risk_score: 9.2,
       risk_level: "LOW",
       status: "SUCCESS",
+      is_fraud: false,
       sender_trust_score: 96,
       receiver_trust_score: 92,
       relationship_type: "UTILITY",
@@ -1008,6 +1019,8 @@ async function startServer() {
         const senderAccountObj = accountsStore.get(r.sender_account);
         const receiverAccountObj = accountsStore.get(r.receiver_account);
 
+        const isFraud = r.is_fraud === 1 || status === "BLOCKED";
+
         return {
           transaction_id: r.transaction_id,
           timestamp: r.timestamp,
@@ -1024,6 +1037,7 @@ async function startServer() {
           risk_score: riskScore,
           risk_level: riskLevel,
           status: status,
+          is_fraud: isFraud,
           sender_trust_score: r.sender_trust_score || 75,
           receiver_trust_score: r.receiver_trust_score || 70,
           relationship_type: r.sender_account_type || "DIRECT_TRANSFER",
@@ -1066,6 +1080,7 @@ async function startServer() {
         risk_score: t.risk_score,
         risk_level: t.risk_level,
         status: t.status,
+        is_fraud: t.is_fraud === 1 || t.status === "BLOCKED",
         sender_trust_score: sender?.trust_score || 80,
         receiver_trust_score: receiver?.trust_score || 75,
         relationship_type: rel?.relationship_type || "DIRECT_TRANSFER",
@@ -1080,6 +1095,7 @@ async function startServer() {
   app.get("/api/dataset-explorer", (req, res) => {
     const q = ((req.query.q || "") as string).toLowerCase().trim();
     const receiverType = ((req.query.receiver_type || "ALL") as string).toUpperCase();
+    const statusFilter = ((req.query.status_filter || req.query.status || "ALL") as string).toUpperCase().trim();
     const discrepancyOnly = req.query.discrepancy_only === "true" || req.query.discrepancy === "true";
     const sortBy = ((req.query.sort_by || req.query.sort || "newest") as string).toLowerCase();
     const page = Math.max(1, parseInt((req.query.page as string) || "1", 10));
@@ -1105,6 +1121,14 @@ async function startServer() {
       records = records.filter((r) => r.actual_receiver_type === "EXISTING_RECEIVER");
     }
 
+    if (statusFilter === "FRAUD") {
+      records = records.filter((r) => r.is_fraud);
+    } else if (statusFilter === "FLAGGED" || statusFilter === "SUSPICIOUS") {
+      records = records.filter((r) => r.status === "FLAGGED");
+    } else if (statusFilter === "SAFE") {
+      records = records.filter((r) => r.status === "SUCCESS" && !r.is_fraud);
+    }
+
     if (discrepancyOnly) {
       records = records.filter((r) => r.is_discrepancy);
     }
@@ -1113,6 +1137,9 @@ async function startServer() {
     const discrepanciesCount = allRecords.filter((r) => r.is_discrepancy).length;
     const firstTimeCount = allRecords.filter((r) => r.actual_receiver_type === "FIRST_TIME_RECEIVER").length;
     const existingCount = allRecords.filter((r) => r.actual_receiver_type === "EXISTING_RECEIVER").length;
+    const fraudCount = allRecords.filter((r) => r.is_fraud).length;
+    const flaggedCount = allRecords.filter((r) => r.status === "FLAGGED").length;
+    const safeCount = allRecords.filter((r) => r.status === "SUCCESS" && !r.is_fraud).length;
 
     // Sort records
     if (sortBy === "oldest") {
@@ -1139,6 +1166,9 @@ async function startServer() {
         discrepancies_count: discrepanciesCount,
         first_time_count: firstTimeCount,
         existing_count: existingCount,
+        fraud_count: fraudCount,
+        flagged_count: flaggedCount,
+        safe_count: safeCount,
       },
       records: paginatedRecords,
     });
