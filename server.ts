@@ -2153,6 +2153,7 @@ async function startServer() {
     );
 
     const transaction_id = `TXN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const txTimestamp = transaction_time ? new Date(transaction_time).toISOString() : new Date().toISOString();
 
     const result = {
       transaction_id,
@@ -2160,6 +2161,7 @@ async function startServer() {
       receiver_account,
       receiver_name: receiver.account_name,
       amount: amt,
+      timestamp: txTimestamp,
       risk_score: mlRes.risk_score,
       risk_level: mlRes.risk_level,
       prediction: mlRes.prediction,
@@ -2437,10 +2439,13 @@ async function startServer() {
             receiver_account: log.receiver_account,
             amount: log.amount,
             status: log.prediction === "FRAUD" ? "BLOCKED" : "SIMULATED",
-            timestamp: new Date().toISOString(),
+            timestamp: log.timestamp || log.transaction_time || log.created_at || new Date().toISOString(),
             risk_score: log.risk_score,
             risk_level: log.risk_level,
             ai_analysis: log,
+            is_live: true,
+            is_live_demo_account: true,
+            ground_truth_status: "NOT_LABELLED_LIVE",
           });
         }
       }
@@ -2468,7 +2473,30 @@ async function startServer() {
   // Deep Account Network & Ledger Audit
   app.get("/api/graph/account/:accountId", (req, res) => {
     try {
-      const details = fetchAccountDeepAudit(req.params.accountId);
+      const combinedLive = [...transactionsStore];
+      for (const log of riskLogsStore.values()) {
+        if (!combinedLive.some((t) => t.transaction_id === log.transaction_id)) {
+          combinedLive.push({
+            transaction_id: log.transaction_id,
+            sender_account: log.sender_account,
+            receiver_account: log.receiver_account,
+            amount: log.amount,
+            status: log.prediction === "FRAUD" ? "BLOCKED" : "SIMULATED",
+            timestamp: log.timestamp || log.transaction_time || log.created_at || new Date().toISOString(),
+            risk_score: log.risk_score,
+            risk_level: log.risk_level,
+            ai_analysis: log,
+            is_live: true,
+            is_live_demo_account: true,
+            ground_truth_status: "NOT_LABELLED_LIVE",
+          });
+        }
+      }
+
+      const details = fetchAccountDeepAudit(req.params.accountId, combinedLive);
+      if (!details || (details as any).found === false) {
+        return res.status(404).json(details || { found: false, error: "Account not found" });
+      }
       res.json(details);
     } catch (err: any) {
       console.error("[Graph API] Error fetching account graph details:", err);
@@ -2480,7 +2508,30 @@ async function startServer() {
   app.get("/api/graph/account/:accountId/history", (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 60;
-      const history = fetchAccountHistoryGraph(req.params.accountId, limit);
+      const combinedLive = [...transactionsStore];
+      for (const log of riskLogsStore.values()) {
+        if (!combinedLive.some((t) => t.transaction_id === log.transaction_id)) {
+          combinedLive.push({
+            transaction_id: log.transaction_id,
+            sender_account: log.sender_account,
+            receiver_account: log.receiver_account,
+            amount: log.amount,
+            status: log.prediction === "FRAUD" ? "BLOCKED" : "SIMULATED",
+            timestamp: log.timestamp || log.transaction_time || log.created_at || new Date().toISOString(),
+            risk_score: log.risk_score,
+            risk_level: log.risk_level,
+            ai_analysis: log,
+            is_live: true,
+            is_live_demo_account: true,
+            ground_truth_status: "NOT_LABELLED_LIVE",
+          });
+        }
+      }
+
+      const history = fetchAccountHistoryGraph(req.params.accountId, limit, combinedLive);
+      if (!history || history.found === false) {
+        return res.status(404).json(history || { found: false, error: "Account not found" });
+      }
       res.json(history);
     } catch (err: any) {
       console.error("[Graph API] Error fetching account history graph:", err);

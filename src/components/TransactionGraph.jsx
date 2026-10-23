@@ -78,6 +78,14 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
   const cyRef = useRef(null);
   const reqSeqRef = useRef(0);
 
+  // Derived Target Transaction Data (ensures Target Banner is independently bound, NOT to selectedEdge)
+  const targetTxnData = useMemo(() => {
+    if (!targetTxnId) return null;
+    const clean = targetTxnId.trim().toLowerCase();
+    const found = graphData.edges?.find((e) => (e.data?.id || "").toLowerCase() === clean);
+    return found ? found.data : null;
+  }, [graphData.edges, targetTxnId]);
+
   // Load Graph Data from API
   const fetchGraph = async (overrideAccountId = null) => {
     const seq = ++reqSeqRef.current;
@@ -97,7 +105,8 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       if (suspiciousOnly) params.append("suspicious_only", "true");
       if (patternFilter !== "all") params.append("pattern", patternFilter);
       if (minAmount && Number(minAmount) > 0) params.append("min_amount", minAmount);
-      if (targetTxnId) params.append("transaction_id", targetTxnId);
+      // Only keep target transaction attached if an explicit search is not overriding it
+      if (targetTxnId && !searchQuery.trim()) params.append("transaction_id", targetTxnId);
 
       const res = await API.get(`/api/graph?${params.toString()}`);
       if (seq === reqSeqRef.current && res.data) {
@@ -125,7 +134,6 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       setError(null);
       setTargetNotFoundNote(null);
       setSelectedNode(null);
-      setSelectedEdge(null);
 
       // Query broader network with target transaction guaranteed to be incorporated
       const params = new URLSearchParams();
@@ -138,25 +146,11 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       const res = await API.get(`/api/graph?${params.toString()}`);
       if (seq === reqSeqRef.current && res.data) {
         setGraphData(res.data);
-        const matchingEdge = res.data.edges?.find((e) => e.data?.id === cleanTxnId);
+        const matchingEdge = res.data.edges?.find(
+          (e) => (e.data?.id || "").toLowerCase() === cleanTxnId.toLowerCase()
+        );
         if (matchingEdge) {
           setSelectedEdge(matchingEdge.data);
-          setTimeout(() => {
-            if (cyRef.current) {
-              const cy = cyRef.current;
-              cy.elements().removeClass("targeted-highlight highlighted dimmed");
-              const cyEdge = cy.getElementById(cleanTxnId);
-              if (cyEdge && cyEdge.length > 0) {
-                const connected = cyEdge.connectedNodes().add(cyEdge);
-                connected.addClass("targeted-highlight");
-                const neighborhood = connected.neighborhood().add(connected);
-                cy.animate({
-                  fit: { eles: neighborhood.length > 2 ? neighborhood : connected, padding: 80 },
-                  duration: 450,
-                });
-              }
-            }
-          }, 400);
         } else {
           setTargetNotFoundNote(`This transaction (${cleanTxnId}) could not be loaded into the graph.`);
         }
@@ -174,16 +168,23 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
   };
 
   // Expand an account's real incoming & outgoing transactions into the active graph
-  const expandAccountHistory = async (accountId, roleLabel = "") => {
+  const expandAccountHistory = async (accountId, roleLabel = "", customLimit = 60) => {
     if (!accountId) return;
     const cleanId = accountId.trim();
     setExpandingAccountId(cleanId);
     setExpansionNote(null);
 
     try {
-      const res = await API.get(`/api/graph/account/${encodeURIComponent(cleanId)}/history?limit=60`);
+      const res = await API.get(`/api/graph/account/${encodeURIComponent(cleanId)}/history?limit=${customLimit}`);
       const historyData = res.data;
-      if (!historyData) return;
+      if (!historyData || historyData.found === false) {
+        setExpansionNote({
+          text: `Account not found: ${cleanId}`,
+          isError: true,
+        });
+        setTimeout(() => setExpansionNote(null), 5000);
+        return;
+      }
 
       const cy = cyRef.current;
       if (!cy) return;
@@ -195,10 +196,15 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       const newEdges = (historyData.edges || []).filter((e) => !existingEdgeIds.has(e.data.id));
 
       if (newNodes.length === 0 && newEdges.length === 0) {
-        setExpansionNote(
-          `All historical transactions for ${cleanId} are already visible in the graph (${historyData.total_transactions || 0} total: ${historyData.total_incoming || 0} incoming, ${historyData.total_outgoing || 0} outgoing).`
-        );
-        setTimeout(() => setExpansionNote(null), 5000);
+        setExpansionNote({
+          text: `All historical transactions for ${cleanId} are already visible in the graph (${historyData.total_transactions || 0} total: ${historyData.total_incoming || 0} incoming, ${historyData.total_outgoing || 0} outgoing).`,
+          accountId: cleanId,
+          roleLabel,
+          hasMore: historyData.has_more,
+          remaining: historyData.remaining_count,
+          currentLimit: customLimit,
+        });
+        setTimeout(() => setExpansionNote(null), 6000);
         return;
       }
 
@@ -252,10 +258,14 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
 
       const inCount = historyData.incoming_transactions?.length || 0;
       const outCount = historyData.outgoing_transactions?.length || 0;
-      setExpansionNote(
-        `Expanded ${newEdges.length} new historical transaction(s) for ${cleanId} (${inCount} incoming, ${outCount} outgoing) into the active network.`
-      );
-      setTimeout(() => setExpansionNote(null), 6000);
+      setExpansionNote({
+        text: `Expanded ${newEdges.length} new transaction(s) for ${cleanId} (${inCount} in, ${outCount} out). Total: ${historyData.total_transactions || newEdges.length}.`,
+        accountId: cleanId,
+        roleLabel,
+        hasMore: historyData.has_more,
+        remaining: historyData.remaining_count,
+        currentLimit: customLimit,
+      });
 
       // Smoothly animate viewport to encompass the expanded neighborhood
       const anchorNode = cy.getElementById(cleanId);
@@ -268,11 +278,74 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       }
     } catch (err) {
       console.error("Failed to expand account history:", err);
-      setExpansionNote(`Unable to expand historical transactions for ${cleanId}.`);
+      const isNotFound = err.response?.status === 404 || err.response?.data?.found === false;
+      setExpansionNote({
+        text: isNotFound ? `Account not found: ${cleanId}` : `Unable to expand historical transactions for ${cleanId}.`,
+        isError: true,
+      });
+      setTimeout(() => setExpansionNote(null), 6000);
     } finally {
       setExpandingAccountId(null);
     }
   };
+
+  // A6 & B3: Layout mounting, re-running upon elements update, and layoutstop target highlight + fit
+  useEffect(() => {
+    if (!cyRef.current || graphData.nodes.length === 0) return;
+    const cy = cyRef.current;
+
+    let layoutName = activeLayout;
+    if (layoutName === "cose" || layoutName === "auto") {
+      layoutName = graphData.nodes.length < 60 ? "concentric" : "cose";
+    }
+
+    const currentConfig = {
+      name: layoutName,
+      fit: true,
+      padding: 40,
+      animate: false,
+      ...(layoutName === "cose"
+        ? {
+            idealEdgeLength: 100,
+            nodeOverlap: 20,
+            refresh: 20,
+            componentSpacing: 100,
+            nodeRepulsion: 400000,
+            edgeElasticity: 100,
+            numIter: 1000,
+          }
+        : layoutName === "concentric"
+        ? {
+            minNodeSpacing: 50,
+            concentric: (node) => (node.data("is_suspicious") ? 10 : (node.data("out_degree") || 0) + (node.data("in_degree") || 0)),
+            levelWidth: () => 2,
+          }
+        : layoutName === "breadthfirst"
+        ? { directed: true, spacingFactor: 1.25 }
+        : {}),
+    };
+
+    const layout = cy.makeLayout(currentConfig);
+
+    layout.one("layoutstop", () => {
+      if (targetTxnId) {
+        cy.elements().removeClass("targeted-highlight highlighted dimmed");
+        const cyEdge = cy.getElementById(targetTxnId);
+        if (cyEdge && cyEdge.length > 0) {
+          const connected = cyEdge.connectedNodes().add(cyEdge);
+          connected.addClass("targeted-highlight");
+          const neighborhood = connected.neighborhood().add(connected);
+          cy.fit(neighborhood.length > 2 ? neighborhood : connected, 80);
+        } else {
+          cy.fit(undefined, 40);
+        }
+      } else {
+        cy.fit(undefined, 40);
+      }
+    });
+
+    layout.run();
+  }, [graphData.nodes.length, graphData.edges.length, activeLayout, targetTxnId]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -286,7 +359,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
   }, [initialTxnId, riskFilter, suspiciousOnly, patternFilter, limit]);
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     fetchGraph();
   };
 
@@ -298,6 +371,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
     setPatternFilter("all");
     setMinAmount("");
     setLimit(120);
+    setActiveLayout("cose"); // B6: Restores Layout to Auto layout
     setSelectedNode(null);
     setSelectedEdge(null);
     setHoveredNode(null);
@@ -350,10 +424,15 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
     try {
       setLoadingAudit(true);
       setInvestigatingAccount(accountId);
-      const res = await API.get(`/api/graph/account/${accountId}`);
+      const res = await API.get(`/api/graph/account/${encodeURIComponent(accountId)}`);
       setAccountAuditDetail(res.data);
     } catch (err) {
       console.error("Failed to fetch deep account audit:", err);
+      setAccountAuditDetail({
+        found: false,
+        error: "Account not found",
+        account_id: accountId,
+      });
     } finally {
       setLoadingAudit(false);
     }
@@ -478,17 +557,38 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           height: 52,
         },
       },
+      // Base Edge Default Style (MUST be placed before specific risk level rules)
+      {
+        selector: "edge",
+        style: {
+          width: 2.0,
+          "line-color": "#0EA5E9",
+          "target-arrow-color": "#38BDF8",
+          "target-arrow-shape": "triangle",
+          "arrow-scale": 1.2,
+          "curve-style": "bezier",
+          "control-point-step-size": 40,
+          opacity: 0.8,
+          label: showLabels ? "data(label)" : "",
+          color: "#94A3B8",
+          "font-size": "9px",
+          "text-background-color": "#0F172A",
+          "text-background-opacity": 0.85,
+          "text-rotation": "autorotate",
+        },
+      },
       // 1. Low Risk Edge (Cyan Solid)
       {
         selector: "edge[risk_level = 'LOW']",
         style: {
-          width: 1.8,
+          width: 2.0,
           "line-color": "#0EA5E9",
           "target-arrow-color": "#38BDF8",
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.1,
           "curve-style": "bezier",
-          opacity: 0.75,
+          "control-point-step-size": 40,
+          opacity: 0.8,
           label: showLabels ? "data(label)" : "",
           color: "#94A3B8",
           "font-size": "9px",
@@ -504,13 +604,14 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       {
         selector: "edge[risk_level = 'MEDIUM']",
         style: {
-          width: 2.6,
+          width: 2.8,
           "line-color": "#EAB308",
           "target-arrow-color": "#FACC15",
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.25,
           "curve-style": "bezier",
-          opacity: 0.85,
+          "control-point-step-size": 40,
+          opacity: 0.9,
           label: showLabels ? "data(label)" : "",
           color: "#FEF08A",
           "font-size": "9px",
@@ -534,6 +635,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.35,
           "curve-style": "bezier",
+          "control-point-step-size": 40,
           opacity: 0.95,
           label: showLabels ? "data(label)" : "",
           color: "#FED7AA",
@@ -550,12 +652,13 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
       {
         selector: "edge[risk_level = 'CRITICAL']",
         style: {
-          width: 4.4,
+          width: 4.5,
           "line-color": "#EF4444",
           "target-arrow-color": "#DC2626",
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.5,
           "curve-style": "bezier",
+          "control-point-step-size": 40,
           opacity: 1.0,
           label: showLabels ? "data(label)" : "",
           color: "#FCA5A5",
@@ -565,25 +668,6 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "text-background-opacity": 0.85,
           "text-background-padding": "2px",
           "text-background-shape": "roundrectangle",
-          "text-rotation": "autorotate",
-        },
-      },
-      // Fallback base edge style
-      {
-        selector: "edge",
-        style: {
-          width: 2.0,
-          "line-color": "#0EA5E9",
-          "target-arrow-color": "#38BDF8",
-          "target-arrow-shape": "triangle",
-          "arrow-scale": 1.2,
-          "curve-style": "bezier",
-          opacity: 0.8,
-          label: showLabels ? "data(label)" : "",
-          color: "#94A3B8",
-          "font-size": "9px",
-          "text-background-color": "#0F172A",
-          "text-background-opacity": 0.85,
           "text-rotation": "autorotate",
         },
       },
@@ -929,10 +1013,17 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
               Displayed Edges
             </div>
             <div style={{ fontSize: "22px", color: "#10B981", fontWeight: 800 }}>
-              {graphData.summary.displayed_transactions} <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 500 }}>transfers</span>
+              {graphData.summary.displayed_transactions}{" "}
+              {graphData.summary.total_matching_transactions !== undefined &&
+                graphData.summary.total_matching_transactions !== graphData.summary.displayed_transactions && (
+                  <span style={{ fontSize: "14px", color: "#38BDF8", fontWeight: 700 }}>
+                    ({graphData.summary.total_matching_transactions} matching)
+                  </span>
+                )}
+              <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 500 }}> transfers</span>
             </div>
             <div style={{ fontSize: "11px", color: "#64748B" }}>
-              Directed flow connections
+              {graphData.summary.subset_label || "Directed flow connections"}
             </div>
           </div>
         </div>
@@ -982,7 +1073,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
         </div>
       </div>
 
-      {/* Targeted Transaction Banner (when navigated from Risk Assessment) */}
+      {/* Targeted Transaction Banner (A7: Independently bound to target transaction data, NOT selectedEdge) */}
       {targetTxnId && (
         <div
           style={{
@@ -1007,9 +1098,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
               ) : (
                 <>
                   Targeted Risk-Assessed Transaction: <strong>{targetTxnId}</strong>{" "}
-                  {selectedEdge && (
+                  {targetTxnData && (
                     <span style={{ color: "#E2E8F0", marginLeft: "6px" }}>
-                      ({selectedEdge.source} → {selectedEdge.target} | {selectedEdge.formatted_amount})
+                      ({targetTxnData.source} → {targetTxnData.target} | {targetTxnData.formatted_amount})
                     </span>
                   )}
                   {" — "}
@@ -1022,20 +1113,20 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            {selectedEdge && (
+            {targetTxnData && (
               <>
                 <button
                   type="button"
-                  onClick={() => expandAccountHistory(selectedEdge.source || selectedEdge.sender_id, "Sender")}
-                  disabled={expandingAccountId === (selectedEdge.source || selectedEdge.sender_id)}
+                  onClick={() => expandAccountHistory(targetTxnData.source || targetTxnData.sender_id, "Sender")}
+                  disabled={expandingAccountId === (targetTxnData.source || targetTxnData.sender_id)}
                   style={{
-                    background: expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id)
+                    background: expandedAccounts.has(targetTxnData.source || targetTxnData.sender_id)
                       ? "rgba(16, 185, 129, 0.25)"
                       : "#1E293B",
                     border: `1px solid ${
-                      expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id) ? "#10B981" : "#334155"
+                      expandedAccounts.has(targetTxnData.source || targetTxnData.sender_id) ? "#10B981" : "#334155"
                     }`,
-                    color: expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id) ? "#34D399" : "#38BDF8",
+                    color: expandedAccounts.has(targetTxnData.source || targetTxnData.sender_id) ? "#34D399" : "#38BDF8",
                     padding: "6px 12px",
                     borderRadius: "6px",
                     fontSize: "11px",
@@ -1047,22 +1138,22 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                   }}
                 >
                   <FaHistory />
-                  {expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id)
-                    ? `Sender (${selectedEdge.source}) Expanded ✓`
-                    : `+ Expand Sender (${selectedEdge.source})`}
+                  {expandedAccounts.has(targetTxnData.source || targetTxnData.sender_id)
+                    ? `Sender (${targetTxnData.source}) Expanded ✓`
+                    : `+ Expand Sender (${targetTxnData.source})`}
                 </button>
                 <button
                   type="button"
-                  onClick={() => expandAccountHistory(selectedEdge.target || selectedEdge.receiver_id, "Receiver")}
-                  disabled={expandingAccountId === (selectedEdge.target || selectedEdge.receiver_id)}
+                  onClick={() => expandAccountHistory(targetTxnData.target || targetTxnData.receiver_id, "Receiver")}
+                  disabled={expandingAccountId === (targetTxnData.target || targetTxnData.receiver_id)}
                   style={{
-                    background: expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id)
+                    background: expandedAccounts.has(targetTxnData.target || targetTxnData.receiver_id)
                       ? "rgba(16, 185, 129, 0.25)"
                       : "#1E293B",
                     border: `1px solid ${
-                      expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id) ? "#10B981" : "#334155"
+                      expandedAccounts.has(targetTxnData.target || targetTxnData.receiver_id) ? "#10B981" : "#334155"
                     }`,
-                    color: expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id) ? "#34D399" : "#38BDF8",
+                    color: expandedAccounts.has(targetTxnData.target || targetTxnData.receiver_id) ? "#34D399" : "#38BDF8",
                     padding: "6px 12px",
                     borderRadius: "6px",
                     fontSize: "11px",
@@ -1074,9 +1165,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                   }}
                 >
                   <FaHistory />
-                  {expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id)
-                    ? `Receiver (${selectedEdge.target}) Expanded ✓`
-                    : `+ Expand Receiver (${selectedEdge.target})`}
+                  {expandedAccounts.has(targetTxnData.target || targetTxnData.receiver_id)
+                    ? `Receiver (${targetTxnData.target}) Expanded ✓`
+                    : `+ Expand Receiver (${targetTxnData.target})`}
                 </button>
               </>
             )}
@@ -1105,39 +1196,71 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
         </div>
       )}
 
-      {/* Dynamic Expansion Feedback Toast */}
+      {/* Dynamic Expansion Feedback Toast with Load More support (B4) */}
       {expansionNote && (
         <div
           style={{
-            background: "rgba(16, 185, 129, 0.15)",
-            border: "1px solid rgba(16, 185, 129, 0.4)",
+            background: expansionNote.isError ? "rgba(239, 68, 68, 0.15)" : "rgba(16, 185, 129, 0.15)",
+            border: `1px solid ${expansionNote.isError ? "rgba(239, 68, 68, 0.4)" : "rgba(16, 185, 129, 0.4)"}`,
             borderRadius: "10px",
             padding: "10px 16px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            color: "#6EE7B7",
+            color: expansionNote.isError ? "#FCA5A5" : "#6EE7B7",
             fontSize: "12px",
             fontWeight: 600,
+            gap: "10px",
+            flexWrap: "wrap",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <FaCheckCircle style={{ color: "#10B981" }} />
-            <span>{expansionNote}</span>
+            {expansionNote.isError ? (
+              <FaExclamationTriangle style={{ color: "#EF4444" }} />
+            ) : (
+              <FaCheckCircle style={{ color: "#10B981" }} />
+            )}
+            <span>{typeof expansionNote === "string" ? expansionNote : expansionNote.text}</span>
           </div>
-          <button
-            type="button"
-            onClick={() => setExpansionNote(null)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#94A3B8",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
-            <FaTimes />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {expansionNote.hasMore && (
+              <button
+                type="button"
+                onClick={() =>
+                  expandAccountHistory(
+                    expansionNote.accountId,
+                    expansionNote.roleLabel,
+                    (expansionNote.currentLimit || 60) + 60
+                  )
+                }
+                style={{
+                  background: "#0284C7",
+                  border: "none",
+                  color: "#FFFFFF",
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Load More ({expansionNote.remaining} remaining)
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setExpansionNote(null)}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#94A3B8",
+                cursor: "pointer",
+                fontSize: "13px",
+              }}
+            >
+              <FaTimes />
+            </button>
+          </div>
         </div>
       )}
 
@@ -1155,7 +1278,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           gap: "12px",
         }}
       >
-        {/* Left: Search Bar */}
+        {/* Left: Search Bar (B2: Enter and Search button call fetchGraph) */}
         <form
           onSubmit={handleSearchSubmit}
           style={{
@@ -1163,17 +1286,23 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
             alignItems: "center",
             background: "#1E293B",
             borderRadius: "10px",
-            padding: "2px 12px",
+            padding: "2px 8px 2px 12px",
             border: "1px solid #334155",
-            minWidth: "260px",
+            minWidth: "290px",
           }}
         >
           <FaSearch style={{ color: "#94A3B8", marginRight: "8px" }} />
           <input
             type="text"
-            placeholder="Search Account ID (e.g. ACC_0557) or TXN..."
+            placeholder="Search Account ID (e.g. ACC_0853) or TXN..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSearchSubmit(e);
+              }
+            }}
             style={{
               background: "transparent",
               border: "none",
@@ -1196,11 +1325,29 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                 border: "none",
                 color: "#64748B",
                 cursor: "pointer",
+                marginRight: "6px",
               }}
             >
               <FaTimes />
             </button>
           )}
+          <button
+            type="submit"
+            title="Search network"
+            style={{
+              background: "#0284C7",
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: "6px",
+              padding: "5px 12px",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Search
+          </button>
         </form>
 
         {/* Center: Filters */}
@@ -1254,7 +1401,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
             Suspicious Only
           </button>
 
-          {/* Pattern Pills Dropdown */}
+          {/* Pattern Pills Dropdown (B5: Exact rules shown in UI) */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600 }}>Pattern:</span>
             <select
@@ -1273,12 +1420,27 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
               }}
             >
               <option value="all" title="Display all transactions without pattern constraints">All Graph Patterns</option>
-              <option value="fan_out" title="Fan-Out: One sender transferring funds to multiple recipients in rapid succession (Mule Dispersal)">Fan-Out (Mule Dispersal)</option>
-              <option value="fan_in" title="Fan-In: Multiple accounts sending funds into a single aggregator account">Fan-In (Aggregator / Receiver)</option>
-              <option value="circular" title="Circular: Closed payment loops returning funds to the originator">Circular (Cycle Flow)</option>
-              <option value="rapid" title="Rapid: High-frequency transfers within short time windows">Rapid Velocity Transfers</option>
-              <option value="multi_hop" title="Multi-Hop: Chained transfers across multiple intermediary nodes">Multi-Hop Chains</option>
+              <option value="multi_hop" title="Multi-Hop Layering: Chained flow A -> B -> C within 12h, similar amount (±25%)">Multi-Hop Layering (12h window, ±25% amount: 1,027 txs)</option>
+              <option value="fan_out" title="High-Volume Sender: At least 10 distinct receivers within rolling 72-hour window">High-Volume Sender (≥10 receivers in 72h: 4 accounts)</option>
+              <option value="fan_in" title="Fan-In Aggregator: At least 10 distinct senders within rolling 72-hour window">Fan-In Aggregator (≥10 senders in 72h: 14 accounts)</option>
+              <option value="circular" title="Circular Reciprocal: Directed 2-hop reciprocal loop within 7 days">Circular Reciprocal (7-day loop: 102 txs)</option>
+              <option value="rapid" title="Rapid Velocity: At least 5 transfers within 10 minutes from same sender">Rapid Velocity (≥5 sends in 10m: 0 in dataset)</option>
             </select>
+            {patternFilter !== "all" && graphData.pattern_rules?.[patternFilter] && (
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "#38BDF8",
+                  background: "rgba(56, 189, 248, 0.12)",
+                  border: "1px solid rgba(56, 189, 248, 0.3)",
+                  borderRadius: "6px",
+                  padding: "4px 8px",
+                  fontWeight: 600,
+                }}
+              >
+                Rule: {graphData.pattern_rules[patternFilter]}
+              </span>
+            )}
           </div>
 
           {/* Transaction Limit Selector */}
@@ -1812,6 +1974,27 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
               </span>
             </div>
 
+            {/* Live Demo Account Note (A1) */}
+            {selectedNode.is_live_demo_account && (
+              <div
+                style={{
+                  background: "rgba(245, 158, 11, 0.15)",
+                  border: "1px solid rgba(245, 158, 11, 0.4)",
+                  borderRadius: "8px",
+                  padding: "8px 12px",
+                  color: "#FDE68A",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <FaInfoCircle />
+                <span>Live demo account - no historical ledger records</span>
+              </div>
+            )}
+
             {/* Pattern Badges */}
             {selectedNode.patterns && selectedNode.patterns.length > 0 && (
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -2046,18 +2229,18 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                   style={{
                     fontWeight: 700,
                     color:
-                      selectedEdge.is_fraud === 1
+                      selectedEdge.ground_truth_status === "NOT_LABELLED_LIVE" || selectedEdge.is_live || selectedEdge.is_fraud === null
+                        ? "#94A3B8"
+                        : selectedEdge.is_fraud === 1
                         ? "#EF4444"
-                        : selectedEdge.is_fraud === 0
-                        ? "#10B981"
-                        : "#94A3B8",
+                        : "#10B981",
                   }}
                 >
-                  {selectedEdge.is_fraud === 1
+                  {selectedEdge.ground_truth_status === "NOT_LABELLED_LIVE" || selectedEdge.is_live || selectedEdge.is_fraud === null
+                    ? "⚪ Not labelled (live transaction)"
+                    : selectedEdge.is_fraud === 1
                     ? "⚠️ Confirmed Fraud (is_fraud=1)"
-                    : selectedEdge.is_fraud === 0
-                    ? "✓ Legitimate (is_fraud=0)"
-                    : "⚪ Unlabeled (NULL)"}
+                    : "✓ Legitimate (is_fraud=0)"}
                 </span>
               </div>
             </div>
@@ -2425,8 +2608,37 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
               <div style={{ padding: "40px", textAlign: "center", color: "#94A3B8" }}>
                 Loading ledger records...
               </div>
+            ) : accountAuditDetail && accountAuditDetail.found === false ? (
+              <div style={{ padding: "40px 20px", textAlign: "center", color: "#FCA5A5" }}>
+                <FaExclamationTriangle style={{ fontSize: "36px", marginBottom: "12px", color: "#EF4444" }} />
+                <div style={{ fontSize: "18px", fontWeight: 700, color: "#F8FAFC" }}>Account Not Found</div>
+                <div style={{ fontSize: "13px", color: "#94A3B8", marginTop: "6px" }}>
+                  The requested account ({accountAuditDetail.account_id}) does not exist in the ledger.
+                </div>
+              </div>
             ) : accountAuditDetail ? (
               <>
+                {/* Live Demo Account Note (A1) */}
+                {accountAuditDetail.is_live_demo_account && (
+                  <div
+                    style={{
+                      background: "rgba(245, 158, 11, 0.15)",
+                      border: "1px solid rgba(245, 158, 11, 0.4)",
+                      borderRadius: "8px",
+                      padding: "10px 14px",
+                      color: "#FDE68A",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <FaInfoCircle />
+                    <span>Live demo account - no historical ledger records</span>
+                  </div>
+                )}
+
                 {/* Metrics Summary */}
                 <div
                   style={{

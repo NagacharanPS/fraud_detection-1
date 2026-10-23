@@ -340,6 +340,7 @@ interface PatternCache {
   rapidAccounts: Set<string>;
   rapidTxIds: Set<string>;
   multiHopAccounts: Set<string>;
+  multiHopTxIds: Set<string>;
 }
 
 let cachedPatterns: PatternCache | null = null;
@@ -357,6 +358,7 @@ function getPatterns(): PatternCache {
     rapidAccounts: new Set(),
     rapidTxIds: new Set(),
     multiHopAccounts: new Set(),
+    multiHopTxIds: new Set(),
   };
 
   if (!db) return cache;
@@ -507,18 +509,25 @@ function getPatterns(): PatternCache {
     // Checked exhaustively against database: 0 instances found in dataset!
     // Stored honestly as 0 detected instances.
 
-    // 5. Multi-Hop: Directed time-ordered chains (A -> B at t1, B -> C at t2 > t1 within 48h)
+    // 5. Multi-Hop: Directed time-ordered chains (A -> B at t1, B -> C at t2 > t1 within 12h, similar amount ±25%)
     const multiHopRows: any[] = db
       .prepare(`
-        SELECT DISTINCT t1.sender_account
+        SELECT t1.transaction_id as tx1, t2.transaction_id as tx2,
+               t1.sender_account as accA, t1.receiver_account as accB, t2.receiver_account as accC
         FROM transactions t1
         JOIN transactions t2 ON t1.receiver_account = t2.sender_account
         WHERE t2.timestamp > t1.timestamp
-          AND (strftime('%s', t2.timestamp) - strftime('%s', t1.timestamp)) <= 172800
+          AND (strftime('%s', t2.timestamp) - strftime('%s', t1.timestamp)) <= 43200
           AND t1.sender_account != t2.receiver_account
+          AND t2.amount >= t1.amount * 0.75 AND t2.amount <= t1.amount * 1.25
       `)
       .all();
-    multiHopRows.forEach((r) => cache.multiHopAccounts.add(r.sender_account));
+    multiHopRows.forEach((r) => {
+      cache.multiHopAccounts.add(r.accA);
+      cache.multiHopAccounts.add(r.accB);
+      cache.multiHopTxIds.add(r.tx1);
+      cache.multiHopTxIds.add(r.tx2);
+    });
 
     cachedPatterns = cache;
   } catch (err) {
@@ -615,21 +624,28 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
         if (patternFilter === "multi_hop" && !patterns.multiHopAccounts.has(sAcc) && !patterns.multiHopAccounts.has(rAcc)) continue;
       }
 
+      const storedRiskScore = lt.risk_score !== undefined ? Number(lt.risk_score) : evaluated.risk_score;
+      const storedRiskLevel = lt.risk_level || evaluated.risk_level;
+      const storedFactors = lt.risk_factors || lt.ai_analysis?.structured_reasons || evaluated.risk_factors;
+      const storedReasons = lt.reasons || lt.ai_analysis?.reasons || evaluated.reasons;
+
       txList.push({
         transaction_id: lt.transaction_id,
         sender_account: lt.sender_account,
         receiver_account: lt.receiver_account,
         amount: amt,
-        timestamp: lt.timestamp || new Date().toISOString(),
-        is_fraud: isGroundTruthFraud,
-        risk_score: evaluated.risk_score,
-        risk_level: evaluated.risk_level,
-        risk_factors: evaluated.risk_factors,
-        risk_reasons: evaluated.reasons,
-        risk_conclusion: evaluated.risk_conclusion,
+        timestamp: lt.timestamp || lt.created_at, // A3: strictly use stored timestamp
+        is_fraud: null, // A4: Not labelled for live payments
+        ground_truth_status: "NOT_LABELLED_LIVE",
+        risk_score: storedRiskScore, // A5: Stored simulator score
+        risk_level: storedRiskLevel, // A5: Stored simulator level
+        risk_factors: storedFactors,
+        risk_reasons: storedReasons,
+        risk_conclusion: lt.risk_conclusion || (storedReasons && storedReasons[0]) || evaluated.risk_conclusion,
         sender_trust_score: lt.sender_trust_score,
         receiver_trust_score: lt.receiver_trust_score,
         is_live: true,
+        is_live_demo_account: true,
         has_data_quality_issue: false,
         is_self_transfer: lt.sender_account === lt.receiver_account,
       });
@@ -666,11 +682,20 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
         params.push(accountIdFilter, accountIdFilter);
       }
 
-      // Search across sender, receiver, and transaction ID
+      // Search across sender, receiver, and transaction ID (B2: exact matching for account IDs)
       if (searchQuery) {
-        query += " AND (sender_account LIKE ? OR receiver_account LIKE ? OR transaction_id LIKE ?)";
-        const term = `%${searchQuery}%`;
-        params.push(term, term, term);
+        const cleanSearch = searchQuery.trim().toUpperCase();
+        if (/^(ACC_\d+|A\d+)$/i.test(cleanSearch)) {
+          query += " AND (sender_account = ? OR receiver_account = ?)";
+          params.push(cleanSearch, cleanSearch);
+        } else if (/^TXN_/i.test(cleanSearch)) {
+          query += " AND transaction_id = ?";
+          params.push(cleanSearch);
+        } else {
+          query += " AND (sender_account LIKE ? OR receiver_account LIKE ? OR transaction_id LIKE ?)";
+          const term = `%${searchQuery}%`;
+          params.push(term, term, term);
+        }
       }
 
       // Pattern filtering across the full database
@@ -690,13 +715,13 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
         query += ` AND transaction_id IN (${placeholders})`;
         params.push(...circIds);
       } else if (patternFilter === "rapid") {
-        // No instances satisfy >= 5 transfers in 10 minutes in this dataset
+        // Rule: >= 5 transfers within 10 minutes from same sender (0 instances in dataset)
         query += " AND 1=0";
-      } else if (patternFilter === "multi_hop" && patterns.multiHopAccounts.size > 0) {
-        const multiHopAccs = Array.from(patterns.multiHopAccounts);
-        const placeholders = multiHopAccs.map(() => "?").join(",");
-        query += ` AND sender_account IN (${placeholders})`;
-        params.push(...multiHopAccs);
+      } else if (patternFilter === "multi_hop" && patterns.multiHopTxIds.size > 0) {
+        const multiHopTxs = Array.from(patterns.multiHopTxIds);
+        const placeholders = multiHopTxs.map(() => "?").join(",");
+        query += ` AND transaction_id IN (${placeholders})`;
+        params.push(...multiHopTxs);
       }
 
       // Natural ledger ordering
@@ -823,21 +848,28 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
               sender_account: liveTarget.sender_account,
               receiver_account: liveTarget.receiver_account,
             });
+            const storedRiskScore = liveTarget.risk_score !== undefined ? Number(liveTarget.risk_score) : evaluated.risk_score;
+            const storedRiskLevel = liveTarget.risk_level || evaluated.risk_level;
+            const storedFactors = liveTarget.risk_factors || liveTarget.ai_analysis?.structured_reasons || evaluated.risk_factors;
+            const storedReasons = liveTarget.reasons || liveTarget.ai_analysis?.reasons || evaluated.reasons;
+
             foundTarget = {
               transaction_id: liveTarget.transaction_id,
               sender_account: liveTarget.sender_account,
               receiver_account: liveTarget.receiver_account,
               amount: Number(liveTarget.amount) || 0,
-              timestamp: liveTarget.timestamp || new Date().toISOString(),
-              is_fraud: liveTarget.status === "BLOCKED" ? 1 : 0,
-              risk_score: evaluated.risk_score,
-              risk_level: evaluated.risk_level,
-              risk_factors: evaluated.risk_factors,
-              risk_reasons: evaluated.reasons,
-              risk_conclusion: evaluated.risk_conclusion,
+              timestamp: liveTarget.timestamp || liveTarget.created_at, // A3: stored timestamp
+              is_fraud: null, // A4: Not labelled
+              ground_truth_status: "NOT_LABELLED_LIVE",
+              risk_score: storedRiskScore, // A5: Stored simulator score
+              risk_level: storedRiskLevel, // A5: Stored simulator level
+              risk_factors: storedFactors,
+              risk_reasons: storedReasons,
+              risk_conclusion: liveTarget.risk_conclusion || (storedReasons && storedReasons[0]) || evaluated.risk_conclusion,
               sender_trust_score: liveTarget.sender_trust_score,
               receiver_trust_score: liveTarget.receiver_trust_score,
               is_live: true,
+              is_live_demo_account: true,
               is_self_transfer: liveTarget.sender_account === liveTarget.receiver_account,
             };
           }
@@ -949,11 +981,14 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
         timestamp: t.timestamp,
         is_fraud: t.is_fraud, // Ground-truth label (1, 0, or null)
         ground_truth_status:
-          t.is_fraud === 1
+          t.ground_truth_status ||
+          (t.is_live
+            ? "NOT_LABELLED_LIVE"
+            : t.is_fraud === 1
             ? "CONFIRMED_FRAUD"
             : t.is_fraud === 0
             ? "LEGITIMATE"
-            : "UNLABELED",
+            : "UNLABELED"),
         risk_score: t.risk_score,
         risk_level: t.risk_level, // LOW | MEDIUM | HIGH | CRITICAL
         risk_factors: t.risk_factors || [],
@@ -967,6 +1002,7 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
         risk_conclusion: t.risk_conclusion,
         conclusion_note: t.risk_conclusion,
         label: `₹${t.amount.toLocaleString("en-IN")}`,
+        is_live: Boolean(t.is_live),
       },
     });
   }
@@ -1030,14 +1066,14 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
       fan_out_count: patterns.fanOutAccounts.size, // 4 accounts (≥10 receivers in 72h)
       circular_count: patterns.circularTxIds.size, // 102 transactions (66 time-ordered cycles within 7 days, 0 fraud)
       rapid_count: 0, // 0 instances found in dataset matching ≥ 5 txs in 10 mins
-      multi_hop_count: patterns.multiHopAccounts.size, // 792 accounts in time-ordered chains (within 48h)
+      multi_hop_count: patterns.multiHopTxIds.size, // 1,027 transactions in chained layering flows (within 12h, ±25% amount)
     },
     pattern_rules: {
-      fan_in: "At least 10 distinct senders within a rolling 72-hour window",
-      fan_out: "At least 10 distinct receivers within a rolling 72-hour window",
-      circular: "Directed, time-ordered reciprocal cycles within a 7-day window (Finding: 0 labeled fraud)",
-      rapid: "At least 5 transfers within 10 minutes (Finding: No instances found in this dataset)",
-      multi_hop: "Directed, time-ordered chains A -> B -> C within a 48-hour window",
+      fan_in: "Fan-In Hub: At least 10 distinct senders within a rolling 72-hour window (14 accounts)",
+      fan_out: "High-Volume Fan-Out: At least 10 distinct receivers within a rolling 72-hour window (4 accounts)",
+      circular: "Circular Reciprocal Cycle: Directed 2-hop reciprocal loop within 7 days (102 transactions, 0 fraud)",
+      rapid: "Rapid Velocity: At least 5 transfers within 10 minutes from same sender (0 detected in dataset)",
+      multi_hop: "Multi-Hop Layering: Chained flow A -> B -> C within 12 hours with similar pass-through amount (±25%) (1,027 transactions)",
     },
     target_transaction_id: targetTxnId || null,
     target_transaction_found: selectedTransactions.some(
@@ -1050,12 +1086,28 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
 
 /**
  * Fetch dedicated account history with incoming and outgoing transactions formatted for graph expansion.
+ * Supports both historical SQLite ledger and live simulated transactions.
  */
-export function fetchAccountHistoryGraph(accountId: string, limit: number = 60) {
+export function fetchAccountHistoryGraph(
+  accountId: string,
+  limit: number = 60,
+  liveTransactions: any[] = []
+) {
   const db = getDb();
   const cleanId = (accountId || "").trim().toUpperCase();
   const meta = resolveAccountMetadata(cleanId);
 
+  // 1. Check live transactions matching this account
+  let liveMatches: any[] = [];
+  if (liveTransactions && liveTransactions.length > 0) {
+    liveMatches = liveTransactions.filter(
+      (t) =>
+        (t.sender_account || "").toUpperCase() === cleanId ||
+        (t.receiver_account || "").toUpperCase() === cleanId
+    );
+  }
+
+  // 2. Query transactions from SQLite database
   let rawTransactions: any[] = [];
   if (db) {
     try {
@@ -1069,10 +1121,46 @@ export function fetchAccountHistoryGraph(accountId: string, limit: number = 60) 
     }
   }
 
-  const incomingRaw = rawTransactions.filter((t) => t.receiver_account === cleanId);
-  const outgoingRaw = rawTransactions.filter((t) => t.sender_account === cleanId);
+  // A9: If account has no history in SQLite and no live transactions and is not verified, it is invalid!
+  if (rawTransactions.length === 0 && liveMatches.length === 0 && !meta.is_verified_identity) {
+    return {
+      found: false,
+      error: "Account not found",
+      account_id: cleanId,
+      total_transactions: 0,
+      total_incoming: 0,
+      total_outgoing: 0,
+      nodes: [],
+      edges: [],
+    };
+  }
 
-  const selectedHistory = rawTransactions.slice(0, limit);
+  // Live transactions are unshifted so latest payments appear at the top
+  const combinedHistory = [
+    ...liveMatches.map((lt) => ({
+      transaction_id: lt.transaction_id,
+      sender_account: lt.sender_account,
+      receiver_account: lt.receiver_account,
+      amount: Number(lt.amount) || 0,
+      timestamp: lt.timestamp || lt.created_at, // A3: stored timestamp
+      is_fraud: null, // A4: Not labelled
+      is_live: true,
+      risk_score: lt.risk_score !== undefined ? Number(lt.risk_score) : 10,
+      risk_level: lt.risk_level || "LOW",
+      risk_factors: lt.risk_factors || lt.ai_analysis?.structured_reasons || [],
+      risk_reasons: lt.reasons || lt.ai_analysis?.reasons || [],
+      risk_conclusion: lt.risk_conclusion || (lt.reasons && lt.reasons[0]) || "",
+      sender_trust_score: lt.sender_trust_score,
+      receiver_trust_score: lt.receiver_trust_score,
+    })),
+    ...rawTransactions,
+  ];
+
+  const incomingAll = combinedHistory.filter((t) => (t.receiver_account || "").toUpperCase() === cleanId);
+  const outgoingAll = combinedHistory.filter((t) => (t.sender_account || "").toUpperCase() === cleanId);
+
+  const selectedHistory = combinedHistory.slice(0, limit);
+  const isLiveDemoOnly = rawTransactions.length === 0 && liveMatches.length > 0;
 
   const nodeMap = new Map<string, any>();
   // Center account node
@@ -1088,25 +1176,40 @@ export function fetchAccountHistoryGraph(accountId: string, limit: number = 60) 
       current_balance: meta.current_balance,
       account_status: meta.account_status,
       is_verified_identity: meta.is_verified_identity,
-      in_degree: incomingRaw.length,
-      out_degree: outgoingRaw.length,
-      total_received: incomingRaw.reduce((s, t) => s + (Number(t.amount) || 0), 0),
-      total_sent: outgoingRaw.reduce((s, t) => s + (Number(t.amount) || 0), 0),
+      in_degree: incomingAll.length,
+      out_degree: outgoingAll.length,
+      total_received: incomingAll.reduce((s, t) => s + (Number(t.amount) || 0), 0),
+      total_sent: outgoingAll.reduce((s, t) => s + (Number(t.amount) || 0), 0),
       connected_accounts: new Set<string>(),
-      is_suspicious: rawTransactions.some((t) => t.is_fraud === 1),
+      is_suspicious: combinedHistory.some((t) => t.is_fraud === 1),
+      is_live_demo_account: isLiveDemoOnly,
+      live_demo_note: isLiveDemoOnly ? "Live demo account - no historical ledger records" : null,
     },
   });
 
   const edges: any[] = [];
   for (const t of selectedHistory) {
-    const evaluated = computeIndependentTransactionRisk({
-      amount: Number(t.amount) || 0,
-      sender_trust_score: t.sender_trust_score,
-      receiver_trust_score: t.receiver_trust_score,
-      timestamp: t.timestamp,
-      sender_account: t.sender_account,
-      receiver_account: t.receiver_account,
-    });
+    let riskScore = t.risk_score;
+    let riskLevel = t.risk_level;
+    let riskFactors = t.risk_factors || [];
+    let riskReasons = t.risk_reasons || [];
+    let riskConclusion = t.risk_conclusion || "";
+
+    if (!t.is_live) {
+      const evaluated = computeIndependentTransactionRisk({
+        amount: Number(t.amount) || 0,
+        sender_trust_score: t.sender_trust_score,
+        receiver_trust_score: t.receiver_trust_score,
+        timestamp: t.timestamp,
+        sender_account: t.sender_account,
+        receiver_account: t.receiver_account,
+      });
+      riskScore = evaluated.risk_score;
+      riskLevel = evaluated.risk_level;
+      riskFactors = evaluated.risk_factors || [];
+      riskReasons = evaluated.reasons || [];
+      riskConclusion = evaluated.risk_conclusion;
+    }
 
     const sMeta = resolveAccountMetadata(t.sender_account);
     const rMeta = resolveAccountMetadata(t.receiver_account);
@@ -1153,26 +1256,28 @@ export function fetchAccountHistoryGraph(accountId: string, limit: number = 60) 
         formatted_amount: `₹${Number(t.amount || 0).toLocaleString("en-IN")}`,
         timestamp: t.timestamp,
         is_fraud: t.is_fraud,
-        ground_truth_status:
-          t.is_fraud === 1
-            ? "CONFIRMED_FRAUD"
-            : t.is_fraud === 0
-            ? "LEGITIMATE"
-            : "UNLABELED",
-        risk_score: evaluated.risk_score,
-        risk_level: evaluated.risk_level,
-        risk_factors: evaluated.risk_factors || [],
-        risk_reasons: evaluated.reasons || [],
+        ground_truth_status: t.is_live
+          ? "NOT_LABELLED_LIVE"
+          : t.is_fraud === 1
+          ? "CONFIRMED_FRAUD"
+          : t.is_fraud === 0
+          ? "LEGITIMATE"
+          : "UNLABELED",
+        risk_score: riskScore,
+        risk_level: riskLevel,
+        risk_factors: riskFactors,
+        risk_reasons: riskReasons,
         sender_id: t.sender_account,
         receiver_id: t.receiver_account,
         sender_name: sMeta.is_verified_identity ? sMeta.account_name : null,
         receiver_name: rMeta.is_verified_identity ? rMeta.account_name : null,
         sender_is_verified: sMeta.is_verified_identity,
         receiver_is_verified: rMeta.is_verified_identity,
-        risk_conclusion: evaluated.risk_conclusion,
-        conclusion_note: evaluated.risk_conclusion,
+        risk_conclusion: riskConclusion,
+        conclusion_note: riskConclusion,
         label: `₹${Number(t.amount || 0).toLocaleString("en-IN")}`,
-        is_historical: true,
+        is_historical: !t.is_live,
+        is_live: Boolean(t.is_live),
       },
     });
   }
@@ -1186,14 +1291,6 @@ export function fetchAccountHistoryGraph(accountId: string, limit: number = 60) 
   }));
 
   const mapTx = (t: any) => {
-    const evalRisk = computeIndependentTransactionRisk({
-      amount: Number(t.amount) || 0,
-      sender_trust_score: t.sender_trust_score,
-      receiver_trust_score: t.receiver_trust_score,
-      timestamp: t.timestamp,
-      sender_account: t.sender_account,
-      receiver_account: t.receiver_account,
-    });
     const sMeta = resolveAccountMetadata(t.sender_account);
     const rMeta = resolveAccountMetadata(t.receiver_account);
     return {
@@ -1204,34 +1301,50 @@ export function fetchAccountHistoryGraph(accountId: string, limit: number = 60) 
       formatted_amount: `₹${Number(t.amount || 0).toLocaleString("en-IN")}`,
       timestamp: t.timestamp,
       is_fraud: t.is_fraud,
-      risk_score: evalRisk.risk_score,
-      risk_level: evalRisk.risk_level,
+      risk_score: t.risk_score,
+      risk_level: t.risk_level,
       sender_name: sMeta.is_verified_identity ? sMeta.account_name : null,
       receiver_name: rMeta.is_verified_identity ? rMeta.account_name : null,
-      is_historical: true,
+      is_historical: !t.is_live,
+      is_live: Boolean(t.is_live),
     };
   };
 
   return {
+    found: true,
     account_id: cleanId,
     account_name: meta.is_verified_identity ? meta.account_name : null,
-    total_transactions: rawTransactions.length,
-    total_incoming: incomingRaw.length,
-    total_outgoing: outgoingRaw.length,
-    total_received: incomingRaw.reduce((s, t) => s + (Number(t.amount) || 0), 0),
-    total_sent: outgoingRaw.reduce((s, t) => s + (Number(t.amount) || 0), 0),
-    incoming_transactions: incomingRaw.slice(0, 30).map(mapTx),
-    outgoing_transactions: outgoingRaw.slice(0, 30).map(mapTx),
+    total_transactions: combinedHistory.length,
+    total_incoming: incomingAll.length,
+    total_outgoing: outgoingAll.length,
+    total_received: incomingAll.reduce((s, t) => s + (Number(t.amount) || 0), 0),
+    total_sent: outgoingAll.reduce((s, t) => s + (Number(t.amount) || 0), 0),
+    is_live_demo_account: isLiveDemoOnly,
+    live_demo_note: isLiveDemoOnly ? "Live demo account - no historical ledger records" : null,
+    displayed_count: selectedHistory.length,
+    has_more: combinedHistory.length > limit,
+    remaining_count: Math.max(0, combinedHistory.length - limit),
+    incoming_transactions: incomingAll.slice(0, 30).map(mapTx),
+    outgoing_transactions: outgoingAll.slice(0, 30).map(mapTx),
     nodes,
     edges,
   };
 }
 
-export function fetchAccountDeepAudit(accountId: string) {
+export function fetchAccountDeepAudit(accountId: string, liveTransactions: any[] = []) {
   const db = getDb();
   const cleanId = (accountId || "").trim().toUpperCase();
   const meta = resolveAccountMetadata(cleanId);
   const patterns = getPatterns();
+
+  let liveMatches: any[] = [];
+  if (liveTransactions && liveTransactions.length > 0) {
+    liveMatches = liveTransactions.filter(
+      (t) =>
+        (t.sender_account || "").toUpperCase() === cleanId ||
+        (t.receiver_account || "").toUpperCase() === cleanId
+    );
+  }
 
   let transactions: any[] = [];
   if (db) {
@@ -1244,6 +1357,29 @@ export function fetchAccountDeepAudit(accountId: string) {
     } catch (e) {
       console.warn("[graphService] Notice querying account history:", e);
     }
+  }
+
+  if (transactions.length === 0 && liveMatches.length === 0 && !meta.is_verified_identity) {
+    return {
+      found: false,
+      error: "Account not found",
+      account_id: cleanId,
+    };
+  }
+
+  const isLiveDemoOnly = transactions.length === 0 && liveMatches.length > 0;
+  if (isLiveDemoOnly) {
+    transactions = liveMatches.map((lt) => ({
+      transaction_id: lt.transaction_id,
+      sender_account: lt.sender_account,
+      receiver_account: lt.receiver_account,
+      amount: Number(lt.amount) || 0,
+      timestamp: lt.timestamp || lt.created_at,
+      is_fraud: null,
+      is_live: true,
+      sender_trust_score: lt.sender_trust_score,
+      receiver_trust_score: lt.receiver_trust_score,
+    }));
   }
 
   const incomingTxs = transactions.filter((t) => t.receiver_account === cleanId);
@@ -1361,5 +1497,8 @@ export function fetchAccountDeepAudit(accountId: string) {
     patterns: accountPatterns,
     pattern_details: patternDetails,
     recent_transactions: enrichedRecentTxs,
+    found: true,
+    is_live_demo_account: isLiveDemoOnly,
+    live_demo_note: isLiveDemoOnly ? "Live demo account - no historical ledger records" : null,
   };
 }
