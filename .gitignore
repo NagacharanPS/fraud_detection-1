@@ -5,3 +5,5 @@ dist/
 *.pyc
 venv/
 .venv/
+*.db-shm
+*.db-wal
