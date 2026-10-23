@@ -19,6 +19,8 @@ export default function Login() {
 
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [demoUsers, setDemoUsers] = useState([]);
@@ -37,9 +39,51 @@ export default function Login() {
     loadDemoUsers();
   }, []);
 
+  const handleEmailChange = (val) => {
+    setEmailOrPhone(val);
+    if (emailError) setEmailError("");
+    if (error) setError("");
+  };
+
+  const handlePasswordChange = (val) => {
+    setPassword(val);
+    if (passwordError) setPasswordError("");
+    if (error) setError("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setEmailError("");
+    setPasswordError("");
+
+    let hasError = false;
+    const trimmedInput = emailOrPhone.trim();
+
+    if (!trimmedInput) {
+      setEmailError("Please enter your email or registered phone number.");
+      hasError = true;
+    } else if (trimmedInput.includes("@")) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedInput)) {
+        setEmailError("Please enter a valid email address (e.g. rahul@payguard.com).");
+        hasError = true;
+      }
+    } else {
+      const digits = trimmedInput.replace(/\D/g, "");
+      if (digits.length < 10) {
+        setEmailError("Please enter a valid 10-digit mobile number.");
+        hasError = true;
+      }
+    }
+
+    if (!password) {
+      setPasswordError("Please enter your password.");
+      hasError = true;
+    }
+
+    if (hasError) return;
+
     setLoading(true);
 
     try {
@@ -55,6 +99,8 @@ export default function Login() {
   const handleQuickFill = (demoUser) => {
     setEmailOrPhone(demoUser.email);
     setPassword(demoUser.demo_password);
+    setEmailError("");
+    setPasswordError("");
     setError("");
   };
 
@@ -93,7 +139,7 @@ export default function Login() {
           Login to PayGuard
         </h2>
         <p style={{ fontSize: "14px", color: "#6B7280", margin: 0 }}>
-          Access your secure UPI account & biometric protection
+          Access your secure UPI account &amp; biometric protection
         </p>
       </div>
 
@@ -117,7 +163,7 @@ export default function Login() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* Email or Phone */}
         <div style={{ marginBottom: "18px" }}>
           <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#374151", marginBottom: "6px" }}>
@@ -128,20 +174,24 @@ export default function Login() {
             <input
               type="text"
               value={emailOrPhone}
-              onChange={(e) => setEmailOrPhone(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
               placeholder="e.g. rahul@payguard.com or 9876543210"
-              required
               style={{
                 width: "100%",
                 padding: "12px 14px 12px 40px",
                 borderRadius: "10px",
-                border: "1px solid #D1D5DB",
+                border: emailError ? "1px solid #DC2626" : "1px solid #D1D5DB",
                 fontSize: "14px",
                 outline: "none",
                 boxSizing: "border-box",
               }}
             />
           </div>
+          {emailError && (
+            <div style={{ color: "#DC2626", fontSize: "12px", fontWeight: "600", marginTop: "5px", display: "flex", alignItems: "center", gap: "4px" }}>
+              <FaExclamationTriangle /> {emailError}
+            </div>
+          )}
         </div>
 
         {/* Password */}
@@ -159,20 +209,24 @@ export default function Login() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => handlePasswordChange(e.target.value)}
               placeholder="Enter your password"
-              required
               style={{
                 width: "100%",
                 padding: "12px 14px 12px 40px",
                 borderRadius: "10px",
-                border: "1px solid #D1D5DB",
+                border: passwordError ? "1px solid #DC2626" : "1px solid #D1D5DB",
                 fontSize: "14px",
                 outline: "none",
                 boxSizing: "border-box",
               }}
             />
           </div>
+          {passwordError && (
+            <div style={{ color: "#DC2626", fontSize: "12px", fontWeight: "600", marginTop: "5px", display: "flex", alignItems: "center", gap: "4px" }}>
+              <FaExclamationTriangle /> {passwordError}
+            </div>
+          )}
         </div>
 
         <button
@@ -211,7 +265,7 @@ export default function Login() {
       {demoUsers.length > 0 && (
         <div style={{ marginTop: "28px", borderTop: "1px solid #F1F5F9", paddingTop: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px", color: "#4B5563", fontSize: "13px", fontWeight: "600" }}>
-            <FaUserCheck style={{ color: "#2563EB" }} /> 1-Click Demo Testing Personas:
+            <FaUserCheck style={{ color: "#2563EB" }} /> 1-Click Demo Accounts:
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
@@ -236,10 +290,15 @@ export default function Login() {
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#E2E8F0")}
               >
                 <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#1E293B" }}>
-                    {du.full_name} ({du.account_id})
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ fontSize: "13px", fontWeight: "600", color: "#1E293B" }}>
+                      {du.full_name} ({du.account_id})
+                    </span>
+                    <span style={{ fontSize: "10px", fontWeight: "700", background: "#E0E7FF", color: "#3730A3", padding: "1px 6px", borderRadius: "4px" }}>
+                      Demo Account
+                    </span>
                   </div>
-                  <div style={{ fontSize: "11px", color: "#64748B" }}>
+                  <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
                     {du.email} • Balance: ₹{du.current_balance.toLocaleString("en-IN")}
                   </div>
                 </div>

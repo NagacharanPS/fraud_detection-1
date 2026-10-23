@@ -298,6 +298,7 @@ export default function DeviceSecurityModal({
       setOtpError("");
       const res = await API.post("/api/auth/verify-otp", {
         session_id: otpSessionId,
+        otp: code,
         otp_code: code,
         account_id: senderAccount?.account_id,
         phone_number: senderAccount?.mobile_number,
@@ -306,14 +307,19 @@ export default function DeviceSecurityModal({
       if (res.data && res.data.verified) {
         onFinalizePayment();
       } else {
-        setOtpError(res.data?.error || "Incorrect OTP. Please try again.");
+        setOtpError(res.data?.error || "Incorrect code. Please try again.");
+        setOtpDigits(["", "", "", "", "", ""]);
+        otpInputRefs.current[0]?.focus();
       }
     } catch (err) {
       // If server unreachable or error, fallback validation for demo
       if (code === (demoOtpCode || "482910")) {
         onFinalizePayment();
       } else {
-        setOtpError(err.response?.data?.error || "Incorrect OTP code. Please check and try again.");
+        const errorMsg = err.response?.data?.error || "Incorrect code. Please try again.";
+        setOtpError(errorMsg);
+        setOtpDigits(["", "", "", "", "", ""]);
+        otpInputRefs.current[0]?.focus();
       }
     } finally {
       setIsVerifyingOtp(false);

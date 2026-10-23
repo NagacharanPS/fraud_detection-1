@@ -204,13 +204,13 @@ export function fetchNetworkGraphData(options: GraphQueryOptions = {}) {
         params.push(accountIdFilter, accountIdFilter, likeTerm, likeTerm);
       }
 
-      // Order suspicious / high risk first so users can clearly see fraud networks, followed by recent
+      // Natural ledger ordering so initial graph displays balanced normal and fraud transactions
       if (suspiciousOnly) {
         query += " ORDER BY amount DESC LIMIT ?";
         params.push(limit * 2);
       } else {
-        query += " ORDER BY is_fraud DESC, transaction_id ASC LIMIT ?";
-        params.push(limit * 3);
+        query += " ORDER BY transaction_id ASC LIMIT ?";
+        params.push(limit * 2);
       }
 
       const rows: any[] = db.prepare(query).all(...params);

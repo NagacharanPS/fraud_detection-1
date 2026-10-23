@@ -68,7 +68,26 @@ button {
 
 input {
   outline: none;
-  border: none;
+}
+
+/* Keyboard Accessibility: High-contrast visible focus indicators */
+*:focus-visible {
+  outline: 2.5px solid #2563EB !important;
+  outline-offset: 2px !important;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2.5px solid #2563EB !important;
+  outline-offset: 1px !important;
+  border-color: #2563EB !important;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2.5px solid #2563EB !important;
+  outline-offset: 2px !important;
 }
 
 :root {

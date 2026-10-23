@@ -1014,8 +1014,36 @@ async function startServer() {
 
     const relKey = getRelationshipKey(senderId, receiverId);
     const relRecord = relationshipsStore.get(relKey);
-    const priorCount = relRecord?.transaction_count || 0;
-    const isFirstTime = priorCount === 0;
+
+    const explorerMatch = getAllExplorerRecords().find(
+      (r) => r.sender_account.toUpperCase() === senderId && r.receiver_account.toUpperCase() === receiverId
+    );
+
+    let priorCount = 0;
+    let isFirstTime = true;
+    let relType = "NONE";
+    let lastPayment = "No previous transaction found in ledger";
+    let avgAmt = 0;
+    let totalAmt = 0;
+    let isVerified = false;
+
+    if (relRecord) {
+      priorCount = relRecord.transaction_count || 0;
+      isFirstTime = priorCount === 0;
+      relType = relRecord.relationship_type || (isFirstTime ? "NONE" : "ESTABLISHED");
+      lastPayment = relRecord.last_payment_at || "No previous transaction found in ledger";
+      avgAmt = relRecord.average_amount || 0;
+      totalAmt = relRecord.total_amount || (priorCount * avgAmt);
+      isVerified = relRecord.verified;
+    } else if (explorerMatch) {
+      priorCount = explorerMatch.actual_prior_count || 0;
+      isFirstTime = explorerMatch.actual_receiver_type === "FIRST_TIME_RECEIVER" || priorCount === 0;
+      relType = explorerMatch.relationship_type || (isFirstTime ? "NONE" : "ESTABLISHED");
+      lastPayment = explorerMatch.last_transfer_timestamp || "No previous transaction found in ledger";
+      avgAmt = explorerMatch.last_transfer_amount || 0;
+      totalAmt = priorCount * avgAmt;
+      isVerified = !isFirstTime;
+    }
 
     const pairTransactions = transactionsStore.filter(
       (t) => t.sender_account === senderId && t.receiver_account === receiverId
@@ -1045,12 +1073,12 @@ async function startServer() {
         actual_prior_transactions_count: priorCount,
         actual_receiver_status: isFirstTime ? "FIRST_TIME_RECEIVER" : "EXISTING_RECEIVER",
         actual_status_label: isFirstTime ? "First-Time Receiver (0 prior txs)" : `Existing Contact (${priorCount} prior txs)`,
-        total_historical_volume: relRecord?.total_amount || 0,
-        average_historical_amount: relRecord?.average_amount || 0,
-        last_known_transfer_timestamp: relRecord?.last_payment_at || "No previous transaction found in ledger",
-        last_known_transfer_amount: relRecord?.average_amount || null,
-        relationship_type: relRecord?.relationship_type || (isFirstTime ? "NONE" : "ESTABLISHED"),
-        verified: relRecord?.verified || false,
+        total_historical_volume: totalAmt,
+        average_historical_amount: avgAmt,
+        last_known_transfer_timestamp: lastPayment,
+        last_known_transfer_amount: avgAmt || null,
+        relationship_type: relType,
+        verified: isVerified,
         audit_verdict: isFirstTime ? "NO_PRIOR_HISTORY_FOUND" : "VERIFIED_ESTABLISHED_LEDGER_RELATIONSHIP",
       },
       recent_pair_transactions: pairTransactions.slice(0, 10),
@@ -1340,15 +1368,10 @@ async function startServer() {
     }
 
     if (!userId || !usersStore.has(userId)) {
-      // Default to first user if none provided
-      userId = "USR_A0001";
+      return res.status(401).json({ error: "Authentication required. Please log in." });
     }
 
-    const user = usersStore.get(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User session not found." });
-    }
-
+    const user = usersStore.get(userId)!;
     const account = accountsStore.get(user.account_id);
     const biometric = userFaceBiometricsStore.get(user.user_id);
 
@@ -1445,10 +1468,19 @@ async function startServer() {
 
   // Verify OTP
   app.post("/api/auth/verify-otp", (req, res) => {
-    const { session_id, otp } = req.body;
+    const { session_id } = req.body;
+    const otpVal = (req.body.otp !== undefined && req.body.otp !== null)
+      ? String(req.body.otp)
+      : (req.body.otp_code !== undefined && req.body.otp_code !== null)
+        ? String(req.body.otp_code)
+        : "";
 
-    if (!session_id || !otp) {
-      return res.status(400).json({ error: "Session ID and OTP code are required." });
+    if (!session_id) {
+      return res.status(400).json({ error: "Verification session identifier is missing or expired. Please request a new OTP." });
+    }
+
+    if (!otpVal.trim()) {
+      return res.status(400).json({ error: "Please enter the 6-digit OTP code." });
     }
 
     const session = otpSessionsStore.get(session_id);
@@ -1467,11 +1499,11 @@ async function startServer() {
       return res.status(429).json({ error: "Too many failed attempts. Session locked." });
     }
 
-    const submittedHash = hashOTP(otp.trim());
+    const submittedHash = hashOTP(otpVal.trim());
     if (submittedHash !== session.otp_hash) {
       return res.status(400).json({
         verified: false,
-        error: "Incorrect 6-digit OTP code. Please verify and try again.",
+        error: "Incorrect code. Please try again.",
         attempts_left: 5 - session.attempts,
       });
     }

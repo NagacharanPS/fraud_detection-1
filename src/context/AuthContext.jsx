@@ -26,19 +26,15 @@ export function AuthProvider({ children }) {
             localStorage.setItem("payguard_user_session", JSON.stringify(res.data));
           }
         } catch (err) {
-          console.warn("Session check failed, using stored local session:", err);
+          console.warn("Session check failed, clearing invalid session:", err);
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem("payguard_auth_token");
+          localStorage.removeItem("payguard_user_session");
         }
       } else {
-        // Auto-login to Rahul Sharma as demo initial session if fresh session
-        try {
-          const res = await API.get("/api/auth/me?account_id=A0001");
-          if (res.data) {
-            setUser(res.data);
-            localStorage.setItem("payguard_user_session", JSON.stringify(res.data));
-          }
-        } catch (e) {
-          console.error("Could not fetch default user profile:", e);
-        }
+        setUser(null);
+        localStorage.removeItem("payguard_user_session");
       }
       setLoading(false);
     }

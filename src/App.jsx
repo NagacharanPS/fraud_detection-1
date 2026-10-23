@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -7,6 +7,43 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import PaymentProcessing from "./pages/PaymentProcessing";
 import PaymentSuccess from "./pages/PaymentSuccess";
+
+function ProtectedRoute({ children }) {
+  const { user, token, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+          color: "#64748B",
+          fontSize: "15px",
+          fontWeight: "600",
+        }}
+      >
+        Verifying secure session...
+      </div>
+    );
+  }
+
+  if (!user && !token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+function PublicAuthRoute({ children }) {
+  const { user, token, loading } = useAuth();
+  if (loading) return null;
+  if (user || token) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
 
 function MainLayout() {
   return (
@@ -26,9 +63,30 @@ function MainLayout() {
         }}
       >
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicAuthRoute>
+                <Login />
+              </PublicAuthRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicAuthRoute>
+                <Signup />
+              </PublicAuthRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
@@ -44,13 +102,21 @@ function App() {
           {/* AI Processing */}
           <Route
             path="/processing"
-            element={<PaymentProcessing />}
+            element={
+              <ProtectedRoute>
+                <PaymentProcessing />
+              </ProtectedRoute>
+            }
           />
 
           {/* Success */}
           <Route
             path="/payment-success"
-            element={<PaymentSuccess />}
+            element={
+              <ProtectedRoute>
+                <PaymentSuccess />
+              </ProtectedRoute>
+            }
           />
 
           {/* Main Layout & Auth Routes */}

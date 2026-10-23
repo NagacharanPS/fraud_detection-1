@@ -58,6 +58,7 @@ function TransactionGraph() {
   // Interaction Panels State
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
   const [investigatingAccount, setInvestigatingAccount] = useState(null);
   const [accountAuditDetail, setAccountAuditDetail] = useState(null);
   const [loadingAudit, setLoadingAudit] = useState(false);
@@ -104,7 +105,7 @@ function TransactionGraph() {
     fetchGraph();
   };
 
-  const handleResetFilters = () => {
+  const resetAllFilters = async () => {
     setSearchQuery("");
     setRiskFilter("ALL");
     setSuspiciousOnly(false);
@@ -113,10 +114,40 @@ function TransactionGraph() {
     setLimit(120);
     setSelectedNode(null);
     setSelectedEdge(null);
-    setTimeout(() => {
-      fetchGraph();
-    }, 50);
+    setHoveredNode(null);
+    setInvestigatingAccount(null);
+    setAccountAuditDetail(null);
+
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await API.get("/api/graph?limit=120");
+      if (res.data) {
+        setGraphData(res.data);
+      }
+    } catch (err) {
+      console.error("Failed to reset network graph:", err);
+      setError("Unable to reload complete graph.");
+    } finally {
+      setLoading(false);
+    }
+
+    if (cyRef.current) {
+      try {
+        const cy = cyRef.current;
+        cy.elements().unselect();
+        cy.elements().removeClass("highlighted dimmed");
+        setTimeout(() => {
+          cy.fit(undefined, 40);
+          cy.center();
+        }, 120);
+      } catch (e) {
+        console.warn("Cytoscape reset error:", e);
+      }
+    }
   };
+
+  const handleResetFilters = resetAllFilters;
 
   // Investigate account deep details
   const handleInvestigateAccount = async (accountId) => {
@@ -220,10 +251,11 @@ function TransactionGraph() {
           "transition-duration": "0.2s",
         },
       },
-      // Suspicious Node (Red/Orange glow)
+      // Suspicious Node (Hexagon shape + Red/Orange glow)
       {
         selector: "node[?is_suspicious]",
         style: {
+          shape: "hexagon",
           "background-color": "#DC2626", // Crimson Red
           "border-color": "#F87171",
           "border-width": 4,
@@ -321,16 +353,40 @@ function TransactionGraph() {
     ];
   }, [showLabels]);
 
-  // Cytoscape element click & drag handlers
+  // Cytoscape element click, hover & drag handlers
   const handleCyInit = (cy) => {
     cyRef.current = cy;
 
     cy.off("tap");
+    cy.off("mouseover");
+    cy.off("mouseout");
+
+    cy.on("mouseover", "node", (evt) => {
+      const node = evt.target;
+      const data = node.data();
+      const pos = node.renderedPosition();
+      setHoveredNode({
+        id: data.id,
+        label: data.label,
+        account_name: data.account_name,
+        is_suspicious: data.is_suspicious,
+        trust_score: data.trust_score,
+        account_type: data.account_type,
+        x: pos.x,
+        y: pos.y,
+      });
+    });
+
+    cy.on("mouseout", "node", () => {
+      setHoveredNode(null);
+    });
+
     cy.on("tap", "node", (evt) => {
       const node = evt.target;
       const data = node.data();
       setSelectedNode(data);
       setSelectedEdge(null);
+      setHoveredNode(null);
 
       // Highlight 1st degree neighborhood
       cy.elements().removeClass("highlighted dimmed");
@@ -344,6 +400,7 @@ function TransactionGraph() {
       const data = edge.data();
       setSelectedEdge(data);
       setSelectedNode(null);
+      setHoveredNode(null);
 
       // Highlight edge and connected endpoints
       cy.elements().removeClass("highlighted dimmed");
@@ -358,6 +415,7 @@ function TransactionGraph() {
         cy.elements().removeClass("highlighted dimmed");
         setSelectedNode(null);
         setSelectedEdge(null);
+        setHoveredNode(null);
       }
     });
   };
@@ -391,6 +449,34 @@ function TransactionGraph() {
         fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
       }}
     >
+      {/* Page Introduction */}
+      <div
+        style={{
+          background: "#0F172A",
+          border: "1px solid #1E293B",
+          borderRadius: "14px",
+          padding: "16px 20px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+        }}
+      >
+        <h3
+          style={{
+            margin: "0 0 4px",
+            fontSize: "16px",
+            fontWeight: "700",
+            color: "#F8FAFC",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <FaProjectDiagram style={{ color: "#38BDF8" }} /> Network Graph
+        </h3>
+        <p style={{ margin: 0, fontSize: "13px", color: "#94A3B8" }}>
+          Explore how accounts are connected through transactions and identify suspicious money flows.
+        </p>
+      </div>
+
       {/* 1. TOP SUMMARY METRIC CARDS */}
       <div
         style={{
@@ -739,12 +825,12 @@ function TransactionGraph() {
                 cursor: "pointer",
               }}
             >
-              <option value="all">All Graph Patterns</option>
-              <option value="fan_out">Fan-Out (Mule Dispersal)</option>
-              <option value="fan_in">Fan-In (Aggregator / Receiver)</option>
-              <option value="circular">Circular (Cycle Flow)</option>
-              <option value="rapid">Rapid Velocity Transfers</option>
-              <option value="multi_hop">Multi-Hop Chains</option>
+              <option value="all" title="Display all transactions without pattern constraints">All Graph Patterns</option>
+              <option value="fan_out" title="Fan-Out: One sender transferring funds to multiple recipients in rapid succession (Mule Dispersal)">Fan-Out (Mule Dispersal)</option>
+              <option value="fan_in" title="Fan-In: Multiple accounts sending funds into a single aggregator account">Fan-In (Aggregator / Receiver)</option>
+              <option value="circular" title="Circular: Closed payment loops returning funds to the originator">Circular (Cycle Flow)</option>
+              <option value="rapid" title="Rapid: High-frequency transfers within short time windows">Rapid Velocity Transfers</option>
+              <option value="multi_hop" title="Multi-Hop: Chained transfers across multiple intermediary nodes">Multi-Hop Chains</option>
             </select>
           </div>
 
@@ -791,7 +877,7 @@ function TransactionGraph() {
                 cursor: "pointer",
               }}
             >
-              <option value="cose">Force-Directed (Cose)</option>
+              <option value="cose">Auto layout</option>
               <option value="concentric">Concentric Rings</option>
               <option value="breadthfirst">Hierarchical Flow</option>
               <option value="circle">Circular Ring</option>
@@ -824,7 +910,7 @@ function TransactionGraph() {
           {/* Reset Filters */}
           <button
             onClick={handleResetFilters}
-            title="Reset All Filters"
+            title="Reset All Filters & Viewport"
             style={{
               background: "#1E293B",
               color: "#94A3B8",
@@ -839,26 +925,6 @@ function TransactionGraph() {
             }}
           >
             <FaRedo /> Reset
-          </button>
-
-          {/* Fit Graph */}
-          <button
-            onClick={handleFit}
-            title="Fit Graph to Screen"
-            style={{
-              background: "#1E293B",
-              color: "#38BDF8",
-              border: "1px solid #334155",
-              borderRadius: "8px",
-              padding: "7px 11px",
-              fontSize: "12px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-            }}
-          >
-            <FaCompress /> Fit
           </button>
         </div>
       </div>
@@ -934,7 +1000,7 @@ function TransactionGraph() {
               No transactions match the selected filters
             </div>
             <div style={{ fontSize: "13px" }}>
-              Try loosening your risk criteria, minimum amount, or search query.
+              Try resetting your risk level, pattern filter, or search query.
             </div>
             <button
               onClick={handleResetFilters}
@@ -1060,20 +1126,21 @@ function TransactionGraph() {
                 display: "inline-block",
               }}
             />
-            <span>Legitimate Account Node</span>
+            <span>Normal Account (Circle)</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
               style={{
                 width: "12px",
                 height: "12px",
-                borderRadius: "50%",
+                borderRadius: "2px",
+                transform: "rotate(45deg)",
                 background: "#DC2626",
                 border: "2px solid #F87171",
                 display: "inline-block",
               }}
             />
-            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Suspicious / High-Risk Account</span>
+            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Suspicious Account (Hexagon)</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
@@ -1084,7 +1151,7 @@ function TransactionGraph() {
                 display: "inline-block",
               }}
             />
-            <span>Normal Transaction (Cyan)</span>
+            <span>Normal Transfer (Cyan)</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
@@ -1095,9 +1162,50 @@ function TransactionGraph() {
                 display: "inline-block",
               }}
             />
-            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Fraud / Suspicious Path (Red)</span>
+            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Fraud / High-Risk Transfer (Red)</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span
+              style={{
+                width: "16px",
+                height: "3px",
+                background: "#F59E0B",
+                display: "inline-block",
+              }}
+            />
+            <span style={{ color: "#FDE68A" }}>Selected / Highlighted Flow (Amber)</span>
           </div>
         </div>
+
+        {/* Hover Tooltip */}
+        {hoveredNode && !selectedNode && (
+          <div
+            style={{
+              position: "absolute",
+              left: Math.min(Math.max(hoveredNode.x + 15, 10), 750),
+              top: Math.max(hoveredNode.y - 45, 10),
+              pointerEvents: "none",
+              background: "rgba(15, 23, 42, 0.95)",
+              border: `1px solid ${hoveredNode.is_suspicious ? "#F87171" : "#38BDF8"}`,
+              borderRadius: "8px",
+              padding: "8px 12px",
+              color: "#F8FAFC",
+              fontSize: "12px",
+              zIndex: 50,
+              boxShadow: "0 4px 14px rgba(0,0,0,0.5)",
+            }}
+          >
+            <div style={{ fontWeight: 700, color: hoveredNode.is_suspicious ? "#F87171" : "#38BDF8" }}>
+              {hoveredNode.label || hoveredNode.id}
+            </div>
+            <div style={{ fontSize: "11px", color: "#94A3B8" }}>
+              {hoveredNode.account_name || "Account"} • Trust: {hoveredNode.trust_score || "N/A"}/100
+            </div>
+            <div style={{ fontSize: "11px", marginTop: "3px", fontWeight: 600, color: hoveredNode.is_suspicious ? "#EF4444" : "#10B981" }}>
+              {hoveredNode.is_suspicious ? "⚠️ Suspicious / Flagged Activity" : "✓ Normal Legitimate Account"}
+            </div>
+          </div>
+        )}
 
         {/* Cytoscape Graph Canvas */}
         {elements.length > 0 && (

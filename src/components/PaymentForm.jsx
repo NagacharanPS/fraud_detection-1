@@ -13,6 +13,31 @@ import { collectDeviceSignals } from "../utils/deviceTrust";
 import DeviceSecurityModal from "./DeviceSecurityModal";
 import GroundedEvidenceView from "./GroundedEvidenceView";
 
+function getNowLocalTimeString() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  try {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(now);
+    const yyyy = parts.find((p) => p.type === "year")?.value || now.getFullYear();
+    const mm = parts.find((p) => p.type === "month")?.value || pad(now.getMonth() + 1);
+    const dd = parts.find((p) => p.type === "day")?.value || pad(now.getDate());
+    const hh = parts.find((p) => p.type === "hour")?.value || pad(now.getHours());
+    const min = parts.find((p) => p.type === "minute")?.value || pad(now.getMinutes());
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  } catch {
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+}
+
 function PaymentForm({ selectedScenario, onResetScenario }) {
   const navigate = useNavigate();
 
@@ -40,11 +65,9 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
   const [relationshipInfo, setRelationshipInfo] = useState(null);
   const [loadingRelationship, setLoadingRelationship] = useState(false);
 
-  // Transaction time – default to current time
-  const [transactionTime, setTransactionTime] = useState(() => {
-    const now = new Date();
-    return now.toISOString().slice(0, 16);
-  });
+  // Transaction time – default to current local Indian time (Asia/Kolkata)
+  const [transactionTime, setTransactionTime] = useState(getNowLocalTimeString);
+  const [scenarioTimeNote, setScenarioTimeNote] = useState("");
 
   const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [checkingRisk, setCheckingRisk] = useState(false);
@@ -54,6 +77,8 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
   const [showReceiverList, setShowReceiverList] = useState(false);
 
   const [error, setError] = useState("");
+  const [receiverError, setReceiverError] = useState("");
+  const [senderError, setSenderError] = useState("");
   const [riskData, setRiskData] = useState(null);
   const [authType, setAuthType] = useState("");
   const [actionTitle, setActionTitle] = useState("");
@@ -129,10 +154,12 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
     if (senderAcc) {
       setSelectedSender(senderAcc);
       setSenderSearch(senderAcc.account_id);
+      setSenderError("");
     }
     if (receiverAcc) {
       setSelectedReceiver(receiverAcc);
       setReceiverSearch(receiverAcc.account_id);
+      setReceiverError("");
     }
     if (selectedScenario.amount !== undefined) {
       setAmount(String(selectedScenario.amount));
@@ -145,12 +172,23 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
     }
     if (selectedScenario.time) {
       setTransactionTime(selectedScenario.time);
+      if (selectedScenario.id?.includes("high") || selectedScenario.id?.includes("crit")) {
+        setScenarioTimeNote("This scenario uses a late-night transaction time to demonstrate unusual activity.");
+      } else {
+        setScenarioTimeNote("");
+      }
     } else {
-      const now = new Date();
-      setTransactionTime(now.toISOString().slice(0, 16));
+      setTransactionTime(getNowLocalTimeString());
+      setScenarioTimeNote("");
     }
     setError("");
+    setReceiverError("");
+    setSenderError("");
     setRiskData(null);
+    setAuthType("");
+    setActionTitle("");
+    setActionColor("");
+    setButtonText("");
   }, [selectedScenario, accounts]);
 
   // Automated Ledger / Dataset Lookup for Receiver Relationship
@@ -236,34 +274,123 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
 
   /* ----------------------------- SELECT SENDER / RECEIVER ----------------------------- */
 
+  function clearAssessmentResults() {
+    setRiskData(null);
+    setAuthType("");
+    setActionTitle("");
+    setActionColor("");
+    setButtonText("");
+    setError("");
+  }
+
+  function handleSenderSearchChange(val) {
+    setSenderSearch(val);
+    setShowSenderList(true);
+    clearAssessmentResults();
+    if (onResetScenario) onResetScenario();
+
+    const trimmed = val.trim();
+    if (!trimmed) {
+      setSelectedSender(null);
+      setSenderError("");
+      return;
+    }
+
+    const matched = accounts.find(
+      (a) =>
+        a.account_id.toLowerCase() === trimmed.toLowerCase() ||
+        (a.upi_id && a.upi_id.toLowerCase() === trimmed.toLowerCase())
+    );
+
+    if (matched) {
+      setSelectedSender(matched);
+      setSenderError("");
+    } else {
+      setSelectedSender(null);
+      setSenderError("Sender account not found. Please select a valid sender.");
+    }
+  }
+
   function selectSender(account) {
     setSelectedSender(account);
     setSenderSearch(account.account_id);
+    setSenderError("");
     setShowSenderList(false);
+    clearAssessmentResults();
+    if (onResetScenario) onResetScenario();
+  }
+
+  function handleReceiverSearchChange(val) {
+    setReceiverSearch(val);
+    setShowReceiverList(true);
+    clearAssessmentResults();
+    if (onResetScenario) onResetScenario();
+
+    const trimmed = val.trim();
+    if (!trimmed) {
+      setSelectedReceiver(null);
+      setReceiverError("");
+      return;
+    }
+
+    const matched = accounts.find(
+      (a) =>
+        a.account_id.toLowerCase() === trimmed.toLowerCase() ||
+        (a.upi_id && a.upi_id.toLowerCase() === trimmed.toLowerCase())
+    );
+
+    if (matched) {
+      setSelectedReceiver(matched);
+      setReceiverError("");
+    } else {
+      setSelectedReceiver(null);
+      setReceiverError("Account not found. Please select a valid receiver.");
+    }
   }
 
   function selectReceiver(account) {
     setSelectedReceiver(account);
     setReceiverSearch(account.account_id);
+    setReceiverError("");
     setShowReceiverList(false);
+    clearAssessmentResults();
+    if (onResetScenario) onResetScenario();
+  }
+
+  function handleAmountChange(val) {
+    setAmount(val);
+    clearAssessmentResults();
+    if (Number(val) > 0 && (error === "Invalid Amount" || error === "Enter Amount")) {
+      setError("");
+    }
   }
 
   /* ----------------------------- VALIDATION ----------------------------- */
 
   function validateForm() {
+    clearAssessmentResults();
+
     if (!selectedSender) {
-      setError("Please select Sender ID");
+      const msg = senderSearch.trim()
+        ? "Sender account not found. Please select a valid sender."
+        : "Please select Sender ID";
+      setError(msg);
+      setSenderError(senderSearch.trim() ? "Sender account not found. Please select a valid sender." : "");
       return false;
     }
     if (!selectedReceiver) {
-      setError("Please select Receiver ID");
+      const msg = receiverSearch.trim()
+        ? "Account not found. Please select a valid receiver."
+        : "Please select Receiver ID";
+      setError(msg);
+      setReceiverError(receiverSearch.trim() ? "Account not found. Please select a valid receiver." : "");
       return false;
     }
     if (selectedSender.account_id === selectedReceiver.account_id) {
       setError("Sender and Receiver cannot be same.");
       return false;
     }
-    if (!amount) {
+    if (!amount || String(amount).trim() === "") {
       setError("Enter Amount");
       return false;
     }
@@ -276,6 +403,8 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
       return false;
     }
     setError("");
+    setReceiverError("");
+    setSenderError("");
     return true;
   }
 
@@ -532,12 +661,9 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
           <input
             value={senderSearch}
             onFocus={() => setShowSenderList(true)}
-            onChange={(e) => {
-              setSenderSearch(e.target.value);
-              setShowSenderList(true);
-            }}
+            onChange={(e) => handleSenderSearchChange(e.target.value)}
             placeholder="Search Sender ID (e.g. A0001)"
-            style={{ ...inputStyle, flex: 1 }}
+            style={{ ...inputStyle, flex: 1, borderColor: senderError ? "#DC2626" : "#D1D5DB" }}
           />
           <select
             value={senderFilter}
@@ -551,6 +677,11 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
             <option value="PERSONAL">Personal</option>
           </select>
         </div>
+        {senderError && (
+          <div style={{ color: "#DC2626", fontSize: "12px", fontWeight: "600", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <FaExclamationTriangle /> {senderError}
+          </div>
+        )}
         {showSenderList && (
           <div style={dropdownStyle}>
             {senderResults.length === 0 ? (
@@ -581,12 +712,9 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
           <input
             value={receiverSearch}
             onFocus={() => setShowReceiverList(true)}
-            onChange={(e) => {
-              setReceiverSearch(e.target.value);
-              setShowReceiverList(true);
-            }}
+            onChange={(e) => handleReceiverSearchChange(e.target.value)}
             placeholder="Search Receiver ID (e.g. A0002)"
-            style={{ ...inputStyle, flex: 1 }}
+            style={{ ...inputStyle, flex: 1, borderColor: receiverError ? "#DC2626" : "#D1D5DB" }}
           />
           <select
             value={receiverFilter}
@@ -600,6 +728,11 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
             <option value="PERSONAL">Personal</option>
           </select>
         </div>
+        {receiverError && (
+          <div style={{ color: "#DC2626", fontSize: "12px", fontWeight: "600", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <FaExclamationTriangle /> {receiverError}
+          </div>
+        )}
         {showReceiverList && (
           <div style={dropdownStyle}>
             {receiverResults.length === 0 ? (
@@ -630,7 +763,7 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
           type="number"
           value={amount}
           placeholder="Enter Amount"
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => handleAmountChange(e.target.value)}
           style={inputStyle}
         />
       </div>
@@ -764,15 +897,40 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
 
       {/* TRANSACTION TIME PICKER */}
       <div style={{ marginBottom: "25px" }}>
-        <label style={labelStyle}>
-          Transaction Time
-        </label>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <label style={{ ...labelStyle, marginBottom: 0 }}>
+            Transaction Time (Local IST)
+          </label>
+        </div>
         <input
           type="datetime-local"
           value={transactionTime}
-          onChange={(e) => setTransactionTime(e.target.value)}
+          onChange={(e) => {
+            setTransactionTime(e.target.value);
+            setScenarioTimeNote("");
+            clearAssessmentResults();
+          }}
           style={inputStyle}
         />
+        {scenarioTimeNote && (
+          <div
+            style={{
+              marginTop: "6px",
+              fontSize: "12px",
+              color: "#4F46E5",
+              fontWeight: "500",
+              background: "#EEF2FF",
+              padding: "6px 10px",
+              borderRadius: "6px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              border: "1px solid #C7D2FE",
+            }}
+          >
+            <span>🌙</span> {scenarioTimeNote}
+          </div>
+        )}
       </div>
 
       {error && (
@@ -791,18 +949,19 @@ function PaymentForm({ selectedScenario, onResetScenario }) {
 
       <button
         onClick={checkRisk}
-        disabled={checkingRisk}
+        disabled={checkingRisk || processingPayment}
         style={{
           width: "100%",
           border: "none",
-          background: "#2563EB",
+          background: checkingRisk || processingPayment ? "#93C5FD" : "#2563EB",
           color: "#fff",
           padding: "16px",
           borderRadius: "12px",
-          cursor: "pointer",
+          cursor: checkingRisk || processingPayment ? "not-allowed" : "pointer",
           fontSize: "16px",
           fontWeight: "600",
-          boxShadow: "0 4px 12px rgba(37,99,235,0.25)"
+          boxShadow: "0 4px 12px rgba(37,99,235,0.25)",
+          opacity: checkingRisk || processingPayment ? 0.75 : 1,
         }}
       >
         {checkingRisk ? "Calculating Synchronized Risk..." : "Check Transaction Risk"}

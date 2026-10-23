@@ -21,6 +21,7 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [receiverTypeFilter, setReceiverTypeFilter] = useState("ALL");
   const [discrepancyOnly, setDiscrepancyOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("newest"); // "newest" | "oldest" | "amount_high" | "amount_low"
   const [records, setRecords] = useState([]);
   const [summary, setSummary] = useState({
     total_records: 0,
@@ -29,6 +30,8 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
     existing_count: 0,
   });
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshFeedback, setRefreshFeedback] = useState(null);
   const [selectedAuditRecord, setSelectedAuditRecord] = useState(null);
   const [auditDetail, setAuditDetail] = useState(null);
   const [loadingAudit, setLoadingAudit] = useState(false);
@@ -58,6 +61,57 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
       setLoading(false);
     }
   }
+
+  async function handleRefresh() {
+    if (isRefreshing || loading) return;
+    try {
+      setIsRefreshing(true);
+      setRefreshFeedback(null);
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.append("q", searchQuery.trim());
+      if (receiverTypeFilter !== "ALL") params.append("receiver_type", receiverTypeFilter);
+      if (discrepancyOnly) params.append("discrepancy_only", "true");
+
+      const res = await API.get(`/api/dataset-explorer?${params.toString()}`);
+      if (res.data) {
+        const fetchedRecords = res.data.records || [];
+        setRecords(fetchedRecords);
+        if (res.data.summary) {
+          setSummary(res.data.summary);
+        }
+        setRefreshFeedback({
+          type: "success",
+          message: `Dataset updated. Showing ${fetchedRecords.length} transactions.`,
+        });
+        setTimeout(() => setRefreshFeedback(null), 4000);
+      }
+    } catch (err) {
+      console.error("Failed to refresh dataset:", err);
+      setRefreshFeedback({
+        type: "error",
+        message: "Failed to refresh dataset. Please try again.",
+      });
+      setTimeout(() => setRefreshFeedback(null), 4000);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
+  const sortedRecords = [...records].sort((a, b) => {
+    if (sortBy === "newest") {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    }
+    if (sortBy === "oldest") {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    }
+    if (sortBy === "amount_high") {
+      return (b.amount || 0) - (a.amount || 0);
+    }
+    if (sortBy === "amount_low") {
+      return (a.amount || 0) - (b.amount || 0);
+    }
+    return 0;
+  });
 
   async function openAuditModal(record) {
     setSelectedAuditRecord(record);
@@ -116,30 +170,54 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
               Transaction Dataset Explorer & Ledger Audit
             </h2>
             <p style={{ margin: 0, color: "#94A3B8", fontSize: "14px", maxWidth: "700px" }}>
-              Search across historical UPI ledger records, audit first-time vs existing receiver relationships, and inspect model prediction consistency with zero black-box ambiguity.
+              Explore transactions, compare fraud predictions with available records, and identify differences that may need investigation.
             </p>
           </div>
 
           <button
-            onClick={fetchRecords}
+            onClick={handleRefresh}
+            disabled={isRefreshing || loading}
             style={{
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              background: "rgba(255, 255, 255, 0.1)",
+              background: isRefreshing ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 255, 255, 0.1)",
               border: "1px solid rgba(255, 255, 255, 0.2)",
               color: "#fff",
               padding: "10px 18px",
               borderRadius: "10px",
-              cursor: "pointer",
+              cursor: isRefreshing || loading ? "not-allowed" : "pointer",
               fontSize: "13px",
               fontWeight: "600",
               transition: "all 0.2s ease",
+              opacity: isRefreshing ? 0.75 : 1,
             }}
           >
-            <FaSync style={{ animation: loading ? "spin 1s linear infinite" : "none" }} /> Refresh Dataset
+            <FaSync style={{ animation: isRefreshing || loading ? "spin 1s linear infinite" : "none" }} />
+            {isRefreshing ? "Updating Dataset..." : "Refresh Dataset"}
           </button>
         </div>
+
+        {refreshFeedback && (
+          <div
+            style={{
+              marginTop: "16px",
+              padding: "10px 16px",
+              borderRadius: "10px",
+              background: refreshFeedback.type === "success" ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)",
+              border: `1px solid ${refreshFeedback.type === "success" ? "#34D399" : "#F87171"}`,
+              color: refreshFeedback.type === "success" ? "#A7F3D0" : "#FECACA",
+              fontSize: "13px",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            {refreshFeedback.type === "success" ? <FaCheckCircle /> : <FaExclamationTriangle />}
+            {refreshFeedback.message}
+          </div>
+        )}
 
         {/* METRICS ROW */}
         <div
@@ -306,6 +384,35 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
         </div>
       </div>
 
+      {/* RESULT COUNT & SORT BAR */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", padding: "0 4px" }}>
+        <div style={{ fontSize: "14px", fontWeight: "600", color: "#475569" }}>
+          Showing <span style={{ color: "#2563EB", fontWeight: "700" }}>{sortedRecords.length}</span> of <span style={{ fontWeight: "700" }}>{summary.total_records}</span> transactions
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "13px", fontWeight: "600", color: "#64748B" }}>Sort by:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              padding: "7px 12px",
+              borderRadius: "8px",
+              border: "1.5px solid #CBD5E1",
+              background: "#fff",
+              fontSize: "13px",
+              fontWeight: "600",
+              color: "#1E293B",
+              cursor: "pointer",
+            }}
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="amount_high">Amount: High to Low</option>
+            <option value="amount_low">Amount: Low to High</option>
+          </select>
+        </div>
+      </div>
+
       {/* DATASET TABLE */}
       <div
         style={{
@@ -321,28 +428,43 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
             <thead>
               <tr style={{ background: "#F8FAFC", borderBottom: "1.5px solid #E2E8F0" }}>
                 <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
-                  Txn ID & Time
+                  Txn ID &amp; Time
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
+                <th
+                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
+                  title="Sender Counterparty: Originator account transferring funds"
+                >
                   Sender (From)
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
+                <th
+                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
+                  title="Receiver Counterparty: Beneficiary account receiving funds"
+                >
                   Receiver (To)
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
                   Amount
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
-                  Actual Ledger History
+                <th
+                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
+                  title="Ground Truth: The available reference label used to compare with the model's prediction"
+                >
+                  Actual Ledger History (Ground Truth)
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
+                <th
+                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
+                  title="Model Prediction: AI model's estimated receiver classification"
+                >
                   Model Prediction
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
+                <th
+                  style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}
+                  title="Grounded Match / Discrepancy: Discrepancy represents a difference between the model's prediction and the reference label"
+                >
                   Audit Status
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: "700", color: "#64748B", textTransform: "uppercase" }}>
-                  Risk & Action
+                  Risk &amp; Action
                 </th>
               </tr>
             </thead>
@@ -353,14 +475,14 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                     Loading transactions from ledger...
                   </td>
                 </tr>
-              ) : records.length === 0 ? (
+              ) : sortedRecords.length === 0 ? (
                 <tr>
                   <td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#64748B" }}>
                     No transaction records match the selected query and filters.
                   </td>
                 </tr>
               ) : (
-                records.map((r, index) => {
+                sortedRecords.map((r, index) => {
                   const isFirstTime = r.actual_receiver_type === "FIRST_TIME_RECEIVER";
                   const isDiscrepancy = r.is_discrepancy;
 
