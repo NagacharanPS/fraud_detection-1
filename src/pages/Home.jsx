@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PaymentForm from "../components/PaymentForm";
 import DemoRiskScenarios from "../components/DemoRiskScenarios";
+import TransactionGraph from "../components/TransactionGraph";
 import DatasetExplorer from "../components/DatasetExplorer";
 import { FaBolt, FaTable, FaShieldAlt } from "react-icons/fa";
 
@@ -111,6 +112,29 @@ function Home() {
           >
             <FaTable /> Dataset Explorer & Ledger Audit
           </button>
+        <button
+          onClick={() => setActiveTab("graph")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "10px 24px",
+            borderRadius: "10px",
+            fontSize: "14px",
+            fontWeight: "700",
+            cursor: "pointer",
+            border: "none",
+            background: activeTab === "graph" ? "#FFFFFF" : "transparent",
+            color: activeTab === "graph" ? "#2563EB" : "#64748B",
+            boxShadow:
+              activeTab === "graph"
+                ? "0 4px 12px rgba(37, 99, 235, 0.15)"
+                : "none",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <FaShieldAlt /> Transaction Network Graph
+        </button>
         </div>
       </div>
 
@@ -139,12 +163,17 @@ function Home() {
             />
           </section>
         </>
-      ) : (
+      ) : activeTab === "explorer" ? (
         /* DATASET EXPLORER & AUDIT TAB */
         <section style={{ width: "100%" }}>
           <DatasetExplorer
             onSelectPairForSimulation={handleSelectPairForSimulation}
           />
+        </section>
+      ) : (
+        /* TRANSACTION NETWORK GRAPH TAB */
+        <section style={{ width: "100%" }}>
+          <TransactionGraph />
         </section>
       )}
     </div>

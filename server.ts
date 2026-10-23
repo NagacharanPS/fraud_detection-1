@@ -12,6 +12,10 @@ import {
   findUser as dbFindUser,
   getAllUsers as dbGetAllUsers,
 } from "./authDatabase";
+import {
+  fetchNetworkGraphData,
+  fetchAccountDeepAudit,
+} from "./src/services/graphService";
 
 interface Account {
   account_id: string;
@@ -2368,6 +2372,48 @@ async function startServer() {
   // Alerts list
   app.get("/api/alerts", (req, res) => {
     res.json(alertsStore);
+  });
+
+  // Interactive Financial Transaction Network Graph API
+  app.get("/api/graph", (req, res) => {
+    try {
+      const {
+        limit,
+        account_id,
+        search,
+        risk_level,
+        suspicious_only,
+        min_amount,
+        pattern,
+      } = req.query;
+
+      const graphData = fetchNetworkGraphData({
+        limit: limit ? parseInt(limit as string, 10) : 120,
+        accountId: account_id as string,
+        search: search as string,
+        riskLevel: risk_level as string,
+        suspiciousOnly: suspicious_only === "true" || suspicious_only === "1",
+        minAmount: min_amount ? parseFloat(min_amount as string) : 0,
+        pattern: pattern as string,
+        liveTransactions: transactionsStore,
+      });
+
+      res.json(graphData);
+    } catch (err: any) {
+      console.error("[Graph API] Error generating network graph:", err);
+      res.status(500).json({ error: "Failed to generate transaction network graph", details: err?.message });
+    }
+  });
+
+  // Deep Account Network & Ledger Audit
+  app.get("/api/graph/account/:accountId", (req, res) => {
+    try {
+      const details = fetchAccountDeepAudit(req.params.accountId);
+      res.json(details);
+    } catch (err: any) {
+      console.error("[Graph API] Error fetching account graph details:", err);
+      res.status(500).json({ error: "Failed to fetch account graph details", details: err?.message });
+    }
   });
 
   // Project Download ZIP Endpoint
