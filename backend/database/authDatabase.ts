@@ -3,9 +3,8 @@ import path from "path";
 import fs from "fs";
 
 const DB_PATHS = [
-  path.resolve(process.cwd(), "fraud_detection.db"),
-  path.resolve(process.cwd(), "dataset/fraud_detection.db"),
   path.resolve(process.cwd(), "backend/database/fraud_detection.db"),
+  path.resolve(process.cwd(), "dataset/fraud_detection.db"),
 ];
 
 function getDatabases(): DatabaseSync[] {

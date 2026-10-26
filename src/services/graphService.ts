@@ -26,9 +26,8 @@ let dbInstance: any = null;
 function getDb(): any {
   if (dbInstance) return dbInstance;
   const dbPaths = [
-    path.resolve(process.cwd(), "fraud_detection.db"),
-    path.resolve(process.cwd(), "dataset/fraud_detection.db"),
     path.resolve(process.cwd(), "backend/database/fraud_detection.db"),
+    path.resolve(process.cwd(), "dataset/fraud_detection.db"),
   ];
 
   for (const p of dbPaths) {

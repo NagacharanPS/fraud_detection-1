@@ -56,6 +56,22 @@ export function AuthProvider({ children }) {
     throw new Error(res.data?.error || "Login failed");
   };
 
+  const faceLogin = async (emailOrPhone, faceVector, faceImage) => {
+    const res = await API.post("/api/auth/face-login", {
+      email_or_phone: emailOrPhone,
+      face_embedding: faceVector,
+      face_image: faceImage,
+    });
+    if (res.data && res.data.token) {
+      setToken(res.data.token);
+      setUser(res.data.user);
+      localStorage.setItem("payguard_auth_token", res.data.token);
+      localStorage.setItem("payguard_user_session", JSON.stringify(res.data.user));
+      return res.data;
+    }
+    throw new Error(res.data?.error || "Biometric face verification failed");
+  };
+
   const signup = async (formData) => {
     const res = await API.post("/api/auth/signup", formData);
     if (res.data && res.data.token) {
@@ -119,6 +135,7 @@ export function AuthProvider({ children }) {
         loading,
         isAuthenticated: !!user,
         login,
+        faceLogin,
         signup,
         logout,
         signout: logout,

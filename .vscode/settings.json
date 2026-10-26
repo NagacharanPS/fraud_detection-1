@@ -1,0 +1,13 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/desktop.ini": true,
+    "**/*.db-shm": true,
+    "**/*.db-wal": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "fraud_detection.db": true
+  }
+}

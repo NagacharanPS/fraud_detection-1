@@ -1183,9 +1183,6 @@ function DatasetExplorer({ onSelectPairForSimulation }) {
                             Safe
                           </span>
                         )}
-                        <div style={{ fontSize: "10.5px", color: "#64748B", marginTop: "3px", fontWeight: "500" }}>
-                          Risk {Math.round(r.risk_score ?? 0)}
-                        </div>
                       </td>
 
                       {/* DETAILS BUTTON */}

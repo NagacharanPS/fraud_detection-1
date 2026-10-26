@@ -17,6 +17,7 @@ import {
   FaExchangeAlt,
 } from "react-icons/fa";
 import api from "../api";
+import { useAuth } from "../context/AuthContext";
 import { collectDeviceSignals } from "../utils/deviceTrust";
 import DeviceSecurityModal from "./DeviceSecurityModal";
 import GroundedEvidenceView from "./GroundedEvidenceView";
@@ -77,6 +78,7 @@ function getInitials(name, fallbackId) {
 
 function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   /* ----------------------------- STATES ----------------------------- */
 
@@ -159,7 +161,7 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
 
   useEffect(() => {
     loadAccounts();
-  }, []);
+  }, [user?.account_id]);
 
   async function loadAccounts() {
     try {
@@ -167,10 +169,13 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
       const res = await api.get("/api/accounts");
       setAccounts(res.data);
       if (res.data.length >= 2) {
-        setSelectedSender(res.data[0]);
-        setSenderSearch(res.data[0].account_id);
-        setSelectedReceiver(res.data[1]);
-        setReceiverSearch(res.data[1].account_id);
+        const userAcc = user?.account_id ? res.data.find((a) => a.account_id === user.account_id) : null;
+        const sender = userAcc || res.data[0];
+        const receiver = res.data.find((a) => a.account_id !== sender.account_id) || res.data[1];
+        setSelectedSender(sender);
+        setSenderSearch(sender.account_id);
+        setSelectedReceiver(receiver);
+        setReceiverSearch(receiver.account_id);
       }
       setLoadingAccounts(false);
     } catch (err) {
@@ -528,14 +533,13 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
   /* ----------------------------- AUTH DECISION ----------------------------- */
 
   function decideAuthentication(score, authRequirement, recommendation) {
-    if (authRequirement === "BLOCKED" || recommendation === "BLOCK" || score > 85) {
-      setAuthType("BLOCK");
-      setActionTitle("Transaction Temporarily Frozen / Blocked");
-      setButtonText("Security Freeze Active");
-      setActionColor("#DC2626");
-    } else if (authRequirement === "FACE" || recommendation === "STEP_UP_FACE" || score > 60) {
+    if (authRequirement === "FACE" || recommendation === "STEP_UP_FACE" || score > 60 || authRequirement === "BLOCKED" || recommendation === "BLOCK" || score > 85) {
       setAuthType("FACE");
-      setActionTitle("Adaptive Face Verification Required");
+      setActionTitle(
+        score > 85 || recommendation === "BLOCK" || authRequirement === "BLOCKED"
+          ? "High Risk Detected — Adaptive Face Biometric Verification Required"
+          : "Adaptive Face Verification Required"
+      );
       setButtonText("Verify Biometrics / Face");
       setActionColor("#2563EB");
     } else if (authRequirement === "OTP" || recommendation === "VERIFY_OTP" || score > 30) {
@@ -555,15 +559,24 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
 
   function handleActionClick() {
     if (!validateForm()) return;
-    if (authType === "BLOCK") {
-      setError("Transaction is BLOCKED by AI Fraud Engine due to critical risk factors.");
-      return;
-    }
     setShowDeviceModal(true);
   }
 
-  async function completeTransaction() {
+  async function completeTransaction(verificationData = {}) {
     if (!validateForm() || processingPayment) return;
+
+    const isBioVerified = Boolean(
+      verificationData?.biometric_verified &&
+      verificationData?.verification_token
+    );
+
+    // If transaction requires Face Verification (High/Critical risk), reject unverified completion
+    if ((authType === "FACE" || authType === "BLOCK") && !isBioVerified) {
+      setError("Biometric face verification is mandatory to authorize this high-risk transaction. Please complete face scan.");
+      setShowDeviceModal(true);
+      return;
+    }
+
     try {
       setProcessingPayment(true);
       setError("");
@@ -581,6 +594,9 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
         transaction_time: transactionTime,
         device_trust: deviceTrust,
         source_transaction_id: selectedScenario?.source_transaction_id || undefined,
+        biometric_verified: isBioVerified,
+        verification_token: verificationData?.verification_token || undefined,
+        auth_type: verificationData?.auth_type || (isBioVerified ? "FACE" : authType),
       };
       const res = await api.post("/api/payment", payload);
 
@@ -1925,7 +1941,7 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
                 <button
                   type="button"
                   onClick={handleActionClick}
-                  disabled={processingPayment || authType === "BLOCK"}
+                  disabled={processingPayment}
                   style={{
                     marginTop: "12px",
                     border: "none",
@@ -1933,13 +1949,13 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
                     color: actionColor || "#16A34A",
                     padding: "12px 26px",
                     borderRadius: "10px",
-                    cursor: authType === "BLOCK" ? "not-allowed" : "pointer",
+                    cursor: processingPayment ? "not-allowed" : "pointer",
                     fontWeight: "700",
                     fontSize: "14px",
                     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
                   }}
                 >
-                  {buttonText}
+                  {buttonText || "Verify Biometrics / Face"}
                 </button>
               </div>
             </div>
