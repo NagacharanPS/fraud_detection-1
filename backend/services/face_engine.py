@@ -12,8 +12,12 @@ import urllib.request
 import cv2
 import numpy as np
 
+if hasattr(cv2, "utils") and hasattr(cv2.utils, "logging"):
+    cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_ERROR)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIR = os.path.join(BASE_DIR, "models", "face")
+REPO_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+MODEL_DIR = os.environ.get("FACE_MODEL_DIR") or os.path.join(REPO_ROOT, "models", "face")
 DETECTOR_PATH = os.path.join(MODEL_DIR, "face_detection_yunet_2023mar.onnx")
 RECOGNIZER_PATH = os.path.join(MODEL_DIR, "face_recognition_sface_2021dec.onnx")
 DETECTOR_URL = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
@@ -47,17 +51,43 @@ def embedding(data_url):
     _, faces = detector.detect(image)
     if faces is None or len(faces) == 0:
         raise ValueError("No face detected. Use a clear, front-facing image.")
-    face = max(faces, key=lambda row: row[2] * row[3])
+    if len(faces) > 1:
+        raise ValueError("Multiple faces detected. Please ensure only one person is in frame.")
+    face = faces[0]
     recognizer = cv2.FaceRecognizerSF.create(RECOGNIZER_PATH, "")
     aligned = recognizer.alignCrop(image, face)
     feature = recognizer.feature(aligned).reshape(-1).astype(float)
     norm = float(np.linalg.norm(feature)) or 1.0
     vector = (feature / norm).tolist()
-    return {"embedding": vector, "algorithm_version": "opencv-yunet-sface-2021dec", "face_count": len(faces)}
+
+    img_h, img_w = image.shape[:2]
+    bbox = {
+        "x": int(face[0]),
+        "y": int(face[1]),
+        "width": int(face[2]),
+        "height": int(face[3]),
+        "norm_x": float(max(0.0, min(1.0, face[0] / img_w))),
+        "norm_y": float(max(0.0, min(1.0, face[1] / img_h))),
+        "norm_w": float(max(0.0, min(1.0, face[2] / img_w))),
+        "norm_h": float(max(0.0, min(1.0, face[3] / img_h))),
+        "score": float(face[-1]),
+    }
+
+    return {
+        "embedding": vector,
+        "algorithm_version": "opencv-yunet-sface-2021dec",
+        "face_count": len(faces),
+        "bounding_box": bbox,
+    }
 
 
 def main():
-    request = json.loads(sys.stdin.read())
+    raw_input = sys.stdin.read().strip()
+    if not raw_input:
+        raise ValueError("Empty request payload")
+    request = json.loads(raw_input)
+    if "image" not in request or not request["image"]:
+        raise ValueError("A data URL image is required")
     ensure_models()
     print(json.dumps(embedding(request["image"])))
 
@@ -68,3 +98,4 @@ if __name__ == "__main__":
     except Exception as exc:
         print(json.dumps({"error": str(exc)}))
         sys.exit(1)
+

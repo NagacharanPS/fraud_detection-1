@@ -15,6 +15,7 @@ import {
   FaCheck,
   FaTimes,
   FaExchangeAlt,
+  FaCamera,
 } from "react-icons/fa";
 import api from "../api";
 import { useAuth } from "../context/AuthContext";
@@ -540,7 +541,7 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
           ? "High Risk Detected — Adaptive Face Biometric Verification Required"
           : "Adaptive Face Verification Required"
       );
-      setButtonText("Verify Biometrics / Face");
+      setButtonText("Face Verification");
       setActionColor("#2563EB");
     } else if (authRequirement === "OTP" || recommendation === "VERIFY_OTP" || score > 30) {
       setAuthType("OTP");
@@ -1940,6 +1941,7 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
                 <div style={{ fontSize: "15px", fontWeight: "700" }}>{actionTitle}</div>
                 <button
                   type="button"
+                  id="face-recognition-btn"
                   onClick={handleActionClick}
                   disabled={processingPayment}
                   style={{
@@ -1953,9 +1955,20 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
                     fontWeight: "700",
                     fontSize: "14px",
                     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                 >
-                  {buttonText || "Verify Biometrics / Face"}
+                  {authType === "FACE" || authType === "BLOCK" ? (
+                    <FaCamera />
+                  ) : authType === "OTP" ? (
+                    <FaShieldAlt />
+                  ) : (
+                    <FaLock />
+                  )}
+                  {" "}
+                  {buttonText || (authType === "FACE" ? "Face Verification" : "Complete Payment")}
                 </button>
               </div>
             </div>

@@ -56,12 +56,27 @@ export function AuthProvider({ children }) {
     throw new Error(res.data?.error || "Login failed");
   };
 
-  const faceLogin = async (emailOrPhone, faceVector, faceImage) => {
-    const res = await API.post("/api/auth/face-login", {
+  const faceLogin = async (emailOrPhone, param2, param3) => {
+    let faceImage = null;
+    let faceEmbedding = null;
+    if (typeof param2 === "string" && (param2.startsWith("data:") || param2.length > 50)) {
+      faceImage = param2;
+    } else if (param3) {
+      faceEmbedding = param2;
+      faceImage = param3;
+    } else if (Array.isArray(param2)) {
+      faceEmbedding = param2;
+    } else if (typeof param2 === "string") {
+      faceImage = param2;
+    }
+
+    const payload = {
       email_or_phone: emailOrPhone,
-      face_embedding: faceVector,
       face_image: faceImage,
-    });
+    };
+    if (faceEmbedding) payload.face_embedding = faceEmbedding;
+
+    const res = await API.post("/api/auth/face-login", payload);
     if (res.data && res.data.token) {
       setToken(res.data.token);
       setUser(res.data.user);

@@ -17,9 +17,11 @@ import {
   FaExclamationTriangle,
   FaUpload,
   FaBolt,
+  FaTimes,
 } from "react-icons/fa";
 import API from "../api";
 import { useAuth } from "../context/AuthContext";
+import FaceRecognition from "./FaceRecognition";
 
 export default function DeviceSecurityModal({
   isOpen,
@@ -62,7 +64,10 @@ export default function DeviceSecurityModal({
   const [faceError, setFaceError] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(false);
-  const [faceMode, setFaceMode] = useState("camera"); // 'camera' | 'upload' | 'enclave'
+  const [isCameraLoading, setIsCameraLoading] = useState(false);
+  const [detectedBox, setDetectedBox] = useState(null);
+  const [verifiedUser, setVerifiedUser] = useState(null);
+  const [faceMode, setFaceMode] = useState("camera"); // 'camera' | 'upload'
   const [facePreviewImage, setFacePreviewImage] = useState(null);
   const [matchConfidence, setMatchConfidence] = useState(null);
   const videoRef = useRef(null);
@@ -72,7 +77,7 @@ export default function DeviceSecurityModal({
   // Reset & Lifecycle
   useEffect(() => {
     if (!isOpen) {
-      setModalStage(authType === "FACE" || authType === "BLOCK" ? "STEP_FACE" : "SCANNING");
+      setModalStage("IDLE");
       setScanProgress(0);
       setShowDetails(false);
       setOtpDigits(["", "", "", "", "", ""]);
@@ -83,6 +88,8 @@ export default function DeviceSecurityModal({
       setFaceError("");
       setFacePreviewImage(null);
       setMatchConfidence(null);
+      setDetectedBox(null);
+      setVerifiedUser(null);
       setFaceMode("camera");
       stopCamera();
       return;
@@ -96,6 +103,8 @@ export default function DeviceSecurityModal({
       setFaceScanStep(0);
       setFaceVerified(false);
       setFaceError("");
+      setDetectedBox(null);
+      setVerifiedUser(null);
       return () => {
         stopCamera();
       };
@@ -184,25 +193,51 @@ export default function DeviceSecurityModal({
     };
   }, [modalStage, resendCooldown]);
 
-  // Start Camera when entering STEP_FACE in camera mode
+  // Start Camera ONLY when modal is open, in STEP_FACE, and faceMode is camera
   useEffect(() => {
-    if (modalStage === "STEP_FACE" && faceMode === "camera") {
+    if (isOpen && modalStage === "STEP_FACE" && faceMode === "camera") {
       startCamera();
     } else {
       stopCamera();
     }
-  }, [modalStage, faceMode]);
+  }, [isOpen, modalStage, faceMode]);
+
+  // Clean up media tracks on component unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  // Ensure live video stream is bound to video element whenever active
+  useEffect(() => {
+    if (cameraActive && streamRef.current && videoRef.current) {
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+      }
+      videoRef.current.play().catch(() => {});
+    }
+  }, [cameraActive, faceMode, modalStage]);
 
   async function startCamera() {
+    if (!isOpen) return;
     try {
       stopCamera();
+      setIsCameraLoading(true);
+      setCameraError(false);
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 480 } },
           audio: false,
         });
+        if (!isOpen) {
+          // If modal was closed while userMedia prompt was active, release immediately
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
         streamRef.current = stream;
         setCameraActive(true);
+        setIsCameraLoading(false);
         setCameraError(false);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -211,10 +246,13 @@ export default function DeviceSecurityModal({
       } else {
         setCameraError(true);
         setCameraActive(false);
+        setIsCameraLoading(false);
       }
-    } catch {
+    } catch (err) {
+      console.warn("Camera initialization error:", err);
       setCameraError(true);
       setCameraActive(false);
+      setIsCameraLoading(false);
     }
   }
 
@@ -224,6 +262,7 @@ export default function DeviceSecurityModal({
       streamRef.current = null;
     }
     setCameraActive(false);
+    setIsCameraLoading(false);
   }
 
   if (!isOpen) return null;
@@ -369,31 +408,15 @@ export default function DeviceSecurityModal({
 
   /* ----------------------------- FACE AUTH HANDLERS ----------------------------- */
 
-  const computeVectorFromString = (str) => {
-    const vector = [];
-    let seed = 0;
-    const len = Math.min(str.length, 1000);
-    for (let i = 0; i < len; i++) {
-      seed = (seed * 31 + str.charCodeAt(i)) & 0xffffffff;
-    }
-    for (let i = 0; i < 128; i++) {
-      const val = Math.sin(seed + i * 0.45) * Math.cos(i * 0.22);
-      vector.push(val);
-    }
-    const norm = Math.sqrt(vector.reduce((s, v) => s + v * v, 0)) || 1.0;
-    return vector.map((v) => Number((v / norm).toFixed(6)));
-  };
-
   const handleStartFaceScan = async (overrideImage = null) => {
     setIsFaceScanning(true);
     setFaceError("");
     setFaceScanStep(1); // Aligning
 
     setTimeout(async () => {
-      setFaceScanStep(2); // Analyzing 3D liveness & 128 landmarks
+      setFaceScanStep(2); // Extracting 128-D OpenCV face embedding
 
       let imageToSend = overrideImage || facePreviewImage;
-      let vectorToSend = null;
 
       if (!imageToSend && videoRef.current && cameraActive) {
         try {
@@ -411,10 +434,10 @@ export default function DeviceSecurityModal({
         }
       }
 
-      if (imageToSend) {
-        vectorToSend = computeVectorFromString(imageToSend);
-      } else if (faceMode === "enclave") {
-        vectorToSend = computeVectorFromString(senderAccount?.account_id || user?.user_id || "enclave_biometric");
+      if (!imageToSend) {
+        setIsFaceScanning(false);
+        setFaceError("No face photo captured. Please ensure your camera is working or upload a photo.");
+        return;
       }
 
       try {
@@ -422,10 +445,16 @@ export default function DeviceSecurityModal({
           account_id: senderAccount?.account_id,
           user_id: user?.user_id,
           face_image: imageToSend,
-          face_embedding: vectorToSend,
         });
 
         setTimeout(() => {
+          if (res.data?.bounding_box) {
+            setDetectedBox(res.data.bounding_box);
+          }
+          if (res.data?.user) {
+            setVerifiedUser(res.data.user);
+          }
+
           if (res.data && res.data.verified) {
             setMatchConfidence(res.data.match_score || 96.8);
             setFaceScanStep(3); // Key verified
@@ -438,19 +467,67 @@ export default function DeviceSecurityModal({
                 verification_token: res.data.verification_token,
                 auth_type: "FACE",
               });
-            }, 800);
+            }, 1200);
           } else {
             setIsFaceScanning(false);
             setFaceVerified(false);
-            setFaceError(res.data?.error || `Biometric verification failed: confidence score (${res.data?.match_score || 0}%) did not match enrolled template.`);
+            const scoreText = typeof res.data?.match_score === "number" ? ` (Score: ${res.data.match_score}%)` : "";
+            setFaceError(res.data?.message || res.data?.error || `Biometric verification failed${scoreText}. Face did not match enrolled template.`);
           }
-        }, 900);
+        }, 600);
       } catch (err) {
         setIsFaceScanning(false);
         setFaceVerified(false);
-        setFaceError(err.response?.data?.error || "Biometric face verification failed. Face does not match registered profile.");
+        const errMsg = err.response?.data?.message || err.response?.data?.error || "Biometric face verification failed.";
+        setFaceError(errMsg);
       }
-    }, 600);
+    }, 400);
+  };
+
+  const handleEnrollFaceFromModal = async () => {
+    let imageToEnroll = facePreviewImage;
+    if (!imageToEnroll && videoRef.current && cameraActive) {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = videoRef.current.videoWidth || 480;
+        canvas.height = videoRef.current.videoHeight || 480;
+        const ctx = canvas.getContext("2d");
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        imageToEnroll = canvas.toDataURL("image/jpeg", 0.9);
+        setFacePreviewImage(imageToEnroll);
+      } catch (e) {
+        console.warn("Could not capture frame snapshot for enrollment", e);
+      }
+    }
+
+    if (!imageToEnroll) {
+      setFaceError("Please capture or upload a clear photo of your face to enrol.");
+      return;
+    }
+
+    setIsFaceScanning(true);
+    setFaceError("");
+
+    try {
+      const res = await API.post("/api/auth/enroll-face", {
+        account_id: senderAccount?.account_id,
+        user_id: user?.user_id,
+        face_image: imageToEnroll,
+      });
+
+      if (res.data && res.data.success) {
+        // Enrolled successfully, now automatically verify this face!
+        handleStartFaceScan(imageToEnroll);
+      } else {
+        setIsFaceScanning(false);
+        setFaceError(res.data?.error || "Face enrollment failed.");
+      }
+    } catch (err) {
+      setIsFaceScanning(false);
+      setFaceError(err.response?.data?.error || "Face enrollment failed. Please ensure your face is clearly visible.");
+    }
   };
 
   const handleFileUpload = (e) => {
@@ -464,11 +541,6 @@ export default function DeviceSecurityModal({
       handleStartFaceScan(dataUrl);
     };
     reader.readAsDataURL(file);
-  };
-
-  const handleEnclaveVerify = () => {
-    stopCamera();
-    handleStartFaceScan(null);
   };
 
   /* ----------------------------- NAVIGATION ----------------------------- */
@@ -488,6 +560,11 @@ export default function DeviceSecurityModal({
   const rawPhone = senderAccount?.mobile_number || "9876543210";
   const maskedPhone = `+91 ******${rawPhone.slice(-4)}`;
 
+  const handleClose = () => {
+    stopCamera();
+    onClose();
+  };
+
   return (
     <div
       style={{
@@ -504,6 +581,11 @@ export default function DeviceSecurityModal({
         justifyContent: "center",
         padding: "16px",
       }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
     >
       <div
         style={{
@@ -519,6 +601,30 @@ export default function DeviceSecurityModal({
           position: "relative",
         }}
       >
+        {/* TOP-RIGHT CLOSE BUTTON */}
+        <button
+          type="button"
+          onClick={handleClose}
+          aria-label="Close"
+          style={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            background: "#F1F5F9",
+            border: "none",
+            borderRadius: "50%",
+            width: "32px",
+            height: "32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#64748B",
+            zIndex: 30,
+          }}
+        >
+          <FaTimes size={13} />
+        </button>
         {/* ========================================================= */}
         {/* STAGE 1: SCANNING TRANSACTION SECURITY REQUIREMENTS */}
         {/* ========================================================= */}
@@ -1096,419 +1202,23 @@ export default function DeviceSecurityModal({
         {/* STAGE 3B: STEP-UP AUTH — ADAPTIVE FACE VERIFICATION */}
         {/* ========================================================= */}
         {modalStage === "STEP_FACE" && (
-          <div>
-            <div
-              style={{
-                width: "56px",
-                height: "56px",
-                borderRadius: "50%",
-                background: "#DBEAFE",
-                color: "#2563EB",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "24px",
-                margin: "0 auto 12px",
-              }}
-            >
-              <FaFingerprint />
-            </div>
-
-            <h3 style={{ margin: "0 0 6px", fontSize: "19px", fontWeight: "800", color: "#0F172A" }}>
-              Adaptive Biometric Face Verification
-            </h3>
-            <p style={{ margin: "0 0 14px", fontSize: "13px", color: "#64748B", lineHeight: "18px" }}>
-              High-Risk transaction policy requires Biometric Facial Attestation to confirm sender authorization for <strong>₹{Number(amount).toLocaleString("en-IN")}</strong>.
-            </p>
-
-            {/* Mode Selection Tabs */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "6px",
-                background: "#F1F5F9",
-                padding: "4px",
-                borderRadius: "10px",
-                marginBottom: "14px",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setFaceMode("camera");
-                  setFacePreviewImage(null);
-                  setFaceError("");
-                  startCamera();
-                }}
-                style={{
-                  padding: "6px 8px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: faceMode === "camera" ? "#FFFFFF" : "transparent",
-                  color: faceMode === "camera" ? "#2563EB" : "#64748B",
-                  fontWeight: faceMode === "camera" ? "700" : "500",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                  boxShadow: faceMode === "camera" ? "0 2px 5px rgba(0,0,0,0.06)" : "none",
-                }}
-              >
-                <FaCamera /> Webcam
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setFaceMode("upload");
-                  stopCamera();
-                  fileInputRef.current?.click();
-                }}
-                style={{
-                  padding: "6px 8px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: faceMode === "upload" ? "#FFFFFF" : "transparent",
-                  color: faceMode === "upload" ? "#2563EB" : "#64748B",
-                  fontWeight: faceMode === "upload" ? "700" : "500",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                  boxShadow: faceMode === "upload" ? "0 2px 5px rgba(0,0,0,0.06)" : "none",
-                }}
-              >
-                <FaUpload /> Photo File
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setFaceMode("enclave");
-                  setFacePreviewImage(null);
-                  stopCamera();
-                  handleEnclaveVerify();
-                }}
-                style={{
-                  padding: "6px 8px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: faceMode === "enclave" ? "#FFFFFF" : "transparent",
-                  color: faceMode === "enclave" ? "#2563EB" : "#64748B",
-                  fontWeight: faceMode === "enclave" ? "700" : "500",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                  boxShadow: faceMode === "enclave" ? "0 2px 5px rgba(0,0,0,0.06)" : "none",
-                }}
-              >
-                <FaBolt /> 1-Click Enclave
-              </button>
-            </div>
-
-            {/* Hidden Photo Upload Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              style={{ display: "none" }}
-            />
-
-            {/* SCANNER CONTAINER */}
-            <div
-              style={{
-                position: "relative",
-                width: "200px",
-                height: "200px",
-                margin: "0 auto 14px",
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: faceVerified
-                  ? "4px solid #16A34A"
-                  : isFaceScanning
-                  ? "4px solid #2563EB"
-                  : "4px solid #94A3B8",
-                background: "#0F172A",
-                boxShadow: faceVerified
-                  ? "0 0 20px rgba(22, 163, 74, 0.4)"
-                  : isFaceScanning
-                  ? "0 0 20px rgba(37, 99, 235, 0.4)"
-                  : "0 10px 25px rgba(0, 0, 0, 0.15)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {/* FACE PHOTO PREVIEW (If photo uploaded or captured) */}
-              {facePreviewImage ? (
-                <img
-                  src={facePreviewImage}
-                  alt="Captured face"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : faceMode === "camera" && cameraActive ? (
-                /* CAMERA FEED */
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    transform: "scaleX(-1)", // Mirror selfie
-                  }}
-                />
-              ) : (
-                /* CAMERA FALLBACK / ENCLAVE GRAPHIC */
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "radial-gradient(circle, #1E293B 0%, #0F172A 100%)",
-                    color: "#94A3B8",
-                  }}
-                >
-                  {faceMode === "enclave" ? (
-                    <>
-                      <FaFingerprint style={{ fontSize: "40px", color: "#60A5FA", marginBottom: "8px" }} />
-                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#CBD5E1" }}>
-                        Secure Hardware Enclave
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <FaCamera style={{ fontSize: "36px", color: isFaceScanning ? "#60A5FA" : "#64748B", marginBottom: "8px" }} />
-                      <span style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1" }}>
-                        {cameraError ? "Camera Unavailable" : "3D Face Biometric"}
-                      </span>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* ACTIVE SCANNING BEAM & RETICLE */}
-              {isFaceScanning && (
-                <>
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      right: 0,
-                      height: "3px",
-                      background: "linear-gradient(90deg, transparent 0%, #60A5FA 50%, transparent 100%)",
-                      boxShadow: "0 0 12px #3B82F6",
-                      top: faceScanStep === 1 ? "30%" : faceScanStep === 2 ? "65%" : "85%",
-                      transition: "top 0.6s ease-in-out",
-                      zIndex: 10,
-                    }}
-                  />
-                  {/* Face Mesh Landmark Points */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      width: "80px",
-                      height: "100px",
-                      border: "2px dashed rgba(96, 165, 250, 0.7)",
-                      borderRadius: "40%",
-                      zIndex: 5,
-                    }}
-                  />
-                </>
-              )}
-
-              {/* VERIFIED CHECKMARK OVERLAY */}
-              {faceVerified && (
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "rgba(22, 163, 74, 0.9)",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#FFFFFF",
-                    zIndex: 20,
-                  }}
-                >
-                  <FaCheckCircle style={{ fontSize: "44px", marginBottom: "6px" }} />
-                  <span style={{ fontWeight: "800", fontSize: "13px" }}>Identity Verified</span>
-                  <span style={{ fontSize: "11px", opacity: 0.9 }}>Match: {matchConfidence || 96.8}%</span>
-                </div>
-              )}
-            </div>
-
-            {/* SCAN STATUS TEXT */}
-            <div
-              style={{
-                fontSize: "12px",
-                fontWeight: "700",
-                color: faceError ? "#DC2626" : faceVerified ? "#16A34A" : isFaceScanning ? "#2563EB" : "#475569",
-                marginBottom: "12px",
-                minHeight: "18px",
-              }}
-            >
-              {faceError
-                ? faceError
-                : faceVerified
-                ? "✓ Biometric Confirmed! Authorizing ₹" + Number(amount).toLocaleString("en-IN") + "..."
-                : faceScanStep === 1
-                ? "Aligning face and evaluating 3D liveness..."
-                : faceScanStep === 2
-                ? "Matching 128 nodal facial landmarks to enrolled template..."
-                : isFaceScanning
-                ? "Processing biometric telemetry..."
-                : faceMode === "upload"
-                ? "Select a face photo to verify"
-                : faceMode === "enclave"
-                ? "Ready to sign with hardware enclave key"
-                : "Look at camera and click 'Scan & Verify Face'"}
-            </div>
-
-            {/* Fallback to SMS OTP */}
-            <div style={{ marginBottom: "14px" }}>
-              <button
-                type="button"
-                onClick={() => {
-                  stopCamera();
-                  setModalStage("STEP_OTP");
-                }}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  color: "#4F46E5",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              >
-                Unable to scan face? Verify with SMS OTP instead
-              </button>
-            </div>
-
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                type="button"
-                onClick={() => {
-                  stopCamera();
-                  setModalStage("VERIFIED_SUMMARY");
-                }}
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: "1px solid #CBD5E1",
-                  background: "#F8FAFC",
-                  color: "#475569",
-                  fontWeight: "600",
-                  fontSize: "13px",
-                  cursor: "pointer",
-                }}
-              >
-                Back
-              </button>
-
-              {faceMode === "upload" ? (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isFaceScanning || faceVerified}
-                  style={{
-                    flex: 2,
-                    padding: "12px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "#2563EB",
-                    color: "#FFFFFF",
-                    fontWeight: "700",
-                    fontSize: "13px",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <FaUpload /> {facePreviewImage ? "Choose Another Photo" : "Upload Face Photo"}
-                </button>
-              ) : faceMode === "enclave" ? (
-                <button
-                  type="button"
-                  onClick={handleEnclaveVerify}
-                  disabled={isFaceScanning || faceVerified}
-                  style={{
-                    flex: 2,
-                    padding: "12px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "#2563EB",
-                    color: "#FFFFFF",
-                    fontWeight: "700",
-                    fontSize: "13px",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <FaBolt /> {isFaceScanning ? "Verifying..." : "Verify Enclave Key"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleStartFaceScan()}
-                  disabled={isFaceScanning || faceVerified || isProcessingPayment}
-                  style={{
-                    flex: 2,
-                    padding: "12px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: faceVerified ? "#16A34A" : "#2563EB",
-                    color: "#FFFFFF",
-                    fontWeight: "700",
-                    fontSize: "13px",
-                    cursor: isFaceScanning ? "not-allowed" : "pointer",
-                    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                >
-                  {isFaceScanning ? (
-                    <>
-                      <FaSpinner className="animate-spin" /> Matching Biometrics...
-                    </>
-                  ) : faceVerified ? (
-                    "Verified!"
-                  ) : (
-                    <>
-                      <FaCamera /> Scan &amp; Verify Face
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
+          <FaceRecognition
+            mode="verification"
+            targetAccount={senderAccount || user}
+            amount={amount}
+            autoStartCamera={true}
+            onVerified={(verificationResult) => {
+              onFinalizePayment({
+                biometric_verified: true,
+                auth_method: "FACE_BIOMETRIC",
+                verified_user: verificationResult.user,
+                match_score: verificationResult.match_score,
+                verification_token: verificationResult.verification_token,
+              });
+            }}
+            onSwitchToOtp={() => setModalStage("STEP_OTP")}
+            onClose={handleClose}
+          />
         )}
 
         {/* ========================================================= */}

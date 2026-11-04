@@ -106,6 +106,15 @@ export function initializeDatabaseTables(): void {
         }
       }
 
+      // Clean up legacy simulated biometric seeds
+      try {
+        db.exec(`
+          UPDATE users 
+          SET face_embedding = NULL, face_data = NULL, template_hash = NULL, algorithm_version = NULL 
+          WHERE algorithm_version IS NOT NULL AND algorithm_version != 'opencv-yunet-sface-2021dec';
+        `);
+      } catch {}
+
       // User credentials view alias
       try {
         db.exec(`
@@ -264,10 +273,10 @@ export function seedDefaultUsers(demoUsers: any[]): void {
         password_hash: u.password_hash,
         salt: u.salt,
         account_id: u.account_id,
-        face_data: u.face_data || `[SIMULATED_128D_BIOMETRIC_VECTOR_${u.user_id}]`,
-        face_embedding: u.face_embedding,
-        template_hash: u.template_hash,
-        algorithm_version: u.algorithm_version || "v2.1-liveness-enclave",
+        face_data: "",
+        face_embedding: null,
+        template_hash: "",
+        algorithm_version: "",
       });
     } catch (err) {
       console.warn(`[authDatabase] Could not seed user ${u.user_id}:`, err);

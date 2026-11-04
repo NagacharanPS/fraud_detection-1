@@ -32,12 +32,13 @@ export default function Login() {
 
   // Biometric Face Login State
   const [showFaceModal, setShowFaceModal] = useState(false);
-  const [faceMode, setFaceMode] = useState("camera"); // 'camera' | 'upload' | 'enclave'
+  const [faceMode, setFaceMode] = useState("camera"); // 'camera' | 'upload'
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [faceImage, setFaceImage] = useState(null);
   const [isVerifyingFace, setIsVerifyingFace] = useState(false);
   const [faceSuccess, setFaceSuccess] = useState(false);
+  const [faceModalError, setFaceModalError] = useState("");
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -60,7 +61,9 @@ export default function Login() {
   // Sync camera feed to videoRef
   useEffect(() => {
     if (showFaceModal && cameraActive && videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+      }
       videoRef.current.play().catch((e) => console.warn("Video play error:", e));
     }
   }, [showFaceModal, cameraActive]);
@@ -149,10 +152,11 @@ export default function Login() {
     setShowFaceModal(true);
     setFaceImage(null);
     setFaceSuccess(false);
+    setFaceModalError("");
     setFaceMode("camera");
     setTimeout(() => {
       startCamera();
-    }, 150);
+    }, 100);
   };
 
   const closeFaceModal = () => {
@@ -161,6 +165,7 @@ export default function Login() {
     setFaceImage(null);
     setFaceSuccess(false);
     setIsVerifyingFace(false);
+    setFaceModalError("");
   };
 
   const startCamera = async () => {
@@ -186,7 +191,7 @@ export default function Login() {
     } catch (err) {
       console.warn("Camera access denied:", err);
       setCameraActive(false);
-      setCameraError("Camera unavailable. You can use 'Upload Photo' or '1-Click Enclave' to authenticate.");
+      setCameraError("Camera unavailable. Please allow camera permissions or upload a photo file.");
     }
   };
 
@@ -198,26 +203,12 @@ export default function Login() {
     setCameraActive(false);
   };
 
-  const computeVectorFromString = (str) => {
-    const vector = [];
-    let seed = 0;
-    const len = Math.min(str.length, 1000);
-    for (let i = 0; i < len; i++) {
-      seed = (seed * 31 + str.charCodeAt(i)) & 0xffffffff;
-    }
-    for (let i = 0; i < 128; i++) {
-      const val = Math.sin(seed + i * 0.45) * Math.cos(i * 0.22);
-      vector.push(val);
-    }
-    const norm = Math.sqrt(vector.reduce((s, v) => s + v * v, 0)) || 1.0;
-    return vector.map((v) => Number((v / norm).toFixed(6)));
-  };
-
   const captureAndAuthenticateFace = async () => {
     if (!videoRef.current) return;
 
     try {
       setIsVerifyingFace(true);
+      setFaceModalError("");
       setError("");
 
       const canvas = document.createElement("canvas");
@@ -232,11 +223,8 @@ export default function Login() {
       setFaceImage(dataUrl);
       stopCamera();
 
-      // Compute live vector
-      const liveVector = computeVectorFromString(dataUrl);
-
-      // Authenticate with server
-      await faceLogin(emailOrPhone.trim(), liveVector, dataUrl);
+      // Authenticate with server using real OpenCV face matching
+      await faceLogin(emailOrPhone.trim(), dataUrl);
 
       setFaceSuccess(true);
       setTimeout(() => {
@@ -244,7 +232,9 @@ export default function Login() {
         navigate("/");
       }, 1000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Biometric verification failed.");
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message || "Biometric verification failed.";
+      setFaceModalError(msg);
+      setError(msg);
       setIsVerifyingFace(false);
     }
   };
@@ -259,42 +249,34 @@ export default function Login() {
       setFaceImage(dataUrl);
       stopCamera();
       setIsVerifyingFace(true);
+      setFaceModalError("");
       setError("");
 
       try {
-        const liveVector = computeVectorFromString(dataUrl);
-        await faceLogin(emailOrPhone.trim(), liveVector, dataUrl);
+        await faceLogin(emailOrPhone.trim(), dataUrl);
         setFaceSuccess(true);
         setTimeout(() => {
           closeFaceModal();
           navigate("/");
         }, 1000);
       } catch (err) {
-        setError(err.response?.data?.error || err.message || "Biometric verification failed.");
+        const msg = err.response?.data?.error || err.response?.data?.message || err.message || "Biometric verification failed.";
+        setFaceModalError(msg);
+        setError(msg);
         setIsVerifyingFace(false);
       }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleEnclaveAuth = async () => {
-    stopCamera();
-    setIsVerifyingFace(true);
-    setError("");
-
-    try {
-      // Use enclave vector based on user credentials
-      const seedStr = emailOrPhone.trim();
-      const enclaveVector = computeVectorFromString(seedStr);
-      await faceLogin(emailOrPhone.trim(), enclaveVector, null);
-      setFaceSuccess(true);
-      setTimeout(() => {
-        closeFaceModal();
-        navigate("/");
-      }, 1000);
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || "Enclave verification failed.");
-      setIsVerifyingFace(false);
+  const handleRetryFace = () => {
+    setFaceModalError("");
+    setFaceImage(null);
+    setFaceSuccess(false);
+    if (faceMode === "camera") {
+      startCamera();
+    } else {
+      fileInputRef.current?.click();
     }
   };
 
@@ -633,8 +615,8 @@ export default function Login() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "6px",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "8px",
                 background: "#F1F5F9",
                 padding: "4px",
                 borderRadius: "10px",
@@ -645,10 +627,12 @@ export default function Login() {
                 type="button"
                 onClick={() => {
                   setFaceMode("camera");
+                  setFaceModalError("");
+                  setFaceImage(null);
                   startCamera();
                 }}
                 style={{
-                  padding: "6px 8px",
+                  padding: "8px 10px",
                   borderRadius: "8px",
                   border: "none",
                   background: faceMode === "camera" ? "#FFFFFF" : "transparent",
@@ -659,7 +643,8 @@ export default function Login() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "4px",
+                  gap: "6px",
+                  boxShadow: faceMode === "camera" ? "0 2px 5px rgba(0,0,0,0.06)" : "none",
                 }}
               >
                 <FaCamera /> Webcam
@@ -672,7 +657,7 @@ export default function Login() {
                   fileInputRef.current?.click();
                 }}
                 style={{
-                  padding: "6px 8px",
+                  padding: "8px 10px",
                   borderRadius: "8px",
                   border: "none",
                   background: faceMode === "upload" ? "#FFFFFF" : "transparent",
@@ -683,33 +668,11 @@ export default function Login() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "4px",
+                  gap: "6px",
+                  boxShadow: faceMode === "upload" ? "0 2px 5px rgba(0,0,0,0.06)" : "none",
                 }}
               >
                 <FaUpload /> Photo File
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setFaceMode("enclave");
-                  handleEnclaveAuth();
-                }}
-                style={{
-                  padding: "6px 8px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: faceMode === "enclave" ? "#FFFFFF" : "transparent",
-                  color: faceMode === "enclave" ? "#2563EB" : "#64748B",
-                  fontWeight: faceMode === "enclave" ? "700" : "500",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                }}
-              >
-                <FaBolt /> Enclave
               </button>
             </div>
 
@@ -724,6 +687,8 @@ export default function Login() {
                 overflow: "hidden",
                 border: faceSuccess
                   ? "4px solid #16A34A"
+                  : faceModalError
+                  ? "4px solid #DC2626"
                   : isVerifyingFace
                   ? "4px solid #2563EB"
                   : "4px solid #CBD5E1",
@@ -756,7 +721,13 @@ export default function Login() {
               ) : cameraActive ? (
                 <>
                   <video
-                    ref={videoRef}
+                    ref={(el) => {
+                      videoRef.current = el;
+                      if (el && streamRef.current && el.srcObject !== streamRef.current) {
+                        el.srcObject = streamRef.current;
+                        el.play().catch(() => {});
+                      }
+                    }}
                     playsInline
                     muted
                     autoPlay
@@ -795,7 +766,26 @@ export default function Login() {
               )}
             </div>
 
-            {cameraError && (
+            {/* In-Modal Error Display */}
+            {faceModalError && (
+              <div
+                style={{
+                  background: "#FEE2E2",
+                  border: "1px solid #FCA5A5",
+                  borderRadius: "8px",
+                  padding: "8px 12px",
+                  color: "#991B1B",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  marginBottom: "14px",
+                  textAlign: "center",
+                }}
+              >
+                {faceModalError}
+              </div>
+            )}
+
+            {cameraError && !faceModalError && (
               <div
                 style={{
                   background: "#FEF3C7",
@@ -812,14 +802,61 @@ export default function Login() {
             )}
 
             {/* Actions */}
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-              {cameraActive && !faceSuccess && (
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+              {faceModalError ? (
+                <button
+                  type="button"
+                  onClick={handleRetryFace}
+                  style={{
+                    flex: 2,
+                    background: "#2563EB",
+                    color: "#FFFFFF",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "12px",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    boxShadow: "0 4px 12px rgba(37,99,235,0.25)",
+                  }}
+                >
+                  <FaSyncAlt /> Retry Face Scan
+                </button>
+              ) : faceMode === "upload" ? (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isVerifyingFace || faceSuccess}
+                  style={{
+                    flex: 2,
+                    background: "#2563EB",
+                    color: "#FFFFFF",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "12px",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    boxShadow: "0 4px 12px rgba(37,99,235,0.25)",
+                  }}
+                >
+                  <FaUpload /> {faceImage ? "Choose Another Photo" : "Upload Face Photo"}
+                </button>
+              ) : cameraActive && !faceSuccess ? (
                 <button
                   type="button"
                   onClick={captureAndAuthenticateFace}
                   disabled={isVerifyingFace}
                   style={{
-                    flex: 1,
+                    flex: 2,
                     background: "#2563EB",
                     color: "#FFFFFF",
                     border: "none",
@@ -837,7 +874,7 @@ export default function Login() {
                 >
                   {isVerifyingFace ? (
                     <>
-                      <FaSyncAlt className="animate-spin" /> Verifying Landmarks...
+                      <FaSyncAlt className="animate-spin" /> Matching OpenCV SFace...
                     </>
                   ) : (
                     <>
@@ -845,11 +882,13 @@ export default function Login() {
                     </>
                   )}
                 </button>
-              )}
+              ) : null}
+
               <button
                 type="button"
                 onClick={closeFaceModal}
                 style={{
+                  flex: 1,
                   padding: "12px 18px",
                   borderRadius: "10px",
                   border: "1px solid #CBD5E1",
