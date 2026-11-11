@@ -509,7 +509,7 @@ loadDataFromCSV();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   try {
     await dbInitTables();
@@ -3463,7 +3463,7 @@ async function startServer() {
       }
 
       const graphData = fetchNetworkGraphData({
-        limit: limit ? parseInt(limit as string, 10) : 120,
+        limit: limit ? parseInt(limit as string, 10) : 100,
         accountId: account_id as string,
         search: search as string,
         transactionId: targetTxn,

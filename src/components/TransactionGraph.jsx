@@ -53,7 +53,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
   const [riskFilter, setRiskFilter] = useState("ALL"); // ALL, LOW, MEDIUM, HIGH, CRITICAL
   const [suspiciousOnly, setSuspiciousOnly] = useState(false);
   const [patternFilter, setPatternFilter] = useState("all"); // all, fan_out, fan_in, circular, rapid, multi_hop
-  const [limit, setLimit] = useState(120);
+  const [limit, setLimit] = useState(100);
   const [minAmount, setMinAmount] = useState("");
   const [showLabels, setShowLabels] = useState(true);
   const [activeLayout, setActiveLayout] = useState("cose"); // cose, concentric, circle, breadthfirst
@@ -321,33 +321,67 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
 
     let layoutName = activeLayout;
     if (layoutName === "cose" || layoutName === "auto") {
-      layoutName = graphData.nodes.length < 60 ? "concentric" : "cose";
+      layoutName = graphData.nodes.length < 60 && patternFilter !== "circular" && patternFilter !== "multi_hop" ? "concentric" : "cose";
     }
+
+    const n = graphData.nodes.length;
+    const isDenseOrFlow = n > 150 || patternFilter === "multi_hop" || patternFilter === "circular";
+    const gravity = isDenseOrFlow ? Math.max(1.0, 300 / n) : 80;
+    const repulsion = isDenseOrFlow ? Math.min(5000000, 400000 + (n - 150) * 8500) : 400000;
+    const idealEdgeLength = isDenseOrFlow ? Math.min(180, 100 + (n - 150) * 0.15) : 100;
 
     const currentConfig = {
       name: layoutName,
       fit: true,
-      padding: 40,
+      padding: 50,
       animate: false,
       ...(layoutName === "cose"
         ? {
-            idealEdgeLength: 100,
-            nodeOverlap: 20,
-            refresh: 20,
-            componentSpacing: 100,
-            nodeRepulsion: 400000,
-            edgeElasticity: 100,
-            numIter: 1000,
-          }
-        : layoutName === "concentric"
-        ? {
-            minNodeSpacing: 50,
-            concentric: (node) => (node.data("is_suspicious") ? 10 : (node.data("out_degree") || 0) + (node.data("in_degree") || 0)),
-            levelWidth: () => 2,
-          }
-        : layoutName === "breadthfirst"
-        ? { directed: true, spacingFactor: 1.25 }
-        : {}),
+          idealEdgeLength,
+          nodeOverlap: 0,
+          refresh: 20,
+          componentSpacing: 160,
+          nodeRepulsion: repulsion,
+          edgeElasticity: isDenseOrFlow ? 30 : 100,
+          nestingFactor: isDenseOrFlow ? 1.2 : 5,
+          gravity,
+          numIter: 1000,
+          initialTemp: 250,
+          coolingFactor: 0.95,
+          minTemp: 1.0,
+          randomize: true,
+        }
+        : layoutName === "circle"
+          ? (() => {
+            const comps = cy.elements().components();
+            const compOrderMap = new Map();
+            let order = 0;
+            comps.forEach((comp) => {
+              comp.nodes().forEach((node) => {
+                compOrderMap.set(node.id(), order++);
+              });
+            });
+            const radius = Math.max(450, (n * 95) / (2 * Math.PI));
+            return {
+              name: "circle",
+              fit: true,
+              padding: 60,
+              radius,
+              avoidOverlap: true,
+              sort: (a, b) => (compOrderMap.get(a.id()) ?? 0) - (compOrderMap.get(b.id()) ?? 0),
+              animate: false,
+            };
+          })()
+          : layoutName === "concentric"
+            ? {
+              minNodeSpacing: 60,
+              avoidOverlap: true,
+              concentric: (node) => (node.data("is_suspicious") ? 10 : (node.data("out_degree") || 0) + (node.data("in_degree") || 0)),
+              levelWidth: () => 2,
+            }
+            : layoutName === "breadthfirst"
+              ? { directed: true, avoidOverlap: true, spacingFactor: 1.75 }
+              : {}),
     };
 
     const layout = cy.makeLayout(currentConfig);
@@ -393,7 +427,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
     setSuspiciousOnly(false);
     setPatternFilter("all");
     setMinAmount("");
-    setLimit(120);
+    setLimit(100);
     setActiveLayout("cose"); // B6: Restores Layout to Auto layout
     setSelectedNode(null);
     setSelectedEdge(null);
@@ -410,7 +444,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
     try {
       setLoading(true);
       setError(null);
-      const res = await API.get("/api/graph?limit=120");
+      const res = await API.get("/api/graph?limit=100");
       if (seq === reqSeqRef.current && res.data) {
         setGraphData(res.data);
       }
@@ -468,51 +502,71 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
 
   // Cytoscape layout configuration
   const layoutConfig = useMemo(() => {
-    if (activeLayout === "cose") {
+    const n = graphData.nodes.length || 100;
+    const isDenseOrFlow = n > 150 || patternFilter === "multi_hop" || patternFilter === "circular";
+    const gravity = isDenseOrFlow ? Math.max(1.0, 300 / n) : 80;
+    const repulsion = isDenseOrFlow ? Math.min(5000000, 400000 + (n - 150) * 8500) : 400000;
+    const idealEdgeLength = isDenseOrFlow ? Math.min(180, 100 + (n - 150) * 0.15) : 100;
+
+      if (activeLayout === "circle") {
+        const radius = Math.max(450, (n * 95) / (2 * Math.PI));
+        return {
+          name: "circle",
+          fit: true,
+          padding: 60,
+          radius,
+          avoidOverlap: true,
+          animate: false,
+        };
+      }
+      if (activeLayout === "cose") {
+        return {
+          name: "cose",
+          idealEdgeLength,
+          nodeOverlap: 0,
+          refresh: 20,
+          fit: true,
+          padding: 50,
+          randomize: true,
+          componentSpacing: 160,
+          nodeRepulsion: repulsion,
+          edgeElasticity: isDenseOrFlow ? 30 : 100,
+          nestingFactor: isDenseOrFlow ? 1.2 : 5,
+          gravity,
+          numIter: 1000,
+          initialTemp: 250,
+          coolingFactor: 0.95,
+          minTemp: 1.0,
+        };
+      }
+      if (activeLayout === "concentric") {
+        return {
+          name: "concentric",
+          fit: true,
+          padding: 50,
+          minNodeSpacing: 60,
+          avoidOverlap: true,
+          concentric: (node) => (node.data("is_suspicious") ? 10 : node.data("out_degree") + node.data("in_degree")),
+          levelWidth: () => 2,
+        };
+      }
+      if (activeLayout === "breadthfirst") {
+        return {
+          name: "breadthfirst",
+          fit: true,
+          directed: true,
+          avoidOverlap: true,
+          padding: 50,
+          spacingFactor: 1.75,
+        };
+      }
       return {
-        name: "cose",
-        idealEdgeLength: 100,
-        nodeOverlap: 20,
-        refresh: 20,
+        name: "circle",
         fit: true,
-        padding: 40,
-        randomize: false,
-        componentSpacing: 100,
-        nodeRepulsion: 400000,
-        edgeElasticity: 100,
-        nestingFactor: 5,
-        gravity: 80,
-        numIter: 1000,
-        initialTemp: 200,
-        coolingFactor: 0.95,
-        minTemp: 1.0,
+        padding: 50,
+        avoidOverlap: true,
       };
-    }
-    if (activeLayout === "concentric") {
-      return {
-        name: "concentric",
-        fit: true,
-        padding: 40,
-        minNodeSpacing: 50,
-        concentric: (node) => (node.data("is_suspicious") ? 10 : node.data("out_degree") + node.data("in_degree")),
-        levelWidth: () => 2,
-      };
-    }
-    if (activeLayout === "breadthfirst") {
-      return {
-        name: "breadthfirst",
-        fit: true,
-        directed: true,
-        padding: 40,
-        spacingFactor: 1.25,
-      };
-    }
-    return {
-      name: "circle",
-      fit: true,
-      padding: 40,
-    };
-  }, [activeLayout]);
+    }, [activeLayout, graphData.nodes.length, patternFilter]);
 
   // Cytoscape stylesheet matching the rich dark theme
   const cyStylesheet = useMemo(() => {
@@ -590,7 +644,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.2,
           "curve-style": "bezier",
-          "control-point-step-size": 40,
+          "control-point-step-size": 28,
+          "loop-direction": "-45deg",
+          "loop-sweep": "-90deg",
           opacity: 0.8,
           label: showLabels ? "data(label)" : "",
           color: "#94A3B8",
@@ -611,7 +667,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.1,
           "curve-style": "bezier",
-          "control-point-step-size": 40,
+          "control-point-step-size": 28,
+          "loop-direction": "-45deg",
+          "loop-sweep": "-90deg",
           opacity: 0.8,
           label: showLabels ? "data(label)" : "",
           color: "#94A3B8",
@@ -634,7 +692,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.25,
           "curve-style": "bezier",
-          "control-point-step-size": 40,
+          "control-point-step-size": 28,
+          "loop-direction": "-45deg",
+          "loop-sweep": "-90deg",
           opacity: 0.9,
           label: showLabels ? "data(label)" : "",
           color: "#FEF08A",
@@ -659,7 +719,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.35,
           "curve-style": "bezier",
-          "control-point-step-size": 40,
+          "control-point-step-size": 28,
+          "loop-direction": "-45deg",
+          "loop-sweep": "-90deg",
           opacity: 0.95,
           label: showLabels ? "data(label)" : "",
           color: "#FED7AA",
@@ -682,7 +744,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           "target-arrow-shape": "triangle",
           "arrow-scale": 1.5,
           "curve-style": "bezier",
-          "control-point-step-size": 40,
+          "control-point-step-size": 28,
+          "loop-direction": "-45deg",
+          "loop-sweep": "-90deg",
           opacity: 1.0,
           label: showLabels ? "data(label)" : "",
           color: "#FCA5A5",
@@ -1043,7 +1107,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                 On screen now
               </div>
               <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.75)", marginTop: "1px" }}>
-                Linked by {graphData.summary.displayed_transactions || 120} payments
+                Linked by {graphData.summary.displayed_transactions || 100} payments
               </div>
             </div>
           </div>
@@ -1311,9 +1375,12 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                 }}
               >
                 <option value={50}>50 payments</option>
-                <option value={120}>120 payments</option>
+                <option value={100}>100 payments</option>
                 <option value={250}>250 payments</option>
                 <option value={500}>500 payments</option>
+                <option value={700}>700 payments</option>
+                <option value={750}>750 payments</option>
+                <option value={1000}>1000 payments</option>
               </select>
             </div>
 
@@ -1464,11 +1531,11 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
             </span>
           </button>
 
-          {/* CIRCULAR: Money going in a circle 102 */}
+          {/* CIRCULAR: Money going in a circle */}
           <button
             type="button"
             onClick={() => setPatternFilter(patternFilter === "circular" ? "all" : "circular")}
-            title="Circular Reciprocal: Directed 2-hop reciprocal loop within 7 days"
+            title="Circular Cycles: Reciprocal loops and 3-hop circular flows"
             style={{
               background: patternFilter === "circular" ? "#0F172A" : "#FFFFFF",
               color: patternFilter === "circular" ? "#FFFFFF" : "#334155",
@@ -1491,7 +1558,7 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                 fontWeight: "700",
               }}
             >
-              102
+              {(graphData.patterns?.circular_count || 4060).toLocaleString()}
             </span>
           </button>
 
@@ -1801,58 +1868,58 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
           </div>
           {!legendCollapsed && (
             <>
-          {/* Node Types */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                borderRadius: "50%",
-                background: "#0284C7",
-                border: "2px solid #38BDF8",
-                display: "inline-block",
-              }}
-            />
-            <span>Normal Account (Circle)</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                borderRadius: "2px",
-                transform: "rotate(45deg)",
-                background: "#DC2626",
-                border: "2px solid #F87171",
-                display: "inline-block",
-              }}
-            />
-            <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Suspicious / Flagged Node (Hexagon)</span>
-          </div>
+              {/* Node Types */}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    borderRadius: "50%",
+                    background: "#0284C7",
+                    border: "2px solid #38BDF8",
+                    display: "inline-block",
+                  }}
+                />
+                <span>Normal Account (Circle)</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    borderRadius: "2px",
+                    transform: "rotate(45deg)",
+                    background: "#DC2626",
+                    border: "2px solid #F87171",
+                    display: "inline-block",
+                  }}
+                />
+                <span style={{ color: "#FCA5A5", fontWeight: 600 }}>Suspicious / Flagged Node (Hexagon)</span>
+              </div>
 
-          <div style={{ height: "1px", background: "#334155", margin: "2px 0" }} />
+              <div style={{ height: "1px", background: "#334155", margin: "2px 0" }} />
 
-          {/* 4 Risk Levels */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ width: "18px", height: "2px", background: "#0EA5E9", display: "inline-block" }} />
-            <span>Low Risk Transfer (&lt;30 score, Cyan solid)</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ width: "18px", height: "3px", background: "#EAB308", display: "inline-block" }} />
-            <span style={{ color: "#FEF08A" }}>Medium Risk (30-59 score, Yellow solid)</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ width: "18px", height: "3px", borderTop: "2px dashed #F97316", display: "inline-block" }} />
-            <span style={{ color: "#FED7AA" }}>High Risk (60-79 score, Orange dashed)</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ width: "18px", height: "4px", background: "#EF4444", display: "inline-block" }} />
-            <span style={{ color: "#FCA5A5", fontWeight: 700 }}>Critical Risk (&ge;80 score, Red thick)</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ width: "18px", height: "4px", background: "#F59E0B", border: "1px solid #FDE68A", display: "inline-block" }} />
-            <span style={{ color: "#FDE68A", fontWeight: 700 }}>Targeted Assessed Flow (Amber outline)</span>
-          </div>
+              {/* 4 Risk Levels */}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ width: "18px", height: "2px", background: "#0EA5E9", display: "inline-block" }} />
+                <span>Low Risk Transfer (&lt;30 score, Cyan solid)</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ width: "18px", height: "3px", background: "#EAB308", display: "inline-block" }} />
+                <span style={{ color: "#FEF08A" }}>Medium Risk (30-59 score, Yellow solid)</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ width: "18px", height: "3px", borderTop: "2px dashed #F97316", display: "inline-block" }} />
+                <span style={{ color: "#FED7AA" }}>High Risk (60-79 score, Orange dashed)</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ width: "18px", height: "4px", background: "#EF4444", display: "inline-block" }} />
+                <span style={{ color: "#FCA5A5", fontWeight: 700 }}>Critical Risk (&ge;80 score, Red thick)</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ width: "18px", height: "4px", background: "#F59E0B", border: "1px solid #FDE68A", display: "inline-block" }} />
+                <span style={{ color: "#FDE68A", fontWeight: 700 }}>Targeted Assessed Flow (Amber outline)</span>
+              </div>
             </>
           )}
         </div>
@@ -1880,9 +1947,9 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
             </div>
             <div style={{ fontSize: "11px", color: "#94A3B8" }}>
               {hoveredNode.is_verified_identity &&
-              hoveredNode.account_name &&
-              hoveredNode.account_name !== "Name not available" &&
-              hoveredNode.account_name !== "Unknown" ? (
+                hoveredNode.account_name &&
+                hoveredNode.account_name !== "Name not available" &&
+                hoveredNode.account_name !== "Unknown" ? (
                 <span style={{ color: "#E2E8F0", fontWeight: 600 }}>{hoveredNode.account_name} • </span>
               ) : null}
               Trust: {hoveredNode.trust_score !== "Unknown" ? `${hoveredNode.trust_score}/100` : "Unknown"}
@@ -1949,10 +2016,10 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                   selectedNode.account_name !== "Name not available" &&
                   selectedNode.account_name !== "Unknown"
                 ) && (
-                  <div style={{ fontSize: "13px", color: "#E2E8F0", fontWeight: 600 }}>
-                    Account Holder: {selectedNode.account_name}
-                  </div>
-                )}
+                    <div style={{ fontSize: "13px", color: "#E2E8F0", fontWeight: 600 }}>
+                      Account Holder: {selectedNode.account_name}
+                    </div>
+                  )}
               </div>
               <button
                 onClick={() => setSelectedNode(null)}
@@ -2114,8 +2181,8 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                 {expandingAccountId === selectedNode.account_id
                   ? "Expanding..."
                   : expandedAccounts.has(selectedNode.account_id)
-                  ? "History Expanded ✓"
-                  : "Explore Connections"}
+                    ? "History Expanded ✓"
+                    : "Explore Connections"}
               </button>
               <button
                 onClick={() => handleInvestigateAccount(selectedNode.account_id)}
@@ -2194,19 +2261,18 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                   selectedEdge.risk_level === "CRITICAL"
                     ? "rgba(239, 68, 68, 0.2)"
                     : selectedEdge.risk_level === "HIGH"
-                    ? "rgba(249, 115, 22, 0.2)"
-                    : selectedEdge.risk_level === "MEDIUM"
-                    ? "rgba(234, 179, 8, 0.2)"
-                    : "rgba(14, 165, 233, 0.2)",
-                border: `1px solid ${
-                  selectedEdge.risk_level === "CRITICAL"
+                      ? "rgba(249, 115, 22, 0.2)"
+                      : selectedEdge.risk_level === "MEDIUM"
+                        ? "rgba(234, 179, 8, 0.2)"
+                        : "rgba(14, 165, 233, 0.2)",
+                border: `1px solid ${selectedEdge.risk_level === "CRITICAL"
                     ? "rgba(239, 68, 68, 0.4)"
                     : selectedEdge.risk_level === "HIGH"
-                    ? "rgba(249, 115, 22, 0.4)"
-                    : selectedEdge.risk_level === "MEDIUM"
-                    ? "rgba(234, 179, 8, 0.4)"
-                    : "rgba(14, 165, 233, 0.4)"
-                }`,
+                      ? "rgba(249, 115, 22, 0.4)"
+                      : selectedEdge.risk_level === "MEDIUM"
+                        ? "rgba(234, 179, 8, 0.4)"
+                        : "rgba(14, 165, 233, 0.4)"
+                  }`,
                 borderRadius: "10px",
                 padding: "12px 14px",
                 display: "flex",
@@ -2229,10 +2295,10 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                         selectedEdge.risk_level === "CRITICAL"
                           ? "#EF4444"
                           : selectedEdge.risk_level === "HIGH"
-                          ? "#F97316"
-                          : selectedEdge.risk_level === "MEDIUM"
-                          ? "#EAB308"
-                          : "#0EA5E9",
+                            ? "#F97316"
+                            : selectedEdge.risk_level === "MEDIUM"
+                              ? "#EAB308"
+                              : "#0EA5E9",
                       color: selectedEdge.risk_level === "MEDIUM" ? "#0F172A" : "#FFFFFF",
                       padding: "3px 8px",
                       borderRadius: "6px",
@@ -2266,15 +2332,15 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                       selectedEdge.ground_truth_status === "NOT_LABELLED_LIVE" || selectedEdge.is_live || selectedEdge.is_fraud === null
                         ? "#94A3B8"
                         : selectedEdge.is_fraud === 1
-                        ? "#EF4444"
-                        : "#10B981",
+                          ? "#EF4444"
+                          : "#10B981",
                   }}
                 >
                   {selectedEdge.ground_truth_status === "NOT_LABELLED_LIVE" || selectedEdge.is_live || selectedEdge.is_fraud === null
                     ? "⚪ Not labelled (live transaction)"
                     : selectedEdge.is_fraud === 1
-                    ? "⚠️ Confirmed Fraud (is_fraud=1)"
-                    : "✓ Legitimate (is_fraud=0)"}
+                      ? "⚠️ Confirmed Fraud (is_fraud=1)"
+                      : "✓ Legitimate (is_fraud=0)"}
                 </span>
               </div>
             </div>
@@ -2324,13 +2390,13 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                     selectedEdge.sender_name !== "Name not available" &&
                     selectedEdge.sender_name !== "Unknown"
                   ) && (
-                    <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
-                      <span style={{ color: "#94A3B8" }}>Account Holder: </span>
-                      <span style={{ fontWeight: 600, color: "#F8FAFC" }}>
-                        {selectedEdge.sender_name}
-                      </span>
-                    </div>
-                  )}
+                      <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                        <span style={{ color: "#94A3B8" }}>Account Holder: </span>
+                        <span style={{ fontWeight: 600, color: "#F8FAFC" }}>
+                          {selectedEdge.sender_name}
+                        </span>
+                      </div>
+                    )}
                   {/* Expand Sender History Button */}
                   <div style={{ marginTop: "6px" }}>
                     <button
@@ -2344,11 +2410,10 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                         background: expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id)
                           ? "rgba(16, 185, 129, 0.2)"
                           : "rgba(56, 189, 248, 0.15)",
-                        border: `1px solid ${
-                          expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id)
+                        border: `1px solid ${expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id)
                             ? "#10B981"
                             : "#0284C7"
-                        }`,
+                          }`,
                         color: expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id)
                           ? "#34D399"
                           : "#38BDF8",
@@ -2367,8 +2432,8 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                       {expandingAccountId === (selectedEdge.source || selectedEdge.sender_id)
                         ? "Retrieving Sender Ledger..."
                         : expandedAccounts.has(selectedEdge.source || selectedEdge.sender_id)
-                        ? "Sender History (Expanded in Graph ✓)"
-                        : "Expand Sender History in Graph"}
+                          ? "Sender History (Expanded in Graph ✓)"
+                          : "Expand Sender History in Graph"}
                     </button>
                   </div>
                 </div>
@@ -2382,10 +2447,10 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                       selectedEdge.risk_level === "CRITICAL"
                         ? "#EF4444"
                         : selectedEdge.risk_level === "HIGH"
-                        ? "#F97316"
-                        : selectedEdge.risk_level === "MEDIUM"
-                        ? "#EAB308"
-                        : "#38BDF8",
+                          ? "#F97316"
+                          : selectedEdge.risk_level === "MEDIUM"
+                            ? "#EAB308"
+                            : "#38BDF8",
                   }}
                 />
                 <div style={{ height: "1px", background: "#334155", flex: 1 }} />
@@ -2407,13 +2472,13 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                     selectedEdge.receiver_name !== "Name not available" &&
                     selectedEdge.receiver_name !== "Unknown"
                   ) && (
-                    <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
-                      <span style={{ color: "#94A3B8" }}>Account Holder: </span>
-                      <span style={{ fontWeight: 600, color: "#F8FAFC" }}>
-                        {selectedEdge.receiver_name}
-                      </span>
-                    </div>
-                  )}
+                      <div style={{ color: "#CBD5E1", fontSize: "12px" }}>
+                        <span style={{ color: "#94A3B8" }}>Account Holder: </span>
+                        <span style={{ fontWeight: 600, color: "#F8FAFC" }}>
+                          {selectedEdge.receiver_name}
+                        </span>
+                      </div>
+                    )}
                   {/* Expand Receiver History Button */}
                   <div style={{ marginTop: "6px" }}>
                     <button
@@ -2427,11 +2492,10 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                         background: expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id)
                           ? "rgba(16, 185, 129, 0.2)"
                           : "rgba(56, 189, 248, 0.15)",
-                        border: `1px solid ${
-                          expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id)
+                        border: `1px solid ${expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id)
                             ? "#10B981"
                             : "#0284C7"
-                        }`,
+                          }`,
                         color: expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id)
                           ? "#34D399"
                           : "#38BDF8",
@@ -2450,8 +2514,8 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                       {expandingAccountId === (selectedEdge.target || selectedEdge.receiver_id)
                         ? "Retrieving Receiver Ledger..."
                         : expandedAccounts.has(selectedEdge.target || selectedEdge.receiver_id)
-                        ? "Receiver History (Expanded in Graph ✓)"
-                        : "Expand Receiver History in Graph"}
+                          ? "Receiver History (Expanded in Graph ✓)"
+                          : "Expand Receiver History in Graph"}
                     </button>
                   </div>
                 </div>
@@ -2534,15 +2598,14 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                     marginTop: "4px",
                     padding: "8px 10px",
                     background: "rgba(15, 23, 42, 0.8)",
-                    borderLeft: `3px solid ${
-                      selectedEdge.risk_level === "CRITICAL"
+                    borderLeft: `3px solid ${selectedEdge.risk_level === "CRITICAL"
                         ? "#EF4444"
                         : selectedEdge.risk_level === "HIGH"
-                        ? "#F97316"
-                        : selectedEdge.risk_level === "MEDIUM"
-                        ? "#EAB308"
-                        : "#0EA5E9"
-                    }`,
+                          ? "#F97316"
+                          : selectedEdge.risk_level === "MEDIUM"
+                            ? "#EAB308"
+                            : "#0EA5E9"
+                      }`,
                     borderRadius: "0 6px 6px 0",
                     color: "#CBD5E1",
                     fontSize: "11px",
@@ -2612,13 +2675,13 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                   accountAuditDetail?.account_name !== "Name not available" &&
                   accountAuditDetail?.account_name !== "Unknown"
                 ) && (
-                  <div style={{ fontSize: "14px", color: "#E2E8F0" }}>
-                    Account Holder: {accountAuditDetail.account_name}
-                    {accountAuditDetail.upi_id && accountAuditDetail.upi_id !== "Not available"
-                      ? ` (${accountAuditDetail.upi_id})`
-                      : ""}
-                  </div>
-                )}
+                    <div style={{ fontSize: "14px", color: "#E2E8F0" }}>
+                      Account Holder: {accountAuditDetail.account_name}
+                      {accountAuditDetail.upi_id && accountAuditDetail.upi_id !== "Not available"
+                        ? ` (${accountAuditDetail.upi_id})`
+                        : ""}
+                    </div>
+                  )}
               </div>
               <button
                 onClick={() => {
@@ -2982,10 +3045,10 @@ function TransactionGraph({ initialTxnId, onClearTargetTxn }) {
                       investigatingFraudTxn.risk_level === "CRITICAL"
                         ? "#EF4444"
                         : investigatingFraudTxn.risk_level === "HIGH"
-                        ? "#F97316"
-                        : investigatingFraudTxn.risk_level === "MEDIUM"
-                        ? "#EAB308"
-                        : "#0EA5E9",
+                          ? "#F97316"
+                          : investigatingFraudTxn.risk_level === "MEDIUM"
+                            ? "#EAB308"
+                            : "#0EA5E9",
                     color: investigatingFraudTxn.risk_level === "MEDIUM" ? "#0F172A" : "#FFFFFF",
                     padding: "3px 8px",
                     borderRadius: "6px",
