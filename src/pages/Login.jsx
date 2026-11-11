@@ -27,6 +27,7 @@ export default function Login() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
+  const [backendError, setBackendError] = useState("");
   const [loading, setLoading] = useState(false);
   const [demoUsers, setDemoUsers] = useState([]);
 
@@ -50,9 +51,11 @@ export default function Login() {
         const res = await API.get("/api/auth/demo-users");
         if (res.data && Array.isArray(res.data)) {
           setDemoUsers(res.data);
+          setBackendError("");
         }
       } catch (err) {
         console.error("Could not fetch demo users:", err);
+        setBackendError("Backend server is unreachable. Please verify that the API server is running on http://localhost:3000.");
       }
     }
     loadDemoUsers();
@@ -319,6 +322,26 @@ export default function Login() {
         </p>
       </div>
 
+      {backendError && (
+        <div
+          style={{
+            background: "#FEF2F2",
+            border: "1px solid #F87171",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            color: "#991B1B",
+            fontSize: "13px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginBottom: "20px",
+          }}
+        >
+          <FaExclamationTriangle style={{ flexShrink: 0, fontSize: "16px", color: "#DC2626" }} />
+          <span>{backendError}</span>
+        </div>
+      )}
+
       {error && (
         <div
           style={{
@@ -469,6 +492,27 @@ export default function Login() {
       </form>
 
       {/* Demo Accounts Quick-Select for fast evaluator testing */}
+      {backendError && (
+        <div style={{ marginTop: "24px", borderTop: "1px solid #FEE2E2", paddingTop: "16px" }}>
+          <div
+            style={{
+              background: "#FFFBEB",
+              border: "1px solid #FCD34D",
+              borderRadius: "10px",
+              padding: "12px 14px",
+              color: "#92400E",
+              fontSize: "12px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <FaExclamationTriangle style={{ color: "#D97706", flexShrink: 0 }} />
+            <span>Cannot load live demo accounts — backend API is currently unreachable.</span>
+          </div>
+        </div>
+      )}
+
       {demoUsers.length > 0 && (
         <div style={{ marginTop: "28px", borderTop: "1px solid #F1F5F9", paddingTop: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px", color: "#4B5563", fontSize: "13px", fontWeight: "600" }}>

@@ -72,6 +72,30 @@ function MainLayout() {
             }
           />
           <Route
+            path="/processing"
+            element={
+              <ProtectedRoute>
+                <PaymentProcessing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-processing"
+            element={
+              <ProtectedRoute>
+                <PaymentProcessing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-success"
+            element={
+              <ProtectedRoute>
+                <PaymentSuccess />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/login"
             element={
               <PublicAuthRoute>
@@ -102,6 +126,14 @@ function App() {
           {/* AI Processing */}
           <Route
             path="/processing"
+            element={
+              <ProtectedRoute>
+                <PaymentProcessing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-processing"
             element={
               <ProtectedRoute>
                 <PaymentProcessing />

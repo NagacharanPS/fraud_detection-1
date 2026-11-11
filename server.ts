@@ -2967,8 +2967,8 @@ async function startServer() {
     return { mlPayload, mlRes };
   }
 
-  // Check Risk
-  app.post("/api/check-risk", async (req, res) => {
+  // Check & Evaluate Risk (Supporting both /api/evaluate-risk and /api/check-risk)
+  app.post(["/api/evaluate-risk", "/api/check-risk"], async (req, res) => {
     const {
       sender_account,
       receiver_account,

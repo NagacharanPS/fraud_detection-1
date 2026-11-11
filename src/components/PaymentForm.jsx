@@ -501,7 +501,7 @@ function PaymentForm({ selectedScenario, onResetScenario, onViewInGraph }) {
         device_trust: currentDeviceTrust,
         source_transaction_id: selectedScenario?.source_transaction_id || undefined,
       };
-      const response = await api.post("/api/check-risk", payload);
+      const response = await api.post("/api/evaluate-risk", payload);
       const data = response.data;
 
       if (data.error === "INSUFFICIENT_BALANCE") {
